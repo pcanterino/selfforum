@@ -127,7 +127,8 @@ sub parse_single_thread ($$;$) {
                ip      => $_ -> getAttribute ('ip'),
                kids    => [$_ -> getElementsByTagName ('Message', 0)],
                answers => $_ -> getElementsByTagName ('Message') -> getLength,
-               deleted => ($_ -> getAttribute ('flag') eq 'deleted')?1:0,
+               deleted => $_ -> getAttribute ('invisible'),
+               archive => $_ -> getAttribute ('archive'),
                name    => plain($header -> {name}),
                cat     => plain($header -> {category} or ''),
                subject => plain($header -> {subject}),
@@ -165,7 +166,8 @@ sub create_message_xml ($$$) {
 
   my $message = $xml -> createElement ('Message');
   $message -> setAttribute ('id', 'm'.$msg -> {mid});
-  $message -> setAttribute ('flag', 'deleted') if ($msg -> {deleted});
+  $message -> setAttribute ('invisible', '1') if ($msg -> {deleted});
+  $message -> setAttribute ('archive', '1') if ($msg -> {archive});
 
   # Header erzeugen
   my $header   = $xml -> createElement ('Header');
@@ -295,7 +297,7 @@ sub get_all_threads ($$;$) {
     ($last_message) = map {/(\d+)/} $xml =~ /<Forum.+?lastMessage="([^"]+)"[^>]*>/;}
 
   my $reg_msg = qr~(?:</Message>
-                     |<Message\s+id="m(\d+)"\s+unid="([^"]*)"(?:\s+flag="([^"]*)")?[^>]*>\s*
+                     |<Message\s+id="m(\d+)"\s+unid="([^"]*)"(?:\s+invisible="([^"]*)")?(?:\s+archive="([^"]*)")?[^>]*>\s*
                       <Header>[^<]*(?:<(?!Name>)[^<]*)*
                         <Name>([^<]+)</Name>[^<]*(?:<(?!Category>)[^<]*)*
                         <Category>([^<]*)</Category>\s*
@@ -310,7 +312,7 @@ sub get_all_threads ($$;$) {
 
     while ($thread =~ m;$reg_msg;g) {
 
-      if (defined($9)) {
+      if (defined($10)) {
         push @stack,$cmno if (defined $cmno);
         push @msg, {};
 
@@ -329,9 +331,10 @@ sub get_all_threads ($$;$) {
         $msg[-1] -> {name},
         $msg[-1] -> {cat},
         $msg[-1] -> {subject},
-        $msg[-1] -> {time})     = ($1, $2, $4, $5, $6, $7);
+        $msg[-1] -> {time})     = ($1, $2, $5, $6, $7, $8);
 
-        $msg[-1] -> {deleted} = ($3 eq 'deleted')?1:undef;
+        $msg[-1] -> {deleted} = $3;
+        $msg[-1] -> {archive} = $4;
 
         $msg[-1] -> {name} =~ s/&amp;/&/g;
         $msg[-1] -> {cat} =~ s/&amp;/&/g;
@@ -342,7 +345,7 @@ sub get_all_threads ($$;$) {
         $msg[-1] -> {answers} = 0;
         $msg[-1] -> {level} = $level++;}
 
-      elsif (defined ($8)) {
+      elsif (defined ($9)) {
         push @msg, {};
 
         if (defined $cmno) {
@@ -359,9 +362,10 @@ sub get_all_threads ($$;$) {
         $msg[-1] -> {name},
         $msg[-1] -> {cat},
         $msg[-1] -> {subject},
-        $msg[-1] -> {time})     = ($1, $2, $4, $5, $6, $7);
+        $msg[-1] -> {time})     = ($1, $2, $5, $6, $7, $8);
 
-        $msg[-1] -> {deleted} = ($3 eq 'deleted')?1:undef;
+        $msg[-1] -> {deleted} = $3;
+        $msg[-1] -> {archive} = $4;
 
         $msg[-1] -> {name} =~ s/&amp;/&/g;
         $msg[-1] -> {cat} =~ s/&amp;/&/g;
@@ -411,7 +415,8 @@ sub create_forum_xml_string ($$) {
       $level = $msg -> {level};
       $xml .= '<Message id="m'.$msg -> {mid}.'"'
                   .' unid="'.$msg -> {unid}.'"'
-                  .(($msg -> {deleted})?' flag="deleted"':'')
+                  .(($msg -> {deleted})?' invisible="1"':'')
+                  .(($msg -> {archive})?' archive="1"':'')
                   .'>'
              .'<Header>'
              .'<Author>'
