@@ -66,6 +66,8 @@ sub unique_id () {
 #
 sub to_base64 ($) {
   my $x = shift;
+  return '' unless defined $x;
+
   my $y = $table[$x % 64];
 
   $y = $table[$x % 64].$y while ($x = int ($x/64));
