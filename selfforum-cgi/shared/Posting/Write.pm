@@ -1,16 +1,16 @@
-# Posting/Write.pm
+package Posting::Write;
 
-# ====================================================
-# Autor: n.d.p. / 2001-01-29
-# lm   : n.d.p. / 2001-02-25
-# ====================================================
-# Funktion:
-#      Speicherung eines Postings
-# ====================================================
+################################################################################
+#                                                                              #
+# File:        shared/Posting/Write.pm                                         #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-02-25                          #
+#                                                                              #
+# Description: Save a posting                                                  #
+#                                                                              #
+################################################################################
 
 use strict;
-
-package Posting::Write;
 
 use vars qw(@EXPORT);
 use base qw(Exporter);
@@ -165,9 +165,11 @@ sub write_posting ($) {
                                            lastMessage => $mid,
                                            lastThread  => 't'.$param -> {lastThread}});
 
-      save_file ($param -> {forumFile}, $forum) or return $error{forumWrite};}
+      save_file ($param -> {forumFile}, $forum) or return $error{forumWrite};
+    }
 
-  return (0, $thread, $mid);}
+    return (0, $thread, $mid);
+  }
 }
 
 # ====================================================
@@ -217,7 +219,7 @@ sub create_message ($$) {
     $header -> appendChild ($category);
     $header -> appendChild ($subject);
     $header -> appendChild ($date);
-  $message -> appendChild ($header);
+    $message -> appendChild ($header);
 
   $message;
 }

@@ -70,14 +70,19 @@ sub get_message_header ($) {
 # Messagebody auslesen
 ###########################
 
-sub get_message_body ($$) {
-  my ($xml,$mid) = @_;
+sub get_message_body ($$)
+{
+  my ($xml, $mid) = @_;
   my $body;
 
-  foreach ($xml -> getElementsByTagName ('ContentList', 1) -> item (0) -> getElementsByTagName ('MessageContent', 0)) {
-    if ($_ -> getAttribute ('mid') eq $mid) {
+  foreach ($xml -> getElementsByTagName ('ContentList', 1) -> item (0) -> getElementsByTagName ('MessageContent', 0))
+  {
+    if ($_ -> getAttribute ('mid') eq $mid)
+    {
       $body = ($_ -> hasChildNodes)?$_ -> getFirstChild -> getData:'';
-      last;}}
+      last;
+    }
+  }
 
   \$body;
 }
@@ -163,14 +168,15 @@ sub create_message_xml ($$$) {
   $message -> setAttribute ('flag', 'deleted') if ($msg -> {deleted});
 
   # Header erzeugen
-  my $header = $xml -> createElement ('Header');
+  my $header   = $xml -> createElement ('Header');
 
   # alles inside of 'Header'
   my $author   = $xml -> createElement ('Author');
-    my $name  = $xml -> createElement ('Name');
-    $name -> addText (toUTF8($msg -> {name}));
 
-    my $email = $xml -> createElement ('Email');
+  my $name     = $xml -> createElement ('Name');
+  $name -> addText (toUTF8($msg -> {name}));
+
+  my $email    = $xml -> createElement ('Email');
 
   my $category = $xml -> createElement ('Category');
   $category -> addText (toUTF8($msg -> {cat}));
@@ -181,8 +187,8 @@ sub create_message_xml ($$$) {
   my $date     = $xml -> createElement ('Date');
   $date -> setAttribute ('longSec', $msg -> {time});
 
-      $author -> appendChild ($name);
-      $author -> appendChild ($email);
+    $author -> appendChild ($name);
+    $author -> appendChild ($email);
     $header -> appendChild ($author);
     $header -> appendChild ($category);
     $header -> appendChild ($subject);
@@ -191,7 +197,9 @@ sub create_message_xml ($$$) {
 
   if ($msg -> {kids}) {
     for (@{$msg -> {kids}}) {
-      $message -> appendChild (&create_message_xml ($xml, $msges, $_));}}
+      $message -> appendChild (&create_message_xml ($xml, $msges, $_));
+    }
+  }
 
   $message;
 }
