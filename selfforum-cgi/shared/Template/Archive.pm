@@ -20,10 +20,14 @@ use Posting::_lib qw(
     get_message_header
     get_message_body
 
+    get_all_threads
     parse_single_thread
     parse_xml_file
 
+    very_short_hr_time
+    short_hr_time
     hr_time
+    month
 
     KILL_DELETED
 );
@@ -36,7 +40,10 @@ use Template::_thread;
 # Export
 #
 use base qw(Exporter);
-@Template::Archive::EXPORT = qw(print_thread_as_HTML);
+@Template::Archive::EXPORT = qw(
+    print_month_as_HTML
+    print_thread_as_HTML
+);
 
 
 ### print_year_as_HTML () ######################################################
@@ -62,7 +69,51 @@ use base qw(Exporter);
 sub print_month_as_HTML($$$) {
     my ($mainfile, $tempfile, $param) = @_;
 
+    my $assign = $param->{'assign'};
+
     my $template = new Template $tempfile;
+
+    my $threads = get_all_threads($mainfile, KILL_DELETED);
+
+    my $tmplparam = {
+            $assign->{'year'}           => $param->{'year'},
+            $assign->{'month'}          => $param->{'month'},
+            $assign->{'monthName'}      => month($param->{'month'})
+    };
+
+    #
+    # monthDocStart
+    #
+    print ${$template->scrap(
+        $assign->{'monthDocStart'},
+        $tmplparam
+    )};
+
+    #
+    # thread overview
+    #
+    for (sort keys %$threads) {
+        print ${$template->scrap(
+            $assign->{'monthThreadEntry'},
+            {
+                $assign->{'threadID'}       => $_,
+                $assign->{'threadCategory'} => $threads->{$_}->[0]->{'cat'},
+                $assign->{'threadTitle'}    => $threads->{$_}->[0]->{'subject'},
+                $assign->{'threadTime'}     => short_hr_time($threads->{$_}->[0]->{'time'}),
+                $assign->{'threadDate'}     => very_short_hr_time($threads->{$_}->[0]->{'time'}),
+                $assign->{'year'}           => $param->{'year'},
+                $assign->{'month'}          => $param->{'month'}
+            }
+        )};
+    }
+
+    #
+    # monthDocEnd
+    #
+    print ${$template->scrap(
+        $assign->{'monthDocEnd'},
+        $tmplparam
+    )};
 
 
 }
@@ -97,6 +148,9 @@ sub print_thread_as_HTML($$$) {
         $tree->{'month'}  => $param->{'month'}
     };
 
+    #
+    # used to print the thread view
+    #
     my $tpar = {
         'thread'    => $param->{'thread'},
         'template'  => $param->{'tree'},
@@ -105,11 +159,15 @@ sub print_thread_as_HTML($$$) {
         'addParam'  => $addparam
     };
 
+    #
+    # threadDocStart
+    #
     my $tmplparam = {
             $assign->{'threadCategory'} => $thread->[0]->{'cat'},
             $assign->{'threadTitle'}    => $thread->[0]->{'subject'},
-            $assign->{'threadYear'}     => $param->{'year'},
-            $assign->{'threadMonth'}    => $param->{'month'},
+            $assign->{'year'}           => $param->{'year'},
+            $assign->{'month'}          => $param->{'month'},
+            $assign->{'monthName'}      => month($param->{'month'}),
             $param->{'tree'}->{'main'}  => html_thread($thread, $template, $tpar)
     };
 
@@ -118,6 +176,9 @@ sub print_thread_as_HTML($$$) {
         $tmplparam
     )};
 
+    #
+    # print thread msgs
+    #
     for (@$thread) {
         my $mnode = get_message_node($xml, 't'.$tid, 'm'.$_->{'mid'});
         my $header = get_message_header($mnode);
@@ -149,6 +210,9 @@ sub print_thread_as_HTML($$$) {
         )};
     }
 
+    #
+    # threadDocEnd
+    #
     print ${$template->scrap(
         $assign->{'threadDocEnd'},
         $tmplparam
