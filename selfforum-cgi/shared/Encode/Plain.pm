@@ -2,7 +2,7 @@
 
 # ====================================================
 # Autor: n.d.p. / 2001-01-07
-# lm   : n.d.p. / 2001-02-06
+# lm   : n.d.p. / 2001-02-25
 # ====================================================
 # Funktion:
 #      Codierung von non-ASCII-Zeichen fuer
@@ -15,14 +15,13 @@ package Encode::Plain;
 
 require 5.6.0;
 
-use vars qw(@ISA @EXPORT %sonder %unimap $utf8);
+use vars qw(@EXPORT %sonder %unimap $utf8);
 
 # ====================================================
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
+use base qw(Exporter);
 @EXPORT = qw(plain multiline toUTF8);
 
 ################################
@@ -152,6 +151,8 @@ sub toUTF8 ($) {
 # ====================================================
 
 BEGIN {
+  $utf8 = 0;
+
   # Latin 1 + geraten
   %sonder=("\177" => '&#127;',    # Delete-Zeichen
            "\200" => '&#8364;',   # Euro-Zeichen

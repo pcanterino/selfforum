@@ -2,7 +2,7 @@
 
 # ====================================================
 # Autor: n.d.p. / 2001-01-29
-# lm   : n.d.p. / 2001-01-29
+# lm   : n.d.p. / 2001-02-25
 # ====================================================
 # Funktion:
 #      Speicherung eines Postings
@@ -12,14 +12,13 @@ use strict;
 
 package Posting::Write;
 
-use vars qw(@ISA @EXPORT);
+use vars qw(@EXPORT);
+use base qw(Exporter);
 
 # ====================================================
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
 @EXPORT = qw(write_posting);
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;

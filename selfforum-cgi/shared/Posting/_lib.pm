@@ -2,7 +2,7 @@
 
 # ====================================================
 # Autor: n.d.p. / 2001-01-07
-# lm   : n.d.p. / 2001-01-08
+# lm   : n.d.p. / 2001-02-25
 # ====================================================
 # Funktion:
 #    * Schnittstellen fuer den Zugriff auf Messages
@@ -13,7 +13,8 @@ use strict;
 
 package Posting::_lib;
 
-use vars qw(@ISA @EXPORT_OK);
+use vars qw(@EXPORT_OK);
+use base qw(Exporter);
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 
@@ -23,8 +24,6 @@ use XML::DOM;
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA       = qw(Exporter);
 @EXPORT_OK = qw(get_message_header get_message_body get_message_node parse_single_thread
                 hr_time short_hr_time long_hr_time
                 get_all_threads

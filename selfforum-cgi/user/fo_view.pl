@@ -42,13 +42,14 @@ my ($tid, $mid) = (param ($cgi -> {thread}), param ($cgi -> {posting}));
 if (defined ($tid) and defined ($mid)) {
   print_posting_as_HTML ($message_path,
                          "$Bin/".$show_posting -> {templateFile},
-                        {assign   => $show_posting -> {assign},
-                         thread   => $tid,
-                         posting  => $mid,
-                         messages => $show_posting -> {messages},
-                         form     => $show_posting -> {form},
-                         cgi      => $cgi,
-                         tree     => $tree
+                        {assign       => $show_posting -> {assign},
+                         thread       => $tid,
+                         posting      => $mid,
+                         adminDefault => $adminDefault,
+                         messages     => $show_posting -> {messages},
+                         form         => $show_posting -> {form},
+                         cgi          => $cgi,
+                         tree         => $tree
                         });}
 
 else {

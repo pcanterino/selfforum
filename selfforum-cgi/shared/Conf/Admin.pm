@@ -2,7 +2,7 @@
 
 # ====================================================
 # Autor: n.d.p. / 2001-01-05
-# lm   : n.d.p. / 2001-02-02
+# lm   : n.d.p. / 2001-02-25
 # ====================================================
 # Funktion:
 #      Einlesen der Admindefaultkonfiguration
@@ -12,7 +12,7 @@ use strict;
 
 package Conf::Admin;
 
-use vars qw(@ISA @EXPORT);
+use vars qw(@EXPORT);
 
 use Lock qw(:READ);
 
@@ -22,8 +22,7 @@ use XML::DOM;
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
+use base qw(Exporter);
 @EXPORT = qw(read_admin_conf);
 
 ################################

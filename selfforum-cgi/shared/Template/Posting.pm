@@ -20,6 +20,7 @@ use Id;
 use Lock qw(:WRITE);
 use Posting::_lib qw(get_message_node get_message_header get_message_body parse_single_thread hr_time);
 use Template;
+use Template::_conf;
 use Template::_query;
 use Template::_thread;
 
@@ -45,12 +46,15 @@ sub print_posting_as_HTML ($$$) {
   my $template = new Template $tempfile;
 
   # Datei sperren... (eigentlich)
+  my $view = get_view_params ({adminDefault => $param -> {adminDefault}
+                              });
+
   my $xml=new XML::DOM::Parser -> parsefile ($threadpath.'t'.$param -> {thread}.'.xml');
 
   my ($mnode, $tnode) = get_message_node ($xml, 't'.$param -> {thread}, 'm'.$param -> {posting});
   my $pnode = $mnode -> getParentNode;
   my $header = get_message_header ($mnode);
-  my $msg = parse_single_thread ($tnode, 0, 0);
+  my $msg = parse_single_thread ($tnode, $param -> {showDeleted}, $view -> {sortedMsg});
   my $pheader = ($pnode -> getNodeName eq 'Message')?get_message_header ($pnode):{};
 
   my $assign = $param -> {assign};
@@ -60,7 +64,7 @@ sub print_posting_as_HTML ($$$) {
   my $body = get_message_body ($xml, 'm'.$param -> {posting});
 
   my $text = message_field ($body,
-                           {quoteChars => '&raquo;&raquo; ',
+                           {quoteChars => plain($view -> {quoteChars}),
                             quoting    => 1,
                             startCite  => ${$template -> scrap ($assign -> {startCite})},
                             endCite    => ${$template -> scrap ($assign -> {endCite})}
@@ -68,7 +72,7 @@ sub print_posting_as_HTML ($$$) {
 
   my $area = answer_field ($body,
                           {quoteArea  => 1,
-                           quoteChars => '&raquo;&raquo; ',
+                           quoteChars => plain($view -> {quoteChars}),
                            messages   => $param -> {messages}
                           });
 
@@ -106,7 +110,7 @@ sub print_posting_as_HTML ($$$) {
                               $formdata->{posterBody}->{assign}->{value} => $area,
                               $formdata->{uniqueID}  ->{assign}->{value} => plain(unique_id),
                               $formdata->{followUp}  ->{assign}->{value} => plain($param -> {thread}.';'.$param -> {posting}),
-                              $formdata->{quoteChar} ->{assign}->{value} => "&#255;".plain('»» '),
+                              $formdata->{quoteChar} ->{assign}->{value} => "&#255;".plain($view -> {quoteChars}),
                               $formdata->{userID}    ->{assign}->{value} => '',
                               }, $pars)};
 

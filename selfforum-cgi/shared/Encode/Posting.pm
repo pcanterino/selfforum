@@ -2,7 +2,7 @@
 
 # ====================================================
 # Autor: n.d.p. / 2001-01-07
-# lm   : n.d.p. / 2001-01-08
+# lm   : n.d.p. / 2001-02-25
 # ====================================================
 # Funktion:
 #      Spezielle Codierung eines Postingtextes
@@ -12,15 +12,14 @@ use strict;
 
 package Encode::Posting;
 
-use vars qw(@ISA @EXPORT);
+use vars qw(@EXPORT);
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 
 # ====================================================
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
+use base qw(Exporter);
 @EXPORT = qw(encoded_body answer_field message_field);
 
 ################################

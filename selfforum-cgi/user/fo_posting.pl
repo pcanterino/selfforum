@@ -32,7 +32,6 @@ use Template;
 use Template::Posting;
 
 use CGI qw(param header);
-
 use XML::DOM;
 
 print header (-type => 'text/html');
