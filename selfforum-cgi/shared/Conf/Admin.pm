@@ -16,7 +16,7 @@ use vars qw(
   $VERSION
 );
 
-use Lock qw(:READ);
+use Lock;
 
 use XML::DOM;
 
@@ -93,9 +93,10 @@ sub read_admin_conf ($) {
   my %conf;
 
   if (-f $filename) {
-    if (lock_file ($filename)) {
-      my $xml = new XML::DOM::Parser -> parsefile ($filename);
-      violent_unlock_file ($filename) unless (unlock_file ($filename));
+    my $admin = new Lock ($filename);
+    if ($admin -> lock(LH_SHARED)) {
+      my $xml = new XML::DOM::Parser -> parsefile ($admin -> filename);
+      $admin -> unlock;
 
       # write data into the hash
       #
@@ -197,10 +198,6 @@ sub read_admin_conf ($) {
           -> getElementsByTagName ('AfterDays', 0) -> item (0)
           -> getFirstChild -> getData
       };
-    }
-
-    else {
-      violent_unlock_file ($filename);
     }
   }
 

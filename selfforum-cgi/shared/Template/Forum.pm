@@ -16,7 +16,7 @@ use vars qw(
   $VERSION
 );
 
-use Lock qw(:READ);
+use Lock;
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Posting::_lib qw(
   get_all_threads
@@ -56,10 +56,10 @@ sub print_forum_as_HTML ($$$) {
   my $template = new Template $tempfile;
 
   my ($threads, $stat);
+  my $main = new Lock ($mainfile);
 
-  unless ($stat = lock_file ($mainfile)) {
-    if (defined $stat) {
-      violent_unlock_file ($mainfile);
+  unless ($main -> lock (LH_SHARED)) {
+    unless ($main -> masterlocked) {
       print ${$template -> scrap (
         $assign -> {errorDoc},
         { $assign -> {errorText} => $template -> insert ($assign -> {'occupied'}) }
@@ -81,8 +81,8 @@ sub print_forum_as_HTML ($$$) {
     #
     eval {setpriority 0,0,1};
 
-    $threads = get_all_threads ($mainfile, $param -> {showDeleted}, $view -> {sortedMsg});
-    violent_unlock_file ($mainfile) unless (unlock_file ($mainfile));
+    $threads = get_all_threads ($main -> filename, $param -> {showDeleted}, $view -> {sortedMsg});
+    $main -> unlock;
 
     print ${$template -> scrap (
       $assign -> {mainDocStart},
@@ -105,7 +105,6 @@ sub print_forum_as_HTML ($$$) {
 
     for (@threads) {
       $tpar -> {thread} = "$_";
-      $|++;
       print ${html_thread ($threads -> {$_}, $template, $tpar)},"\n",'<dd>&nbsp;</dd>',"\n";}
 
     print "</dl>\n",${$template -> scrap ($assign -> {mainDocEnd})};}
