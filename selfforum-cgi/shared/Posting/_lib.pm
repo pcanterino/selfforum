@@ -5,7 +5,7 @@ package Posting::_lib;
 # File:        shared/Posting/_lib.pm                                          #
 #                                                                              #
 # Authors:     André Malo <nd@o3media.de>, 2001-03-03                          #
-#              Frank Schoenmann <fs@tower.de>, 2001-03-13                      #
+#              Frank Schoenmann <fs@tower.de>, 2001-06-02                      #
 #                                                                              #
 # Description: Message access interface, time format routines                  #
 #                                                                              #
@@ -295,7 +295,7 @@ sub parse_xml_file ($) {
 
   my $xml = eval {
     local $SIG{__DIE__};      # CGI::Carp works unreliable ;-(
-    new XML::DOM::Parser (KeepCDATA => 1) -> parsefile ($file);
+    new XML::DOM::Parser(KeepCDATA => 1)->parsefile ($file);
   };
 
   return if ($@);
@@ -704,7 +704,7 @@ sub save_file ($$)
 ###########################
 
 sub hr_time ($) {
-  my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mail Juni Juli August September Oktober November Dezember));
+  my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mai Juni Juli August September Oktober November Dezember));
                                    # ^^^^^^^^ - UTF8 #
 
   my (undef, $min, $hour, $day, $mon, $year) = localtime ($_[0]);
@@ -719,13 +719,20 @@ sub short_hr_time ($) {
 }
 
 sub long_hr_time ($) {
-  my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mail Juni Juli August September Oktober November Dezember));
+  my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mai Juni Juli August September Oktober November Dezember));
                                    # ^^^^^^^^ - UTF8 #
 
   my @wday  = qw(Sonntag Montag Dienstag Mittwoch Donnerstag Freitag Samstag);
   my ($sek, $min, $hour, $day, $mon, $year, $wday) = localtime ($_[0]);
 
   sprintf ('%s, %02d. %s %04d, %02d:%02d:%02d Uhr', $wday[$wday], $day, $month[$mon], $year+1900, $hour, $min, $sek);
+}
+
+sub month($) {
+    my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mai Juni Juli August September Oktober November Dezember));
+                                     # ^^^^^^^^ - UTF8 #
+
+    return $month[$_[0]];
 }
 
 # ====================================================
