@@ -35,7 +35,7 @@ my $adminDefault = read_admin_conf ($conf -> {files} -> {adminDefault});
 my $forum_file = $conf -> {files} -> {forum};
 my $message_path = $conf -> {files} -> {messagePath};
 
-#use Lock qw(:ALL);release_file(forum_file);die;
+#use Lock qw(:ALL);release_file($forum_file);die;
 
 my ($tid, $mid) = (param ($cgi -> {thread}), param ($cgi -> {posting}));
 
