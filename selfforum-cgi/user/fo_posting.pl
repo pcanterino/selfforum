@@ -327,12 +327,16 @@ sub print_error ($;$) {
 ################################
 
 sub fetch_subject () {
-  unless (exists ($dparam{$formdata -> {posterCategory} -> {name}}) and
-          exists ($dparam{$formdata -> {posterSubject} -> {name}})) {
 
+  my %must = map {$_ => 1} @{$formmust -> {exists $dparam{$formdata -> {followUp} -> {name}}?'reply':'new'}};
+
+  if ( ($must{posterCategory} and not exists ($dparam{$formdata -> {posterCategory} -> {name}})) or
+       ($must{posterSubject} and not exists ($dparam{$formdata -> {posterSubject} -> {name}})))
+  {
     my $filename = message_path.'t'.$ftid.'.xml';
 
-    if (lock_file ($filename)) {
+    if (-f $filename and lock_file ($filename))
+    {
       my $xml = new XML::DOM::Parser -> parsefile ($filename);
       violent_unlock_file($filename) unless unlock_file ($filename);
 
@@ -340,7 +344,9 @@ sub fetch_subject () {
       my $header = get_message_header ($mnode);
 
       $dparam{$formdata -> {posterCategory} -> {name}} = $header -> {category};
-      $dparam{$formdata -> {posterSubject} -> {name}} = $header -> {subject};}}
+      $dparam{$formdata -> {posterSubject} -> {name}} = $header -> {subject};
+    }
+  }
 }
 
 ################################

@@ -21,12 +21,12 @@
          </Archiving>
   </Severance>
   <Messaging callUserAnswer="0" callAdminThread="0" callAdminNA="1" callAdminHQ="0" callAdminVoting="0" callAdminArchiving="1" callByUser="0">
-         <CallByUser>
+<!--         <CallByUser>
                 <Email>a9105535@unet.univie.ac.at</Email>
                 <Email>selfhtml@teamone.de</Email>
                 <Name>Wowbagger</Name>
                 <IpAddress>123.456.789</IpAddress>
-         </CallByUser>
+         </CallByUser>-->
   </Messaging>
   <InstantJob executeJob="0">
          <Severance executeArchiving="0" executeSeverance="instant">

@@ -48,7 +48,7 @@ sub encoded_body ($;$) {
 
   # normaler Link
   $posting =~ s{\[link:\s*
-               ((?:ftp://                        # hier beginnt $1
+               ((?:ftp://                          # hier beginnt $1
                |   https?://
                |   about:
                |   view-source:
@@ -59,14 +59,14 @@ sub encoded_body ($;$) {
                |   telnet://
                |   wais://
                |   prospero://
-               |   \.\.?/                        # relativ auf dem server
-               |   /                             # absolut auf dem server
-               |   (?:[a-zA-Z.\d]+)?\??          # im forum
-               )   [^\s<'()\[\]]+                # auf jeden Fall kein \s und kein ] etc.
-               )                                 # hier ist $1 zuende
-               \s*(?:\]|(\s|\(|\)|<br>))         # der Begrenzer (\s, ] oder Zeilenende)
+               |   \.\.?/                          # relativ auf dem server
+               |   /                               # absolut auf dem server
+               |   (?:[a-zA-Z.\d]+)?\??            # im forum
+               )   [^\s<'()\[\]]+                  # auf jeden Fall kein \s und kein ] etc.
+               )                                   # hier ist $1 zuende
+               \s*(?:\]|(\s|&(?!amp;)|\(|\)|<br>)) # der Begrenzer (\s, ] oder Zeilenende)
               }
-              {<a href="$1">$1</a>$2}gix;        # und der Link
+              {<a href="$1">$1</a>$2}gix;          # und der Link
 
   # javascript-links extra
   my $klammer1='\((?:[^)])*\)';
@@ -75,27 +75,27 @@ sub encoded_body ($;$) {
   my $klammer4="\\((?:$klammer3|(?:[^)])*)\\)";
 
   $posting =~ s{\[link:\s*
-               (javascript:                      # hier beginnt $1
+               (javascript:                        # hier beginnt $1
                (?:
-                 $klammer4                       # Klammern bis Verschachtelungstiefe 4 (sollte reichen?)
-               | '[^\'\\]*(?:\\.[^\'\\]*)*'      # mit ' quotierter String, J.F. sei gedankt
-                                                 # im String sind Escapes zugelassen (also auch \')
-                                                 # damit werden (korrekt gesetzte) Javascript-Links moeglich
-               | [^\s<()'\]]+)+                  # auf jeden Fall kein \s und kein ] (ausser im String)
-               )                                 # hier ist $1 zuende
-               \s*(?:\s|\]|(\(|\)|<br>))         # der Begrenzer (\s, ] oder Zeilenende)
+                 $klammer4                         # Klammern bis Verschachtelungstiefe 4 (sollte reichen?)
+               | '[^\'\\]*(?:\\.[^\'\\]*)*'        # mit ' quotierter String, J.F. sei gedankt
+                                                   # im String sind Escapes zugelassen (also auch \')
+                                                   # damit werden (korrekt gesetzte) Javascript-Links moeglich
+               | [^\s<()'\]]+)+                    # auf jeden Fall kein \s und kein ] (ausser im String)
+               )                                   # hier ist $1 zuende
+               \s*(?:\s|\]|(\(|\)|&(?!amp;)|<br>)) # der Begrenzer (\s, ] oder Zeilenende)
               }
-              {<a href="$1">$1</a>$2}gix;        # und der Link
+              {<a href="$1">$1</a>$2}gix;          # und der Link
 
   # images
   $posting =~ s{\[image:\s*
                ((?:https?://
-               |   \.\.?/                        # relativ auf dem server
-               |   /                             # absolut auf dem server
-               |   (?:[a-zA-Z.\d]+)?\??          # im forum
-               )   [^\s<'()\[\]]+                # auf jeden Fall kein \s und kein ] etc.
-               )                                 # hier ist $1 zuende
-               \s*(?:\]|(\s|\(|\)|<br>))         # der Begrenzer (\s, ] oder Zeilenende)
+               |   \.\.?/                          # relativ auf dem server
+               |   /                               # absolut auf dem server
+               |   (?:[a-zA-Z.\d]+)?\??            # im forum
+               )   [^\s<'()\[\]]+                  # auf jeden Fall kein \s und kein ] etc.
+               )                                   # hier ist $1 zuende
+               \s*(?:\]|(\s|\(|\)|&(?!amp;)|<br>)) # der Begrenzer (\s, ] oder Zeilenende)
               }
               {<img src="$1" border=0 alt="">$2}gix; # und das Bild
 
@@ -112,13 +112,13 @@ sub encoded_body ($;$) {
                |   telnet://
                |   wais://
                |   prospero://
-               |   \.\.?/                        # relativ auf dem server
-               |   /                             # absolut auf dem server
-               |   [a-zA-Z\d]+(?:\.html?|/)      # im forum (koennen eh nur threads oder verweise
-                                                 # auf tiefere verzeichnisse sein)
-               )[^\s<'()\]]+                     # auf jeden Fall kein \s und kein ] etc. (s.o.)
-               )                                 # hier ist $1 zuende
-               \s*(?:\]|(\s|\(|\)|<br>))         # der Begrenzer (\s, ] oder Zeilenende)
+               |   \.\.?/                          # relativ auf dem server
+               |   /                               # absolut auf dem server
+               |   [a-zA-Z\d]+(?:\.html?|/)        # im forum (koennen eh nur threads oder verweise
+                                                   # auf tiefere verzeichnisse sein)
+               )[^\s<'()\]]+                       # auf jeden Fall kein \s und kein ] etc. (s.o.)
+               )                                   # hier ist $1 zuende
+               \s*(?:\]|(\s|\(|\)|&(?!amp;)|<br>)) # der Begrenzer (\s, ] oder Zeilenende)
               }
               {<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>$2}gix;
 

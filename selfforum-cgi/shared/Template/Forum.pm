@@ -47,6 +47,7 @@ sub print_forum_as_HTML ($$$) {
   unless ($stat = lock_file ($mainfile)) {
     if ($stat == 0) {
       violent_unlock_file ($mainfile);
+      print "aha!"
       # ueberlastet
     }
 

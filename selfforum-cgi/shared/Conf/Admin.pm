@@ -60,8 +60,8 @@ sub read_admin_conf ($) {
                       countMessages => $thread_view -> getAttribute ('countMessages'),
                       sortThreads   => $thread_view -> getAttribute ('sortThreads'),
                       sortMessages  => $thread_view -> getAttribute ('sortMessages'),
-                      showThread    => (($how_name eq 'showAll')?undef:
-                                       (($how_name eq 'showNone')?1:
+                      showThread    => (($how_name eq 'ShowAll')?undef:
+                                       (($how_name eq 'ShowNone')?1:
                                        ($show_how -> getFirstChild -> getData))),
                       showPreview   => $message_view -> getAttribute ('previewON'),
                       showNA        => $flags -> getAttribute ('showNA'),
@@ -83,9 +83,9 @@ sub read_admin_conf ($) {
                            voting     => $messaging -> getAttribute ('callAdminVoting'),
                            archiving  => $messaging -> getAttribute ('callAdminArchiving'),
                            byUser     => $messaging -> getAttribute ('callUserAnswer'),
-                           callByName => [map {$_ -> getFirstChild -> getData} $call_by_user -> getElementsByTagName ('Name', 0)],
-                           callByMail => [map {$_ -> getFirstChild -> getData} $call_by_user -> getElementsByTagName ('Email', 0)],
-                           callByIP   => [map {$_ -> getFirstChild -> getData} $call_by_user -> getElementsByTagName ('IpAddress', 0)]};
+                           callByName => [$call_by_user?map {$_ -> getFirstChild -> getData} $call_by_user -> getElementsByTagName ('Name', 0):()],
+                           callByMail => [$call_by_user?map {$_ -> getFirstChild -> getData} $call_by_user -> getElementsByTagName ('Email', 0):()],
+                           callByIP   => [$call_by_user?map {$_ -> getFirstChild -> getData} $call_by_user -> getElementsByTagName ('IpAddress', 0):()]};
 
       # Instant
       my $instant    = $forum   -> getElementsByTagName ('InstantJob', 0) -> item (0);
