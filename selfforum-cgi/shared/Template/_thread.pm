@@ -85,7 +85,7 @@ sub html_thread ($$$) {
     my $end   = $start + $msg -> [$start] -> {answers};
     $start++;
     @indexes = ($start..$end);
-    $oldlevel = $startlevel = $msg -> [$par -> {start}] -> {level};}
+    $oldlevel = $startlevel = $msg -> [$start] -> {level};}
 
   # HTML erzeugen
   for (@$msg[@indexes]) {
