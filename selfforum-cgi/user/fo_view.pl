@@ -16,6 +16,7 @@ use vars qw(
   $Shared
   $Script
   $Config
+  $VERSION
 );
 
 BEGIN {

@@ -16,6 +16,7 @@ use vars qw(
   $Shared
   $Script
   $Config
+  $VERSION
 );
 
 BEGIN {
@@ -25,12 +26,16 @@ BEGIN {
   $Config  = "$Bin/config";
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 
-#  my $null = $0; #$null =~ s/\\/\//g; # for win :-(
+#  my $null = $0;
 #  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-#  $Config  = "$Bin/../../../cgi-config/devforum";
-#  $Shared  = "$Bin/../../../cgi-shared";
+#  $Config  = "$Bin/../../daten/forum/config";
+#  $Shared  = "$Bin/../../cgi-shared";
 #  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
+
+# setting umask, remove or comment it, if you don't need
+#
+umask 006;
 
 use lib $Shared;
 use CGI::Carp qw(fatalsToBrowser);
@@ -40,9 +45,11 @@ use Conf::Admin;
 use Posting::Cache;
 use Template::Posting;
 
-use CGI qw(param header remote_addr);
+use CGI qw(param header remote_addr request_method);
 
-print header(-type => 'text/html');
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 my $conf = read_script_conf ($Config, $Shared, $Script);
 
@@ -66,48 +73,58 @@ my ($tid, $mid) = map {$_ || 0} split /;/ => $fup, 2;
 $tid = ($tid=~/(\d+)/)[0] || 0;
 $mid = ($mid=~/(\d+)/)[0] || 0;
 
-my $cache = new Posting::Cache ($conf->{files}->{cachePath});
-my $hash;
+if ($tid and $mid and $unid) {
 
-if ($hash = $cache -> pick ({thread => $tid, posting => $mid})) {
-  unless (exists ($hash->{voteRef}->{$unid})) {
+  print header(-type => 'text/html');
 
-    $voted=1;
-    my $ip = remote_addr;
-    my %iphash = map {
-      $hash->{voteRef}->{$_}->{IP} => $hash->{voteRef}->{$_}->{time}
-    } keys %{$hash->{voteRef}};
+  my $cache = new Posting::Cache ($conf->{files}->{cachePath});
+  my $hash;
 
-    my $time = time;
+  if ($hash = $cache -> pick ({thread => $tid, posting => $mid})) {
+    unless (exists ($hash->{voteRef}->{$unid})) {
 
-    unless (exists($iphash{$ip}) and $iphash{$ip}>($time-$adminDefault->{Voting}->{voteLock}*60)) {
-      $cache -> add_voting (
-        { posting => $mid,
-          thread  => $tid,
-          IP      => $ip,
-          time    => $time,
-          ID      => $unid
+      $voted=1;
+      my $ip = remote_addr;
+      my %iphash = map {
+        $hash->{voteRef}->{$_}->{IP} => $hash->{voteRef}->{$_}->{time}
+      } keys %{$hash->{voteRef}};
+
+      my $time = time;
+
+      unless (exists($iphash{$ip}) and $iphash{$ip}>($time-$adminDefault->{Voting}->{voteLock}*60)) {
+        if (request_method eq 'POST') {
+          $cache -> add_voting (
+            { posting => $mid,
+              thread  => $tid,
+              IP      => $ip,
+              time    => $time,
+              ID      => $unid
+            }
+          );# or die $cache->error;
         }
-      ) or die $cache->error;
+      }
     }
   }
-}
 
-print_posting_as_HTML (
-  $message_path,
-  $show_posting -> {templateFile},
-  { assign       => $show_posting -> {assign},
-    thread       => $tid,
-    posting      => $mid,
-    adminDefault => $adminDefault,
-    messages     => $conf -> {template} -> {messages},
-    form         => $show_posting -> {form},
-    cgi          => $cgi,
-    tree         => $tree,
-    voted        => $voted || '',
-    cachepath    => $conf -> {files} -> {cachePath}
-  }
-);
+  print_posting_as_HTML (
+    $message_path,
+    $show_posting -> {templateFile},
+    { assign       => $show_posting -> {assign},
+      thread       => $tid,
+      posting      => $mid,
+      adminDefault => $adminDefault,
+      messages     => $conf -> {template} -> {messages},
+      form         => $show_posting -> {form},
+      cgi          => $cgi,
+      tree         => $tree,
+      voted        => $voted || '',
+      cachepath    => $conf -> {files} -> {cachePath}
+    }
+  );
+}
+else {
+  print header(-status => '204 No Response');
+}
 
 #
 #
