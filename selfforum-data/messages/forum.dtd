@@ -1,213 +1,191 @@
-<!--
-Document Type Declaration fuer das SELFHTML-Forum
-Autor: Thomas J. Sebestyen      thomasj.sebestyen@meta-text.net
-
-Version 1.00    17.07.2000
-Version 1.01    29.07.2000
-Version 2.00    30.09.2000
-        Aenderung der DTD:
-        - Vereinfachung der Syntax: Wegfall von Attributen bei 'Thread' und 'Message'.
-        - Einfuehren von den Elementen 'Header' 'Email' 'Homepage' 'Imageurl' 'Category' 'Subject'.
-        - AEndern von 'Datum' auf 'Date' und Erweiterung der Attribute.
-
-   Aenderung 27.12.2000
-   - Hinzufuegen von den Attributen: visitings, votingUser, votingAteam und votingAdmin beim "Message"
-     lastThread und lastMessage beim "Forum"
-   - Reduzierung der Attribute beim "Date" auf 'longSec'
-   - Wegfall vom "Flag"
-   - Einfuehren von %boolean als ja/nein Wertangabe
-
-    Aenderung 16.01.2001
-    - hinzufuegen vom Attribut 'flag' beim "Message"
-
-    Aenderung 21.02.2001
-    - ersetzen vom Attribut 'flag' beim "Message" durch 'invisible'
-    - hinzufuegen vom Attribut 'archive', 'ip' und 'unid' beim "Message"
-
-   Last modified: 21.02.2001
--->
+<!-- ***************************************************************************
+*                                                                              *
+* File                                                                         *
+*   Document Type Declaration (DTD) fuer das SELFHTML-Forum                    *
+*                                                                              *
+* Authors                                                                      *
+*   Thomas J. Sebestyen <thomasj.sebestyen@meta-text.net>, 2001-09-30          *
+*   Andre Malo <nd@o3media.de>, 2001-02-21                                     *
+*   Frank Schoenmann <fs@tower.de>, 2001-03-17                                 *
+*                                                                              *
+* 2001-03-17, v2.13                                                            *
+*   * style changes                                                            *
+*   * renamed "Message" attribute "visitings" -> "views"                       *
+*   * "Email" is now optional (not used in main forum xml)                     *
+*                                                                              *
+* 2001-02-21, v2.12                                                            *
+*   * replaced "Message" attribute "flag" -> "invisible"                       *
+*   * added "Message" attributes "archive", "ip", "unid"                       *
+*                                                                              *
+* 2001-01-16, v2.11                                                            *
+*   * added "Message" attributes "flag"                                        *
+*                                                                              *
+* 2000-12-27, v2.1                                                             *
+*   * added "Message" attribues "visitings", "votingUser", "votingAteam",      *
+*     "votingAdmin"                                                            *
+*   * added "Forum" attributes "lastThread", "lastMessage"                     *
+*   * replaced "Date" attributes by "longSec"                                  *
+*   * removed "Flag"                                                           *
+*   * added "%boolean" type as attribute value                                 *
+*                                                                              *
+* 2000-09-30, v2.0                                                             *
+*   * removed some "Thread" and "Message" attributes                           *
+*   * added "Header", "Email", "Homepage", "Imageurl", "Category", "Subject"   *
+*   * renamed "Datum" -> "Date"                                                *
+*                                                                              *
+* Older history:                                                               *
+*   * 2000-07-29, v1.01                                                        *
+*   * 2000-07-17, v1.00                                                        *
+*                                                                              *
+**************************************************************************** -->
 
 <!ENTITY % boolean "(0 | 1)">
 <!-- Parameterentity fuer ja (1) oder nein (0) Fragen -->
 
 
-<!ELEMENT               Forum                   ((Thread, ContentList) | (Thread)*)>
-<!-- *****************************************************************************************************
-                Das Element 'Forum' wurde definert.
-      'Forum' ist das rootelement und beinhaltet alle anderen Elemente
-***************************************************************************************************** -->
-<!ATTLIST      Forum
-   lastThread     IDREF    #IMPLIED
-   lastMessage    IDREF    #IMPLIED
+<!ELEMENT   Forum           ((Thread, ContentList) | (Thread)*)>
+<!ATTLIST   Forum
+    lastThread          IDREF       #IMPLIED
+    lastMessage         IDREF       #IMPLIED
 >
-<!-- *****************************************************************************************************
-      Das Attribut 'lastThread' hat den Typ IDREF, es bezieht sich auf die ID des
-      jeweils letzten Threads im Forum
-      Das Attribut 'lastMessage' hat den Typ IDREF, es bezieht sich auf die ID der
-      jeweils letzten Messages im Forum
-***************************************************************************************************** -->
+<!-- ***************************************************************************
+    'Forum' ist das Root-Element und beinhaltet alle anderen Elemente.
+
+    Das Attribut 'lastThread' hat den Typ IDREF, es bezieht sich auf die ID
+    des jeweils letzten Threads im Forum
+    Das Attribut 'lastMessage' hat den Typ IDREF, es bezieht sich auf die ID
+    der jeweils letzten Messages im Forum
+**************************************************************************** -->
 
 
-
-
-
-<!ELEMENT               Thread                  (Message)>
-<!-- *****************************************************************************************************
-                Das Element 'Thread' wurde definert.
-      'Thread' stellt ein Nachrichtnbaum dar.
-***************************************************************************************************** -->
-<!ATTLIST      Thread
-        id              ID              #REQUIRED
+<!ELEMENT   Thread          (Message)>
+<!ATTLIST   Thread
+    id                      ID          #REQUIRED
 >
-<!-- *****************************************************************************************************
-                Das Attribut 'id' hat den Typ ID  und muss zwingend vorhanden sein.
-***************************************************************************************************** -->
+<!-- ***************************************************************************
+    'Thread' stellt einen Nachrichtenbaum dar.
+
+    Das Attribut 'id' hat den Typ ID und muss vorhanden sein.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               ContentList             (MessageContent)+>
-<!-- *****************************************************************************************************
-                Das Element 'ContentList' wurde definert.
-      'ContentList' enthaelt alle Nachrichteninhalte.
-***************************************************************************************************** -->
+<!ELEMENT   ContentList     (MessageContent)+>
+<!-- ***************************************************************************
+    'ContentList' enthaelt alle Nachrichteninhalte.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               MessageContent  (#PCDATA)>
-<!-- *****************************************************************************************************
-                Das Element 'MessageContent' wurde definert.
-      'MessageContent' beinhaltet den Nachrichtentext eines Messages
-***************************************************************************************************** -->
-<!ATTLIST MessageContent
-        mid             IDREF           #REQUIRED
+<!ELEMENT   MessageContent  (#PCDATA)>
+<!ATTLIST   MessageContent
+    mid                     IDREF       #REQUIRED
 >
-<!-- *****************************************************************************************************
-                Das Attribut 'mid' hat den Typ IDREF, es bezieht sich auf die ID der entsprechnden Messages.
-***************************************************************************************************** -->
+<!-- ***************************************************************************
+    'MessageContent' beinhaltet den Nachrichtentext einer Nachricht.
+
+    Das Attribut 'mid' hat den Typ IDREF. Es bezieht sich auf die ID der
+    entsprechenden Nachricht.
+**************************************************************************** -->
 
 
-
-
-<!ELEMENT               Message                 (Header, Message*)>
-<!-- *****************************************************************************************************
-                Das Element 'Message' wurde definert.
-      'Message' stellt eine Nachricht im Thread dar und darf andere 'Messages' enthalten
-       um so Teilbaeume im Thread zu bilden.
-***************************************************************************************************** -->
-<!ATTLIST Message
-        id              ID              #REQUIRED
-        visitings   NMTOKEN     #IMPLIED
-   votingUser  NMTOKEN     #IMPLIED
-   votingAteam %boolean;   #IMPLIED
-   votingAdmin %boolean;   #IMPLIED
-   invisible   %boolean;   #IMPLIED
-   archive     %boolean;   #IMPLIED
-   ip          CDATA       #IMPLIED
-   unid        CDATA       #IMPLIED
+<!ELEMENT   Message         (Header, Message*)>
+<!ATTLIST   Message
+    id                      ID          #REQUIRED
+    views                   NMTOKEN     #IMPLIED
+    votingUser              NMTOKEN     #IMPLIED
+    votingAteam             %boolean;   #IMPLIED
+    votingAdmin             %boolean;   #IMPLIED
+    invisible               %boolean;   #IMPLIED
+    archive                 %boolean;   #IMPLIED
+    ip                      CDATA       #IMPLIED
+    unid                    CDATA       #IMPLIED
 >
-<!-- *****************************************************************************************************
-                Das Attribut 'id' hat den Typ ID  und muss zwingend vorhanden sein.
-      Das Attribut 'visitings' zaehlt die Anzahl der Aufrufe einer Messages.
-      Das Attribut 'votingUser' zaehlt wie oft User die Nachricht fuer das Archiv vorgeschlagen haben.
-      Das Attribut 'votingAteam'  ja/nein Entscheidung eines Mitgliedes des Auslese-Teams fuer die
-      Archivierung einer Nachricht. 0 = auf keinem Fall archivieren, 1 = auf jedem Fall archivieren.
-      Das Attribut 'votingAdmin'  ja/nein Entscheidung eines Mitgliedes des SELFHTML-Redaktionsteams
-      fuer die Archivierung einer Nachricht.
-      0 = auf keinem Fall archivieren, 1 = auf jedem Fall archivieren.
-      Das Attribut 'invisible' bestimmt ob ein Message angezeigt wird (0 oder nicht vorhanden) oder nicht (1)
-      Das Attribut 'archive' bestimmt ob ein Message archiviert wird (1) oder nicht (0): 1 oder 0 wird
-         anhand der Werte von 'votings' bestimmt.
-     Das Attribut 'ip' speichert die IP der Sender des Messages.
-     Das Attribut 'unid' enthaelt eine unique Nummer fuer das Message.
-***************************************************************************************************** -->
+<!-- ***************************************************************************
+    'Message' stellt eine Nachricht im Thread dar und darf andere 'Message'-
+    Elemente enthalten, um so Teilbaeume im Thread zu bilden.
+
+    Das Attribut 'id' hat den Typ ID und muss vorhanden sein.
+    Das Attribut 'views' zaehlt die Anzahl der Aufrufe einer Nachricht.
+    Das Attribut 'votingUser' zaehlt, wie oft User die Nachricht fuer das
+    Archiv vorgeschlagen haben.
+    Das Attribut 'votingAteam' speichert die Meinung des Auslese-Teams zu
+    dieser Nachricht (0 - nicht archivieren, 1 - archivieren).
+    Das Attribut 'votingAdmin" speichert die Meinung des Administrators zu
+    dieser Nachricht (0 - nicht archivieren, 1 - archivieren).
+    Das Attribut 'invisible' bestimmt, ob eine Nachricht angezeigt wird (0
+    oder nicht vorhanden) oder nicht (1).
+    Das Attribut 'archive' speichert den aktuellen Status, ob eine Nachricht
+    archiviert wird (1) oder nicht (0), basierend auf den Votings.
+    Das Attribut 'ip' speicher die IP-Adresse des Senders der Nachricht.
+    Das Attribute 'unid' enthaelt eine eindeutige Nummer fuer die Nachricht.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               Header                  (Author, Category, Subject, Date)>
-<!-- *****************************************************************************************************
-                Das Element 'Header' wurde definert.
-      'Header' beinhaltet die fuer die Nachricht relevanten Informationen in Form von Elementen
-***************************************************************************************************** -->
-
+<!ELEMENT   Header          (Author, Category, Subject, Date)>
+<!-- ***************************************************************************
+    'Header' beinhaltet die Header-Informationen der Nachricht in Form von
+    Elementen.
+**************************************************************************** -->
 
 
-<!ELEMENT               Author                  (Name, Email, HomepageUrl?, ImageUrl?)>
-<!-- *****************************************************************************************************
-                Das Element 'Author' wurde definert.
-      'Autor' enthaelt alle benoetingten und optionalen Daten zum Nachrichtenautor.
-***************************************************************************************************** -->
+<!ELEMENT   Author          (Name, Email?, HomepageUrl?, ImageUrl?)>
+<!-- ***************************************************************************
+    'Author' enthaelt alle benoetigten und optionalen Daten zum Autor einer
+    Nachricht.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               Category                (#PCDATA)>
-<!-- *****************************************************************************************************
-                Das Element 'Category' wurde definert.
-      'Category' enthaelt ein, aus einer Liste waehlbares Forumsthema.
-***************************************************************************************************** -->
+<!ELEMENT   Category        (#PCDATA)>
+<!-- ***************************************************************************
+    'Category' enthaelt das Thema der Nachricht.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               Subject                 (#PCDATA)>
-<!-- *****************************************************************************************************
-                Das Element 'Subject' wurde definert.
-      'Subject' beinhaltet den vom User definierten Titel der Nachricht.
-***************************************************************************************************** -->
+<!ELEMENT   Subject         (#PCDATA)>
+<!-- ***************************************************************************
+    'Subject' beinhaltet den Titel der Nachricht.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               Date                     EMPTY>
-<!-- *****************************************************************************************************
-                Das Element 'Datum' wurde definert.
-                'Date' enthaelt die Zeit, zu der die Nachricht gepostet wurde.
-***************************************************************************************************** -->
-<!ATTLIST Date
-        longSec NMTOKEN         #REQUIRED
+<!ELEMENT   Date            EMPTY>
+<!ATTLIST   Date
+    longSec                 NMTOKEN     #REQUIRED
 >
 <!--
-        year            NMTOKEN         #REQUIRED
-        mon             NMTOKEN         #REQUIRED
-        day             NMTOKEN         #REQUIRED
-        hour            NMTOKEN         #REQUIRED
-        min             NMTOKEN         #REQUIRED
-        sec             NMTOKEN         #REQUIRED
-        isoDate NMTOKEN         #REQUIRED
+    year                    NMTOKEN     #REQUIRED
+    mon                     NMTOKEN     #REQUIRED
+    day                     NMTOKEN     #REQUIRED
+    hour                    NMTOKEN     #REQUIRED
+    min                     NMTOKEN     #REQUIRED
+    sec                     NMTOKEN     #REQUIRED
+    isoDate                 NMTOKEN     #REQUIRED
 -->
-<!-- *****************************************************************************************************
-                Die Liste der Attribute fuer das Element 'Date' wurde definert.
-                Alle Attribute haben den Typ NMTOKEN und jedes der Attribute muss zwingend vorhanden sein.
-                NMTOKEN = Es duerfen Werte in den Attributen mit Zahlen beginnen;
-                und Buchstaben, Zahlen, den ( . ), den Unterstrich ( _ ) und Bindestrich ( - ) enthalten.
-                'isoDate' ist fuer Datumformat: YYYY-MM-DD gedacht.
-                'longSec' steht fuer Datum/Zeit in Sekunden seit 1970.
-***************************************************************************************************** -->
+<!-- ***************************************************************************
+    'Date' enthaelt die Erstellungszeit der Nachricht.
+
+    Das Attribut 'longSec' speichert die Erstellungszeit als Sekunden seit
+    1970.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               Name                    (#PCDATA)>
-<!-- *****************************************************************************************************
-      'Name' enthaelt den Namen des Messageautors
-***************************************************************************************************** -->
-
+<!ELEMENT   Name            (#PCDATA)>
+<!-- ***************************************************************************
+    'Name' enthaelt den Namen des Autors.
+**************************************************************************** -->
 
 
-<!ELEMENT               Email                   (#PCDATA)>
-<!-- *****************************************************************************************************
-                Das Element 'Email' wurde definert.
-      'Email' enthaelt die E-Mail-Adresse des Messageautors
-***************************************************************************************************** -->
+<!ELEMENT   Email           (#PCDATA)>
+<!-- ***************************************************************************
+    'Email' enthaelt die eMail-Adresse des Autors.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               HomepageUrl                     (#PCDATA)>
-<!-- *****************************************************************************************************
-                Das Element 'HomepageURL' wurde definert.
-      'HomepageUrl' enthaelt die Internetadresse der Website des Messageautors.
-***************************************************************************************************** -->
+<!ELEMENT   HomepageUrl     (#PCDATA)>
+<!-- ***************************************************************************
+    'HomepageUrl' enthaelt die Homepage-Adresse des Autors.
+**************************************************************************** -->
 
 
-
-<!ELEMENT               ImageUrl                (#PCDATA)>
-<!-- *****************************************************************************************************
-                Das Element 'ImageURL' wurde definert.
-      'ImageUrl' enthaelt die Internetadresse eines beliebigen Bildes (Banners) des Messageautors.
-***************************************************************************************************** -->
+<!ELEMENT   ImageUrl        (#PCDATA)>
+<!-- ***************************************************************************
+    'ImageUrl' enthaelt die Adresse eines beliebigen Bildes des Autors.
+**************************************************************************** -->
