@@ -1,0 +1,228 @@
+<?xml version="1.0"?>
+
+<Template metaon="{&amp;&amp;" metaoff="&amp;&amp;}">
+
+<!--
+  ** Thread view
+  -->
+
+<Scrap id="ARC_THREAD_START"><![CDATA[
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html><head>
+<title>SELFHTML Forumsarchiv / {&& _YEAR &&} / {&& _MONTH_NAME &&} / {&& %IF _T_CATEGORY &&}({&& _T_CATEGORY &&}) {&& %ENDIF &&}{&& _T_TITLE &&}</title>
+<!--<meta name="description" content="SELFHTML-Forumsarchiv, Thread: {&& _T_TITLE &&}">-->
+<link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}" />
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"></a>{&& LOCATION &&}</td></tr>
+</table><table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr>
+<td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forumsarchiv<br />{&& %IF _T_CATEGORY &&}({&& _T_CATEGORY &&}) {&& %ENDIF &&}{&& _T_TITLE &&}</h2></td>
+</tr>
+<tr><td bgcolor="#EEEEEE" class="doc" colspan="2"><a href="#bottom">{&& IMG_XGDOWN &&}</a></td></tr>
+</table>
+{&& %IF _THREAD &&}<br /><dl>{&& _THREAD &&}</dl><br />{&& %ENDIF &&}
+]]></Scrap>
+
+<Scrap id="ARC_THREAD_END"><![CDATA[
+<br />&#160;<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" colspan="2">
+<a href="#top">{&& IMG_XGOUP &&}</a>
+</td></tr>
+<tr><td colspan="2" bgcolor="#FFEEDD" class="nav">{&& LOCATION &&}</td></tr></table>
+<p><a class="an" name="bottom">&copy; 2000</a> {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:selfhtml@teamone.de">selfhtml@teamone.de</a></p>
+</body></html>
+]]></Scrap>
+
+<!--
+  ** Month view
+  -->
+
+<Scrap id="ARC_MONTH_START"><![CDATA[
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html><head>
+<title>SELFHTML Forumsarchiv / {&& _YEAR &&} / {&& _MONTH_NAME &&}</title>
+<link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}" />
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"></a>{&& LOCATION &&}</td></tr>
+</table><table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr>
+<td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forumsarchiv<br />{&& _MONTH_NAME &&} {&& _YEAR &&}</h2></td>
+</tr>
+<tr><td bgcolor="#EEEEEE" class="doc" colspan="2"><a href="#bottom">{&& IMG_XGDOWN &&}</a></td></tr>
+</table>
+<br />
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+<tr><td nowrap="nowrap" bgcolor="#EEEEE0" class="code"><b>Startdatum&nbsp;&nbsp;</b></td><td>&nbsp;</td><td><b>Themenbereich</b></td>
+<td bgcolor="#EEEEE0" class="code"><b>Thread-Titel</b></td></tr>
+]]></Scrap>
+
+<Scrap id="ARC_MONTH_END"><![CDATA[
+</table>
+<br />&#160;<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" colspan="2">
+<a href="#top">{&& IMG_XGOUP &&}</a>
+</td></tr>
+<tr><td colspan="2" bgcolor="#FFEEDD" class="nav">{&& LOCATION &&}</td></tr></table>
+<p><a class="an" name="bottom">&copy; 2000</a> {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:selfhtml@teamone.de">selfhtml@teamone.de</a></p>
+</body></html>
+]]></Scrap>
+
+<Scrap id="ARC_MONTH_THREAD"><![CDATA[
+<tr><td>{&& _T_DATE &&}</td><td></td><td>{&& IMG_X3 &&} (<b>{&& _T_CATEGORY &&}</b>)</td><td><a href="{&& BASE &&}{&& _YEAR &&}/{&& _MONTH &&}/{&& _T_ID &&}/"><b>{&& _T_TITLE &&}</b></a></td></tr>
+]]></Scrap>
+
+<!--
+  ** Error messages
+  -->
+
+<Scrap id="DOC_ERROR"><![CDATA[
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html><head>
+<meta http-equiv="expires" content="0">
+<meta name="robots" content="noindex">
+<title>SELFHTML Forumsarchiv: Fehler</title>
+<link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top">{&& LOCATION &&}</td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forumsarchiv:<br>Fehler</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center">
+<br /></td>
+<td bgcolor="#FFFFFF" valign="top">
+<p>{&& IMG_XGDOWN &&}&nbsp;<a href="#a1"><b>Fehler</b></a></p>{&& %IF _LOAD_TIME &&}
+<p>Ladezeitpunkt: {&& _LOAD_TIME &&}</p>{&& %ENDIF &&}</td></tr>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr>
+</table>
+<h2 class="Sh2"><a class="an" name="a1">Fehler</a></h2>
+<p>{&& _ERROR_TEXT &&}</p>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top">{&& IMG_XGOUP &&}</a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom">{&& LOCATION &&}</td></tr>
+</table>
+<p>&copy; 2000 {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:{&& MAIL_SELF &&}">{&& MAIL_SELF &&}</a></p>
+</body></html>
+]]></Scrap>
+
+<!--
+  ** SNIPPETS
+  -->
+
+<Scrap id="LOCATION"><![CDATA[
+{&& PARTOF &&}&nbsp;{&& LINK_SELFAKTUELL &&}
+{&& PARTOF &&}&nbsp;{&& LINK_FORUM &&}
+{&& PARTOF &&}&nbsp;{&& LINK_ARCHIV &&}
+{&& %IF _MONTH &&}{&& %IF _YEAR &&}{&& PARTOF &&}&nbsp;{&& LOC_YEAR &&}{&& %ENDIF &&}{&& %ENDIF &&}
+{&& %IF _T_TITLE &&}{&& %IF _MONTH &&}{&& PARTOF &&}&nbsp;{&& LOC_MONTH &&}{&& %ENDIF &&}{&& %ENDIF &&}
+]]></Scrap>
+
+<Scrap id="UPNDOWN"><![CDATA[
+  <table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top">{&& IMG_XGOUP &&}</a><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr></table>
+]]></Scrap>
+
+<Scrap id="PST_TITLE"><![CDATA[
+  <h2 class="sh2"><a class="an" name="m{&& _MSG_ID &&}">{&&%IF _MSG_CATEGORY &&}({&& _MSG_CATEGORY &&}) {&& %ENDIF &&}{&& _MSG_TITLE &&}</a></h2>
+]]></Scrap>
+
+<Scrap id="PST_INFO"><![CDATA[
+  <p>Die folgende Nachricht zum Thema stammt von:
+  <b>{&& _MSG_AUTHOR &&}</b>,
+  {&& %IF _MSG_MAIL &&}{&& IMG_XGMAIL &&} <a href="mailto:{&& _MSG_MAIL &&}"><b>{&& _MSG_MAIL &&}</b></a>,{&& %ENDIF &&}
+  {&& _MSG_TIME &&}
+  {&& %IF _MSG_HOMEPAGE &&}<br /><a href="{&& _MSG_HOMEPAGE &&}"><b>{&& _MSG_HOMEPAGE &&}</b></a>{&& %ENDIF &&}</p>
+]]></Scrap>
+
+<Scrap id="PST_TEXT"><![CDATA[
+  <p><tt>{&& _MSG_TEXT &&}</tt></p>
+]]></Scrap>
+
+<Scrap id="POSTING"><![CDATA[
+  {&& PST_TITLE &&}
+  {&& PST_INFO &&}
+  {&& PST_TEXT &&}
+]]></Scrap>
+
+<Scrap id="XPOSTING"><![CDATA[
+  {&& UPNDOWN &&}
+  {&& POSTING &&}
+]]></Scrap>
+
+<Scrap id="CITE_START"><![CDATA[ <span class="q"> ]]></Scrap>
+<Scrap id="CITE_END"><![CDATA[ </span> ]]></Scrap>
+
+<!--
+  ** ATOMICS
+  -->
+
+<!--
+  ** Links
+  -->
+
+<Scrap id="LOC_YEAR"><![CDATA[ <a href="{&& BASE &&}{&& _YEAR &&}/"><b>{&& _YEAR &&}</b></a> ]]></Scrap>
+<Scrap id="LOC_MONTH"><![CDATA[ <a href="{&& BASE &&}{&& _YEAR &&}/{&& _MONTH &&}/"><b>{&& _MONTH_NAME &&}</b></a> ]]></Scrap>
+
+<Scrap id="MAIL_SELF"><![CDATA[ selfhtml@teamone.de ]]></Scrap>
+
+<Scrap id="BASE"><![CDATA[ /dev/archiv/ ]]></Scrap>
+<Scrap id="LINK_SELFHTML"><![CDATA[ <a href="/selfhtml/"><b>SELFHTML</b></a> ]]></Scrap>
+<Scrap id="LINK_SELFAKTUELL"><![CDATA[ <a href="/selfaktuell/"><b>SELFHTML aktuell</b></a> ]]></Scrap>
+<Scrap id="LINK_LIVE"><![CDATA[ <a href="/selfaktuell/live/"><b>SELFHTML live</b></a> ]]></Scrap>
+<Scrap id="LINK_FORUM"><![CDATA[ <a href="/dev/"><b>SELFHTML&nbsp;Forum</b></a> ]]></Scrap>
+<Scrap id="LINK_ARCHIV"><![CDATA[ <a href="{&& BASE &&}"><b>Forumsarchiv</b></a> ]]></Scrap>
+
+<Scrap id="_CSS_FILE"><![CDATA[ /src/forum.css ]]></Scrap>
+
+<!--
+  ** Images
+  -->
+
+<Scrap id="PARTOF"><![CDATA[ {&& IMG_X2 &&} ]]></Scrap>
+
+<Scrap id="IMG_XGMAIL"><![CDATA[ <img src="/src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail" /> ]]></Scrap>
+<Scrap id="IMG_XGOUP"><![CDATA[ <img src="/src/xgoup.gif" width="14" height="10" border="0" alt="nach oben" /> ]]></Scrap>
+<Scrap id="IMG_XGDOWN"><![CDATA[ <img src="/src/xgdown.gif" width="14" height="10" border="0" alt="nach unten" /> ]]></Scrap>
+<Scrap id="IMG_X2"><![CDATA[ <img src="/src/x2.gif" width="16" height="13" border="0" alt="Teil von" /> ]]></Scrap>
+<Scrap id="IMG_X3"><![CDATA[ <img src="/src/x3.gif" width="15" height="10" border="0" alt="Seite" /> ]]></Scrap>
+<Scrap id="IMG_X5"><![CDATA[ <img src="/src/x5.gif" width="30" height="20" vspace="6" border="0" alt="Informationsseite" /> ]]></Scrap>
+<Scrap id="IMG_XWEB"><![CDATA[ <img src="/src/xweb.gif" width="106" height="109" border="0" alt="SELFHTML" /> ]]></Scrap>
+
+<!--
+  ** Thread view
+  -->
+
+  <Scrap id="TREE_START"><![CDATA[
+{&& IMG_XGDOWN &&} (<b>{&& _CATEGORY &&}</b>) <a href="{&& TREE_URL &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_START_NC"><![CDATA[
+{&& IMG_XGDOWN &&} <a href="{&& TREE_URL &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_LINE"><![CDATA[
+{&& IMG_XGDOWN &&} ({&& _CATEGORY &&}) <a href="{&& TREE_URL &&}">{&& _TITLE &&}</a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_LINE_NC"><![CDATA[
+{&& IMG_XGDOWN &&} <a href="{&& TREE_URL &&}">{&& _TITLE &&}</a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_URL"><![CDATA[
+{&& BASE &&}{&& _YEAR &&}/{&& _MONTH &&}/{&& _TID &&}/#m{&& _POSTING &&}
+  ]]></Scrap>
+
+</Template>
