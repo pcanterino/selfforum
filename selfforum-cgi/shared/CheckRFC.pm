@@ -17,6 +17,7 @@ use vars qw(
   @email
   @EXPORT
   @ISA
+  $VERSION
 );
 
 $v56 = eval q[
@@ -25,6 +26,10 @@ $v56 = eval q[
 ];
 
 use Carp qw(croak);
+
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 ################################################################################
 #
@@ -53,25 +58,27 @@ require Exporter;
 #
 sub is_URL ($@) {
   my ($string, @schemes) = @_;
+  my $scheme;
 
   return unless (defined ($string) and length ($string));
 
   @schemes = qw(http) unless (@schemes);
   @schemes = keys %url if (@schemes == 1 and $schemes[0] eq ':ALL');
 
-  for (@schemes) {
-    croak "unknown url scheme '$_'" unless exists $url{$_};
-    unless (/mailto/) {
-      return 1 if ($string =~ /$url{$_}/);
+  for $scheme (@schemes) {
+    croak "unknown url scheme '$scheme'" unless exists $url{$scheme};
+    unless ($scheme =~ /mailto/) {
+      return 1 if ($string =~ /$url{$scheme}/);
     }
     else {
-      return unless ($string =~ /^mailto:(.+)/);
+      if ($string =~ /^mailto:(.+)/) {
 
-      if ($_ eq 'mailto') {
-        return 1 if (is_email ($1));
-      }
-      elsif ($_ eq 'strict_mailto') {
-        return 1 if (is_email ($1,1));
+        if ($scheme eq 'mailto') {
+          return 1 if (is_email ($1));
+        }
+        elsif ($scheme eq 'strict_mailto') {
+          return 1 if (is_email ($1,1));
+        }
       }
     }
   }

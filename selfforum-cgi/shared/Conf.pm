@@ -1,81 +1,68 @@
-# Conf.pm
+package Conf;
 
-# ====================================================
-# Autor: n.d.p. / 2001-01-05
-# lm   : n.d.p. / 2001-02-02
-# ====================================================
-# Funktion:
-#      Einlesen der Scriptkonfiguration
-# ====================================================
+################################################################################
+#                                                                              #
+# File:        shared/Conf.pm                                                  #
+#                                                                              #
+# Authors:     Andre Malo       <nd@o3media.de>, 2001-06-16                    #
+#                                                                              #
+# Description: read and parse configuration files                              #
+#                                                                              #
+################################################################################
 
 use strict;
-
-package Conf;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
 
 use XML::DOM;
 
-# ====================================================
-# Funktionsexport
-# ====================================================
-
-use base qw(Exporter);
-@Conf::EXPORT = qw(read_script_conf);
-
-################################
-# sub read_script_conf
+################################################################################
+# Version check
 #
-# Scriptkonf. lesen
-################################
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
-sub read_script_conf ($$$) {
-  my ($Config, $Shared, $Script) = @_;
+################################################################################
+#
+# Export
+#
+use base qw(Exporter);
+@EXPORT = qw(read_script_conf);
 
-  $Script =~ s/^(.*)\..*$/$1/;             # Vornamen extrahieren
-  my $common  = "$Shared/common.xml";      # gemeinsame Konf-datei
-  my $group   = "$Config/common.xml";  # gemeinsame (Gruppen-)Konf-datei
-  my $special = "$Config/$Script.xml"; # spezielle Konf-datei
-  my %conf=();                             # conf-Hash
+### add_limit () ###############################################################
+#
+# add limited data
+#
+# Params: $node   - element node
+#         $conf   - hashref of config hash (will be modified)
+#         $Script - scriptname (first name)
+#
+# Return: ~none~
+#
+sub add_limit ($$$) {
+  my ($node, $conf, $Script) = @_;
 
-  &parse_script_conf ($common , \%conf, $Script);   # und los...
-  &parse_script_conf ($group,   \%conf, $Script);
-  &parse_script_conf ($special, \%conf, $Script);
+  my %apps = map {($_ -> getFirstChild -> getData => 1)}
+                   $node -> getElementsByTagName ('Application',0) -> item (0)
+                   -> getElementsByTagName ('Script',0);
 
-  # Rueckgabe
-  \%conf;
-}
-
-# ====================================================
-# Private Funktionen
-# ====================================================
-
-sub parse_script_conf ($$$) {
-  my ($filename, $conf, $Script) = @_;
-
-  if (-f $filename) {
-    # XML parsen
-    my $xml = new XML::DOM::Parser -> parsefile ($filename);
-    my $config = $xml -> getElementsByTagName ('Config',0) -> item (0);
-
-    foreach ($config -> getElementsByTagName ('Constant', 0)) {&add_data ($_, $conf)}
-    foreach ($config -> getElementsByTagName ('Property', 0)) {&add_prop ($_, $conf)}
-    foreach ($config -> getElementsByTagName ('Limit', 0))    {&add_limit ($_, $conf, $Script)}}
+  if ($apps {$Script}) {
+    foreach ($node -> getElementsByTagName ('Constant', 0)) {add_data ($_, $conf)}
+    foreach ($node -> getElementsByTagName ('Property', 0)) {add_prop ($_, $conf)}}
 
   return;
 }
 
-sub add_data ($$) {
-  my ($node, $conf) = @_;
-  my $name = $node -> getAttribute ('name');
-
-  die "element '".$node -> getNodeName."' requires attribute 'name' - aborted" unless (length ($name) and defined ($name));
-  die "double defined name '$name' - aborted" if ( exists ( $conf -> {$name} ) );
-
-  # Wert eintragen
-  $conf -> {$name} = ($node -> hasChildNodes)?$node -> getFirstChild -> getData:undef;
-
-  return;
-}
-
+### add_prop () ################################################################
+#
+# add a property (recursive if necessary)
+#
+# Params: $node - element node
+#         $conf - hashref of config hash (will be modified)
+#
+# Return: ~none~
+#
 sub add_prop ($$) {
   my ($node, $conf) = @_;
 
@@ -88,6 +75,7 @@ sub add_prop ($$) {
   my @lists  = $node -> getElementsByTagName ('List', 0);
 
   # Properties
+  #
   if (@props) {
     for (@props) {
       my $hash = (defined $conf -> {$name})?$conf -> {$name}:{};
@@ -98,6 +86,7 @@ sub add_prop ($$) {
       $conf -> {$name} = $hash;}}
 
   # Array
+  #
   if (@lists) {
     for (@lists) {
       my $lname = $_ -> getAttribute ('name');
@@ -108,6 +97,7 @@ sub add_prop ($$) {
       $conf -> {$name} -> {$lname} = [map {($_ -> hasChildNodes)?$_ -> getFirstChild -> getData:undef} $_ -> getElementsByTagName ('ListItem', 0)];}}
 
   # Hash
+  #
   if (@vars) {
     for (@vars) {
       my $vname = $_ -> getAttribute ('name');
@@ -120,31 +110,91 @@ sub add_prop ($$) {
   return;
 }
 
-sub add_limit ($$$) {
-  my ($node, $conf, $Script) = @_;
+### add_data () ################################################################
+#
+# add a real value (Constant or Variable)
+#
+# Params: $node - Element node
+#         $conf - hashref of config hash (will be modified)
+#
+# Return: ~none~
+#
+sub add_data ($$) {
+  my ($node, $conf) = @_;
+  my $name = $node -> getAttribute ('name');
 
-  my %apps = map {($_ -> getFirstChild -> getData => 1)}
-                   $node -> getElementsByTagName ('Application',0) -> item (0)
-                   -> getElementsByTagName ('Script',0);
+  die q"element '".$node -> getNodeName.q"' requires attribute 'name' - aborted" unless (length ($name) and defined ($name));
+  die q"double defined name '$name' - aborted" if ( exists ( $conf -> {$name} ) );
 
-  if ($apps {$Script}) {
-    foreach ($node -> getElementsByTagName ('Constant', 0)) {&add_data ($_, $conf)}
-    foreach ($node -> getElementsByTagName ('Property', 0)) {&add_prop ($_, $conf)}}
+  $conf -> {$name} = ($node -> hasChildNodes)?$node -> getFirstChild -> getData:undef;
 
   return;
 }
 
-# ====================================================
-# Modulinitialisierung
-# ====================================================
+### parse_script_conf () #######################################################
+#
+# parse a config file
+#
+# Params: $filename - filename
+#         $conf     - hashref of config hash (hash will be modified)
+#         $Script   - scriptname
+#
+# Return: ~none~
+#
+sub parse_script_conf ($\%$) {
+  my ($filename, $conf, $Script) = @_;
 
-# making require happy
+  if (-f $filename) {
+    my $xml = new XML::DOM::Parser -> parsefile ($filename);
+    my $config = $xml -> getElementsByTagName ('Config', 0) -> item (0);
+
+    add_data  $_, $conf          for ($config -> getElementsByTagName ('Constant', 0));
+    add_prop  $_, $conf          for ($config -> getElementsByTagName ('Property', 0));
+    add_limit $_, $conf, $Script for ($config -> getElementsByTagName ('Limit', 0));
+  }
+
+  return;
+}
+
+### read_script_conf () ########################################################
+#
+# read and parse whole script config.
+#
+# Params: $Config - /path/to/config-dir   # NO trailing slash please
+#         $Shared - /path/to/shared-dir   #        -- " --
+#         $Script - scriptname
+#
+sub read_script_conf ($$$) {
+  my ($Config, $Shared, $Script) = @_;
+
+  $Script =~ s/^(.*)\..*$/$1/;             # extract script's 'first name'
+  my $common  = "$Shared/common.xml";      # shared config file
+  my $group   = "$Config/common.xml";      # group config file
+  my $special = "$Config/$Script.xml";     # special script config file
+  my %conf=();                             # config hash
+
+  parse_script_conf ($common , %conf, $Script);
+  parse_script_conf ($group,   %conf, $Script);
+  parse_script_conf ($special, %conf, $Script);
+
+  # return
+  #
+  \%conf;
+}
+
+# keep 'require' happy
 1;
 
-# ====================================================
-# end of Conf
-# ====================================================
+#
+#
+### end of Conf ################################################################
 
+### show() #####################################################################
+#
+# mini data dumper
+#
+# Usage: Conf::Test::show (hashref)
+#
 package Conf::Test;sub show{print"Content-type: text/plain\n\n";&hash($_[
 0],'')}sub hash{my($ref,$string)=@_;foreach(sort keys%$ref){my$val=$ref->
 {$_};unless(ref($val)){print$string,$_,' = ',$val,"\n";next;}else{if(ref(
@@ -155,6 +205,6 @@ ref($_)eq 'HASH'){&hash($_,"$string\[$i] -> ")}else{if(ref($_)eq'ARRAY'){
 &array($_,"$string\[$i] -> ");}}}$i++;}}# n.d.p./2001-01-05/lm:2001-01-19
 # FUNCTION: printing the configuration, USAGE: &Conf::Test::show ($conf);
 
-# ====================================================
-# 'real' end of Conf .-))
-# ====================================================
+#
+#
+### *real* end of Conf ;-) #####################################################
