@@ -18,7 +18,7 @@ use vars qw(
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 
-use Time::German ':overwrite_internal_localtime';
+use Time::German qw(localtime);
 use XML::DOM;
 
 ################################################################################
@@ -39,6 +39,8 @@ use constant SORT_ASCENT  => 0; # (latest postings first)
 use constant SORT_DESCENT => 1;
 use constant KEEP_DELETED => 1;
 use constant KILL_DELETED => 0;
+
+use constant FORUM_DTD => 'http://selfforum.sourceforge.net/dtd/forum.dtd';
 
 use base qw(Exporter);
 @EXPORT_OK = qw(
@@ -135,7 +137,7 @@ sub create_message ($$) {
 # create a XML::DOM::Document object of a thread containing one posting
 #
 # Params: hash reference
-#         (dtd, thread, msg, body, ip, name, email, home,
+#         (thread, msg, body, ip, name, email, home,
 #          image, category, subject, time)
 #
 # Return: XML::DOM::Document object
@@ -156,7 +158,7 @@ sub create_new_thread ($) {
 
   # set doctype
   #
-  my $dtd = $xml -> createDocumentType ('Forum' => $par -> {dtd});
+  my $dtd = $xml -> createDocumentType ('Forum' => FORUM_DTD);
   $xml -> setDoctype ($dtd);
 
   # create root element 'Forum'
@@ -469,13 +471,13 @@ sub get_all_threads ($$;$) {
   close(FILE) or return;
 
   if (wantarray) {
-    ($dtd)          = $xml =~ /<!DOCTYPE\s+\S+\s+SYSTEM\s+"([^"]+)">/;
+    $dtd            = FORUM_DTD;
     ($last_thread)  = map {/(\d+)/} $xml =~ /<Forum.+?lastThread="([^"]+)"[^>]*>/;
     ($last_message) = map {/(\d+)/} $xml =~ /<Forum.+?lastMessage="([^"]+)"[^>]*>/;
   }
 
   my $reg_msg = qr~(?:</Message>
-                     |<Message\s+id="m(\d+)"\s+unid="([^"]*)"(?:\s+invisible="([^"]*)")?(?:\s+archive="([^"]*)")?[^>]*>\s*
+                     |<Message\s+id="m(\d+)"(?:\s+unid="([^"]*)")?(?:\s+invisible="([^"]*)")?(?:\s+archive="([^"]*)")?[^>]*>\s*
                       <Header>[^<]*(?:<(?!Name>)[^<]*)*
                         <Name>([^<]+)</Name>[^<]*(?:<(?!Category>)[^<]*)*
                         <Category>([^<]*)</Category>\s*
@@ -495,7 +497,7 @@ sub get_all_threads ($$;$) {
         push @stack,$cmno if (defined $cmno);
         push @msg, {
           mid     => $1,
-          unid    => $2,
+          unid    => (defined $2) ? $2 : '',
           deleted => $3 || 0,
           archive => $4 || 0,
           name    => $5,
@@ -511,11 +513,11 @@ sub get_all_threads ($$;$) {
         if (defined $cmno)
         {
           push @{$msg[$cmno] -> {kids}}  => $#msg;
-          push @{$msg[$cmno] -> {unids}} => $2;
+          push @{$msg[$cmno] -> {unids}} => (defined $2) ? $2 : '#';
         }
         else
         {
-          push @unids => $2;
+          push @unids => (defined $2) ? $2 : '';
         }
 
         $msg[$_] -> {answers}++ for (@stack);
@@ -531,7 +533,7 @@ sub get_all_threads ($$;$) {
       {
         push @msg, {
           mid     => $1,
-          unid    => $2,
+          unid    => (defined $2) ? $2 : '',
           deleted => $3 || 0,
           archive => $4 || 0,
           name    => $5,
@@ -547,12 +549,12 @@ sub get_all_threads ($$;$) {
         if (defined $cmno)
         {
           push @{$msg[$cmno] -> {kids}}  => $#msg;
-          push @{$msg[$cmno] -> {unids}} => $2;
+          push @{$msg[$cmno] -> {unids}} => (defined $2) ? $2 : '';
           $msg[$cmno] -> {answers}++;
         }
         else
         {
-          push @unids => $2;
+          push @unids => (defined $2) ? $2 : '';
         }
 
         $msg[$_] -> {answers}++ for (@stack);
@@ -592,9 +594,9 @@ sub create_forum_xml_string ($$) {
   my ($level, $thread, $msg);
 
   my $xml =
-      '<?xml version="1.0" encoding="UTF-8"?>'."\n"
-    . '<!DOCTYPE Forum SYSTEM "'.$param -> {dtd}.'">'."\n"
-    . '<Forum lastMessage="m'.$param -> {lastMessage}.'" lastThread="t'.$param -> {lastThread}.'">';
+      '<?xml version="1.0"?>'."\n"
+    . '<!DOCTYPE Forum SYSTEM "'.FORUM_DTD.'">'."\n"
+    . '<Forum lastMessage="m'.($param->{lastMessage} =~ /(\d+)/)[0].'" lastThread="t'.($param->{lastThread} =~ /(\d+)/)[0].'">';
 
   for $thread (sort {$b <=> $a} keys %$threads) {
     $xml .= '<Thread id="t'.$thread.'">';
@@ -606,7 +608,7 @@ sub create_forum_xml_string ($$) {
       $level = $msg -> {level};
       $xml  .=
           '<Message id="m'.$msg -> {mid}.'"'
-            . ' unid="'.$msg -> {unid}.'"'
+            . (($msg -> {unid})   ?' unid="'.$msg -> {unid}.'"':'')
             . (($msg -> {deleted})?' invisible="1"':'')
             . (($msg -> {archive})?' archive="1"':'')
             . '>'
