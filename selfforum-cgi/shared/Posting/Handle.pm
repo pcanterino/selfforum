@@ -4,9 +4,14 @@ package Posting::Handle;
 #                                                                              #
 # File:        shared/Posting/Handle.pm                                        #
 #                                                                              #
-# Authors:     Frank Schoenmann <fs@tower.de>, 2001-03-08                      #
+# Authors:     Frank Schoenmann <fs@tower.de>, 2001-03-13                      #
 #                                                                              #
 # Description: Allow modifications of postings                                 #
+#                                                                              #
+# Todo:        * Lock files before modification                                #
+#              * Change body in change_posting_body()                          #
+#              * Recursively set invisibility flag in main forum xml by        #
+#                hide_posting() and recover_posting()                          #
 #                                                                              #
 ################################################################################
 
@@ -15,12 +20,85 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 
-@EXPORT = qw(hide_posting recover_posting modify_posting);
+@EXPORT = qw(hide_posting recover_posting modify_posting add_user_vote level_vote);
 
+use Lock qw(:READ);
 use Posting::_lib qw(get_message_node save_file get_all_threads
                      create_forum_xml_string);
 
 use XML::DOM;
+
+### add_user_vote () ###########################################################
+#
+# Increase number of user votes (only in thread file)
+#
+# Params: $forum  Path and filename of forum
+#         $tpath  Path to thread files
+#         \%info  Hash reference: 'thread', 'posting', 'percent'
+# Return: Status code (Bool)
+#
+# Todo:
+#  * Lock files before modification
+#
+sub add_user_vote()
+{
+    my ($forum, $tpath, $info) = @_;
+    my ($tid, $mid, $percent) = ($info->{'thread'},
+                                 $info->{'posting'},
+                                 $info->{'percent'});
+
+    # Thread
+    my $tfile = $tpath . '/t' . $tid . '.xml';
+
+    my $parser = new XML::DOM::Parser;
+    my $xml = $parser->parsefile($tfile);
+
+    my $mnode = get_message_node($xml, $tid, $mid);
+    my $votes = $mnode->getAttribute('votingUser') + 1;
+    $mnode->setAttribute('votingUser', $votes);
+
+    return save_file($tfile, \$xml->toString);
+}
+
+### level_vote () ##############################################################
+#
+# Set 1st or 2nd level voting (only in thread file)
+#
+# Params: $forum  Path and filename of forum
+#         $tpath  Path to thread files
+#         \%info  Hash reference: 'thread', 'posting', 'level', 'value'
+# Return: Status code (Bool)
+#
+# Todo:
+#  * Lock files before modification
+#
+sub level_vote
+{
+    my ($forum, $tpath, $info´) = @_;
+    my ($tid, $mid, $level, $value) = ($info->{'thread'},
+                                       $info->{'posting'},
+                                       $info->{'level'},
+                                       $info->{'value'});
+
+    # Thread
+    my $tfile = $tpath . '/t' . $tid . '.xml';
+
+    my $parser = new XML::DOM::Parser;
+    my $xml = $parser->parsefile($tfile);
+
+    my $mnode = get_message_node($xml, $tid, $mid);
+
+    if ($value == undef)
+    {
+        removeAttribute($level);
+    }
+    else
+    {
+        $mnode->setAttribute($level, $value);
+    }
+
+    return save_file($tfile, \$xml->toString);
+}
 
 ### hide_posting () ############################################################
 #
@@ -32,7 +110,8 @@ use XML::DOM;
 # Return: -none-
 #
 # Todo:
-#  * set flags recursive in forum xml
+#  * set flags recursively in forum xml
+#  * lock files before modification
 #
 sub hide_posting($$$)
 {
@@ -46,9 +125,7 @@ sub hide_posting($$$)
     change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 1);
 
     # Forum
-    #change_posting_visibility($forum, 't'.$tid, 'm'.$mid, 1);    # OBSOLETE
-
-    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
+    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 0, 0);  # filter deleted, descending
 
     for (@{$f->{$tid}})
     {
@@ -78,6 +155,7 @@ sub hide_posting($$$)
 #
 # Todo:
 #  * set flags recursive in forum xml
+#  * lock files before modification
 #
 sub recover_posting($$$)
 {
@@ -91,9 +169,7 @@ sub recover_posting($$$)
     change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 0);
 
     # Forum
-    #change_posting_visibility($forum, 't'.$tid, 'm'.$mid, 0);    # OBSOLETE
-
-    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
+    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);  # do not filter deleted, descending
 
     for (@{$f->{$tid}})
     {
@@ -173,26 +249,26 @@ sub modify_posting($$$)
     $body && change_posting_body($tfile, 't'.$tid, 'm'.$mid, $body);
 
     # Forum (does not contain msg bodies)
-    #change_posting_value($forum, 't'.$tid, 'm'.$mid, \$msgdata);
-
-    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
-
-    for (@{$f->{$tid}})
+    if ($subject or $category)
     {
-        if ($_->{'mid'} == $mid)
-        {
-            $subject && $_->{'subject'} = $subject;
-            $category && $_->{'cat'} = $category;
-        }
-    }
+        my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
 
-    my %cfxs = (
-        'dtd'         => $dtd,
-        'lastMessage' => $lmsg,
-        'lastThread'  => $lthread
-    );
-    my $xmlstring = create_forum_xml_string($f, \%cfxs);
-    save_file($forum, $$xmlstring);
+        for (@{$f->{$tid}})
+        {
+            if ($_->{'mid'} == $mid)
+            {
+                $subject && $_->{'subject'} = $subject;
+                $category && $_->{'cat'} = $category;
+            }
+        }
+
+        my %cfxs = (
+            'dtd'         => $dtd,
+            'lastMessage' => $lmsg,
+            'lastThread'  => $lthread
+        );
+        my $xmlstring = create_forum_xml_string($f, \%cfxs);
+        save_file($forum, $$xmlstring);
 }
 
 ### change_posting_value () ####################################################
@@ -234,6 +310,9 @@ sub change_posting_value($$$$)
 #         $mid    Message ID
 #         $body   New body
 # Return: Status code
+#
+# Todo:
+#  * Change body
 #
 sub change_posting_body($$$$)
 {

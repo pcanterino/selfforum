@@ -5,7 +5,7 @@ package Posting::_lib;
 # File:        shared/Posting/_lib.pm                                          #
 #                                                                              #
 # Authors:     André Malo <nd@o3media.de>, 2001-03-03                          #
-#              Frank Schoenmann <fs@tower.de>, 2001-03-02                      #
+#              Frank Schoenmann <fs@tower.de>, 2001-03-13                      #
 #                                                                              #
 # Description: Message access interface, time format routines                  #
 #                                                                              #
@@ -273,7 +273,7 @@ sub sort_thread ($$) {
   \@smsg;
 }
 
-### delete_messages () ##########################################################
+### delete_messages () #########################################################
 #
 # Filter out deleted messages
 #
@@ -318,7 +318,7 @@ sub delete_messages ($)
   return;
 }
 
-### get_all_threads () ##########################################################
+### get_all_threads () #########################################################
 #
 # Read and Parse the main file (without any XML-module, they are too slow)
 #
@@ -440,9 +440,9 @@ sub get_all_threads ($$;$)
     $threads{$tid} = $smsg if (@$smsg);
   }
 
-  wantarray ?
-    (\%threads, $last_thread, $last_message, $dtd, \@unids)
-  : \%threads;
+  wantarray
+    ? (\%threads, $last_thread, $last_message, $dtd, \@unids)
+    : \%threads;
 }
 
 ###########################
