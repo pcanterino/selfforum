@@ -73,10 +73,29 @@ sub print_month_as_HTML($$$) {
 
     my $template = new Template $tempfile;
 
+    #
+    # check if XML file exists
+    #
+    unless (-e $mainfile) {
+        print ${$template->scrap(
+            $assign->{'error'},
+            {
+                $assign->{'errorText'}  => "Es existieren keine Nachrichten für diesen Monat."
+            }
+        )};
+        return;
+    }
+
+    #
+    # try locking and read/parse threads
+    #
     my ($threads, $locked);
     unless ($locked = lock_file($mainfile) and $threads = get_all_threads($mainfile, KILL_DELETED)) {
         print ${$template->scrap(
-            $assign->{'errorLocking'}
+            $assign->{'error'},
+            {
+                $assign->{'errorText'}  => "Fehler beim Locking."
+            }
         )};
         return;
     }
@@ -143,6 +162,19 @@ sub print_thread_as_HTML($$$) {
 
     my $template = new Template $tempfile;
 
+    #
+    # check if XML file exists
+    #
+    unless (-e $mainfile) {
+        print ${$template->scrap(
+            $assign->{'error'},
+            {
+                $assign->{'errorText'}  => "Der gewünschte Thread existiert nicht."
+            }
+        )};
+        return;
+    }
+
     my $view = get_view_params ({
         'adminDefault'  => $param->{'adminDefault'}
     });
@@ -180,7 +212,8 @@ sub print_thread_as_HTML($$$) {
 
     print ${$template->scrap(
         $assign->{'threadDocStart'},
-        $tmplparam
+        $tmplparam,
+        1
     )};
 
     #
@@ -191,7 +224,7 @@ sub print_thread_as_HTML($$$) {
         my $header = get_message_header($mnode);
         my $body = get_message_body($xml, 'm'.$_->{'mid'});
 
-        my $text = message_field (
+        my $text = message_field(
             $body,
             {
                 'quoteChars'    => plain($view->{'quoteChars'}),
@@ -213,7 +246,8 @@ sub print_thread_as_HTML($$$) {
                 $assign->{'msgCategory'}    => plain($header->{'category'}),
                 $assign->{'msgSubject'}     => plain($header->{'subject'}),
                 $assign->{'msgBody'}        => $text
-            }
+            },
+            1
         )};
     }
 
@@ -222,7 +256,8 @@ sub print_thread_as_HTML($$$) {
     #
     print ${$template->scrap(
         $assign->{'threadDocEnd'},
-        $tmplparam
+        $tmplparam,
+        1
     )};
 }
 
