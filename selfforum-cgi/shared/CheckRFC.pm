@@ -4,7 +4,7 @@ package CheckRFC;
 #                                                                              #
 # File:        shared/CheckRFC.pm                                              #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-04-14                    #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: implement several string checks on RFC correctness              #
 #                                                                              #
@@ -17,7 +17,6 @@ use vars qw(
   @email
   @EXPORT
   @ISA
-  $VERSION
 );
 
 $v56 = eval q[
@@ -27,9 +26,15 @@ $v56 = eval q[
 
 use Carp qw(croak);
 
+################################################################################
+#
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #
@@ -309,7 +314,7 @@ BEGIN {
   }
 }
 
-# keeping require happy
+# keep 'require' happy
 1;
 
 #

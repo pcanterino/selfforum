@@ -4,7 +4,7 @@ package Id;
 #                                                                              #
 # File:        shared/Id.pm                                                    #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-05-03                          #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: compose an unique ID (in CGI context)                           #
 #                                                                              #
@@ -14,14 +14,17 @@ use strict;
 use vars qw(
   @table
   @EXPORT
-  $VERSION
 );
 
 ################################################################################
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #
