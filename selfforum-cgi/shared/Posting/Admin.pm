@@ -7,13 +7,12 @@ package Posting::Admin;
 #                                                                              #
 # Authors:     Frank Schönmann <fs@tower.de>                                   #
 #              André Malo <nd@o3media.de>                                      #
+#              Christian Kruse <ckruse@wwwtech.de>                             #
 #                                                                              #
 # Description: Allow administration of postings                                #
 #                                                                              #
 # Todo:        * Lock files before modification                                #
 #              * Change body in change_posting_body()                          #
-#              * Recursively set invisibility flag in main forum xml by        #
-#                hide_posting() and recover_posting()                          #
 #                                                                              #
 ################################################################################
 
@@ -22,8 +21,9 @@ use vars qw(
   @EXPORT
 );
 
-use Lock qw(:READ);
+use Lock;
 use Posting::_lib qw(
+  parse_xml_file
   get_message_node
   save_file
   get_all_threads
@@ -69,22 +69,20 @@ use base qw(Exporter);
 #  * Lock files before modification
 #
 sub add_user_vote ($$$) {
-    my ($forum, $tpath, $info) = @_;
-    my ($tid, $mid, $percent) = ($info->{'thread'},
-                                 $info->{'posting'},
-                                 $info->{'percent'});
+  my ($forum, $tpath, $info) = @_;
+  my ($tid, $mid, $percent) = ($info->{'thread'},
+                               $info->{'posting'},
+                               $info->{'percent'});
 
-    # Thread
-    my $tfile = $tpath . '/t' . $tid . '.xml';
+  # Thread
+  my $tfile = $tpath . '/t' . $tid . '.xml';
+  my $xml   = parse_xml_file($tfile);
 
-    my $parser = new XML::DOM::Parser;
-    my $xml = $parser->parsefile($tfile);
+  my $mnode = get_message_node($xml, $tid, $mid);
+  my $votes = $mnode->getAttribute('votingUser') + 1;
+  $mnode->setAttribute('votingUser', $votes);
 
-    my $mnode = get_message_node($xml, $tid, $mid);
-    my $votes = $mnode->getAttribute('votingUser') + 1;
-    $mnode->setAttribute('votingUser', $votes);
-
-    return save_file($tfile, \$xml->toString);
+  return save_file($tfile, \$xml->toString);
 }
 
 ### level_vote () ##############################################################
@@ -100,30 +98,25 @@ sub add_user_vote ($$$) {
 #  * Lock files before modification
 #
 sub level_vote {
-    my ($forum, $tpath, $info´) = @_;
-    my ($tid, $mid, $level, $value) = (
-      $info->{'thread'},
-      $info->{'posting'},
-      $info->{'level'},
-      $info->{'value'}
-    );
+  my ($forum, $tpath, $info) = @_;
+  my ($tid, $mid, $level, $value) = ($info->{'thread'},
+                                     $info->{'posting'},
+                                     $info->{'level'},
+                                     $info->{'value'});
 
-    # Thread
-    my $tfile = $tpath . '/t' . $tid . '.xml';
+  # Thread
+  my $tfile = $tpath . '/t' . $tid . '.xml';
+  my $xml = parse_xml_file($tfile);
+  my $mnode = get_message_node($xml, $tid, $mid);
 
-    my $parser = new XML::DOM::Parser;
-    my $xml = $parser->parsefile($tfile);
+  unless (defined $value) {
+    removeAttribute($level);
+  }
+  else {
+    $mnode->setAttribute($level, $value);
+  }
 
-    my $mnode = get_message_node($xml, $tid, $mid);
-
-    unless (defined $value) {
-        removeAttribute($level);
-    }
-    else {
-        $mnode->setAttribute($level, $value);
-    }
-
-    return save_file($tfile, \$xml->toString);
+  return save_file($tfile, \$xml->toString);
 }
 
 ### hide_posting () ############################################################
@@ -132,41 +125,66 @@ sub level_vote {
 #
 # Params: $forum  Path and filename of forum
 #         $tpath  Path to thread files
-#         \%info  Hash reference: 'thread', 'posting', 'indexFile'
+#         \%info  Hash reference: 'thread', 'posting'
 # Return: -none-
 #
-# Todo:
-#  * set flags recursively in forum xml
-#  * lock files before modification
-#
-sub hide_posting ($$$) {
-    my ($forum, $tpath, $info) = @_;
-    my ($tid, $mid, $indexFile) = ($info->{'thread'},
-                                   $info->{'posting'},
-                                   $info->{'indexFile'});
+sub hide_posting($$$) {
+  my ($forum, $tpath, $info) = @_;
+  my ($tid, $mid) = ($info->{'thread'},
+                     $info->{'posting'});
 
-    # Thread
-    my $tfile = $tpath . '/t' . $tid . '.xml';
-    change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 1);
+  # Thread
+  my $tfile = $tpath . '/t' . $tid . '.xml';
 
-    # Forum
-    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 0, 0);  # filter deleted, descending
+  # lock files
+  my $main  = new Lock $forum;
+  my $tlock = new Lock $tfile;
 
-    for (@{$f->{$tid}})
-    {
-        if ($_->{'mid'} == $mid)
-        {
-            $_->{'deleted'} = 1;
-        }
+  return unless $tlock->lock(LH_EXCL); # lock failed
+  unless ($main->lock(LH_EXCL)) { # lock failed
+    $tlock->unlock;
+    return;
+  }
+
+  #
+  # Change invisibility in the thread file.
+  #
+  unless (change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 1)) { # saving failed
+    $tlock->unlock;
+    $main->unlock;
+    return;
+  }
+
+  # get all Forum threads
+  my ($f, $lthread, $lmsg,$dtd) = get_all_threads($forum, 1);
+  unless ($f) {
+    $tlock->unlock;
+    $main->unlock;
+  }
+
+  #
+  # Change invisibility in the main forum index.
+  #
+  for my $i (0 .. $#{$f->{$tid}}) {
+    if ($f->{$tid}->[$i]->{'mid'} == $mid) {
+      $f->{$tid}->[$_]->{'deleted'} = 1 for ($i .. $i+$f->{$tid}->[$i]->{'answers'});
+      last;
     }
+  }
 
-    my %cfxs = (
-        'dtd'         => $dtd,
-        'lastMessage' => $lmsg,
-        'lastThread'  => $lthread
-    );
-    my $xmlstring = create_forum_xml_string($f, \%cfxs);
-    save_file($forum, $$xmlstring);
+  my $success = save_file($forum,
+                          create_forum_xml_string($f,
+                                                  {
+                                                    'dtd'         => $dtd,
+                                                    'lastMessage' => $lmsg,
+                                                    'lastThread'  => $lthread
+                                                  })
+                         );
+
+  $tlock->unlock;
+  $main->unlock;
+
+  return $success;
 }
 
 ### recover_posting() ##########################################################
@@ -175,41 +193,69 @@ sub hide_posting ($$$) {
 #
 # Params: $forum  Path and filename of forum
 #         $tpath  Path to thread files
-#         \%info  Hash reference: 'thread', 'posting', 'indexFile'
-# Return: -none-
-#
-# Todo:
-#  * set flags recursive in forum xml
-#  * lock files before modification
+#         \%info  Hash reference: 'thread', 'posting'
+# Return: success or unsuccess
 #
 sub recover_posting ($$$) {
-    my ($forum, $tpath, $info) = @_;
-    my ($tid, $mid, $indexFile) = ($info->{'thread'},
-                                   $info->{'posting'},
-                                   $info->{'indexFile'});
+  my ($forum, $tpath, $info) = @_;
+  my ($tid, $mid) = ($info->{'thread'},
+                     $info->{'posting'});
 
-    # Thread
-    my $tfile = $tpath . '/t' . $tid . '.xml';
-    change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 0);
+  # Thread
+  my $tfile = $tpath . '/t' . $tid . '.xml';
 
-    # Forum
-    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);  # do not filter deleted, descending
+  # lock files
+  my $main  = new Lock $forum;
+  my $tlock = new Lock $tfile;
 
-    for (@{$f->{$tid}})
-    {
-        if ($_->{'mid'} == $mid)
-        {
-            $_->{'deleted'} = 0;
-        }
+  return unless $tlock->lock(LH_EXCL); # lock failed
+  unless ($main->lock(LH_EXCL)) { # lock failed
+    $tlock->unlock;
+    return;
+  }
+
+  #
+  # Change invisibility in the thread file.
+  #
+  unless (change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 0)) { # saving failed
+    $main->unlock;
+    $tlock->unlock;
+    return;
+  }
+
+  # get all Forum threads
+  my ($f, $lthread, $lmsg,$dtd) = get_all_threads($forum,1);
+
+  unless ($f) {
+    $main->unlock;
+    $tlock->unlock;
+
+    return;
+  }
+
+  #
+  # Change invisibility in the main forum index.
+  #
+  for my $i (0 .. $#{$f->{$tid}}) {
+    if ($f->{$tid}->[$i]->{'mid'} == $mid) {
+      $f->{$tid}->[$_]->{'deleted'} = 0 for ($i .. $i+$f->{$tid}->[$i]->{'answers'});
+      last;
     }
+  }
 
-    my %cfxs = (
-        'dtd'         => $dtd,
-        'lastMessage' => $lmsg,
-        'lastThread'  => $lthread
-    );
-    my $xmlstring = create_forum_xml_string($f, \%cfxs);
-    save_file($forum, $$xmlstring);
+  my $success = save_file($forum,
+                          create_forum_xml_string($f,
+                                                  {
+                                                    'dtd'         => $dtd,
+                                                    'lastMessage' => $lmsg,
+                                                    'lastThread'  => $lthread
+                                                  })
+                         );
+
+  $tlock->unlock;
+  $main->unlock;
+
+  return $success;
 }
 
 ### change_posting_visibility () ###############################################
@@ -222,23 +268,20 @@ sub recover_posting ($$$) {
 #         $invisible  1 - invisible, 0 - visible
 # Return: Status code
 #
-sub change_posting_visibility ($$$$)
-{
-    my ($fname, $tid, $mid, $invisible) = @_;
+sub change_posting_visibility($$$$) {
+  my ($fname, $tid, $mid, $invisible) = @_;
 
-    my $parser = new XML::DOM::Parser;
-    my $xml = $parser->parsefile($fname);
+  my $xml = parse_xml_file($fname);
+  return unless $xml; # parser failed
 
-    # Set flag in given msg
-    my $mnode = get_message_node($xml, $tid, $mid);
-    $mnode->setAttribute('invisible', $invisible);
+  # Set flag in given msg
+  my $mnode = get_message_node($xml, $tid, $mid);
+  $mnode->setAttribute('invisible', $invisible);
 
-    # Set flag in sub nodes
-    for ($mnode->getElementsByTagName('Message')) {
-        $_->setAttribute('invisible', $invisible);
-    }
+  # Set flag in sub nodes
+  $_->setAttribute('invisible', $invisible) foreach $mnode->getElementsByTagName('Message');
 
-    return save_file($fname, \$xml->toString);
+  return save_file($fname, \$xml->toString);
 }
 
 ### modify_posting () ##########################################################
@@ -251,50 +294,50 @@ sub change_posting_visibility ($$$$)
 #                 (data = \%hashref: 'subject', 'category', 'body')
 # Return: -none-
 #
+# Todo:
+#   * Lock files!
+#   * save return values
+#
 sub modify_posting($$$) {
-    my ($forum, $tpath, $info) = @_;
-    my ($tid, $mid, $indexFile, $data) = (
-      $info->{'thread'},
-      $info->{'posting'},
-      $info->{'indexFile'},
-      $info->{'data'}
-    );
+  my ($forum, $tpath, $info) = @_;
+  my ($tid, $mid, $indexFile, $data) = (
+    $info->{'thread'},
+    $info->{'posting'},
+    $info->{'indexFile'},
+    $info->{'data'}
+  );
 
-    my ($subject, $category, $body) = (
-      $data->{'subject'},
-      $data->{'category'},
-      $data->{'body'}
-    );
+  my ($subject, $category, $body) = (
+    $data->{'subject'},
+    $data->{'category'},
+    $data->{'body'}
+  );
 
-    my %msgdata;
+  my %msgdata;
 
-    # These values may be changed by change_posting_value()
-    $subject && $msgdata{'Subject'} = $subject;
-    $category && $msgdata{'Category'} = $category;
+  # These values may be changed by change_posting_value()
+  $msgdata{'Subject'} = $subject if $subject;
+  $msgdata{'Category'} = $category if $category;
 
-    # Thread
-    my $tfile = $tpath . '/t' . $tid . '.xml';
-    change_posting_value($tfile, 't'.$tid, 'm'.$mid, \$msgdata);
-    $body && change_posting_body($tfile, 't'.$tid, 'm'.$mid, $body);
+  # Thread
+  my $tfile = $tpath . '/t' . $tid . '.xml';
+  change_posting_value($tfile, 't'.$tid, 'm'.$mid, \%msgdata);
+  change_posting_body($tfile, 't'.$tid, 'm'.$mid, $body) if $body;
 
-    # Forum (does not contain msg bodies)
-    if ($subject or $category) {
-        my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
+  # Forum (does not contain msg bodies)
+  if ($subject or $category) {
+    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
 
-        for (@{$f->{$tid}}) {
-            if ($_->{'mid'} == $mid) {
-                $subject && $_->{'subject'} = $subject;
-                $category && $_->{'cat'} = $category;
-            }
-        }
+    for (@{$f->{$tid}}) {
+      if ($_->{'mid'} == $mid) {
+        $_->{'subject'} = $subject if $subject;
+        $_->{'cat'} = $category if $category;
+      }
+    }
 
-        my %cfxs = (
-            'dtd'         => $dtd,
-            'lastMessage' => $lmsg,
-            'lastThread'  => $lthread
-        );
-        my $xmlstring = create_forum_xml_string($f, \%cfxs);
-        save_file($forum, $$xmlstring);
+   save_file($forum, create_forum_xml_string($f,{dtd=>$dtd,lastMessage=>$lmsg,lastThread$lthread}));
+  }
+
 }
 
 ### change_posting_value () ####################################################
@@ -308,22 +351,19 @@ sub modify_posting($$$) {
 # Return: Status code
 #
 sub change_posting_value($$$$) {
-    my ($fname, $tid, $mid, $values) = @_;
+  my ($fname, $tid, $mid, $values) = @_;
 
-    my $parser = new XML::DOM::Parser;
-    my $xml = $parser->parsefile($fname);
+  my $xml   = parse_xml_file($fname);
+  my $mnode = get_message_node($xml, $tid, $mid);
 
-    my $mnode = get_message_node($xml, $tid, $mid);
+  for (keys %$values) {
+    # Find first direct child node with name $_
+    my $nodes = $mnode->getElementsByTagName($_, 0);
+    my $node = $nodes->item(0);
+    $node->setValue($values->{$_});
+  }
 
-    for (keys %$values)
-    {
-        # Find first direct child node with name $_
-        my $nodes = $mnode->getElementsByTagName($_, 0);
-        my $node = $nodes->item(0);
-        $node->setValue($values->{$_});
-    }
-
-    return save_file($fname, \$xml->toString);
+  return save_file($fname, \$xml->toString);
 }
 
 ### change_posting_body () #####################################################
@@ -340,16 +380,14 @@ sub change_posting_value($$$$) {
 #  * Change body
 #
 sub change_posting_body ($$$$) {
-    my ($fname, $tid, $mid, $body) = @_;
+  my ($fname, $tid, $mid, $body) = @_;
 
-    my $parser = new XML::DOM::Parser;
-    my $xml = $parser->parsefile($fname);
-
-    my $mbnody = get_message_body($xml, $mid);
+  my $xml    = parse_xml_file($fname);
+  my $mbnody = get_message_body($xml, $mid);
 
     # todo: change body
 
-    return save_file($fname, \$xml->toString);
+  return save_file($fname, \$xml->toString);
 }
 
 
