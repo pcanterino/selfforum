@@ -56,8 +56,9 @@ require Exporter;
 #
 # Return: Status code (Bool)
 #
-sub is_URL ($@) {
+sub is_URL (;$@) {
   my ($string, @schemes) = @_;
+  $string = $_ unless defined $string;
   my $scheme;
 
   return unless (defined ($string) and length ($string));
@@ -96,8 +97,11 @@ sub is_URL ($@) {
 #
 # Return: Status code (Bool)
 #
-sub is_email ($;$) {
+sub is_email (;$$) {
   my $string = shift;
+  $string = $_ unless defined $string;
+  return unless defined $string;
+
   my $strict = shift;
 
   # false if any non-ascii chars
@@ -106,8 +110,6 @@ sub is_email ($;$) {
 
   # remove nested comments
   1 while ($string =~ s/\([^()]*\)//g);
-  #$string =~ s/^\s+//;
-  #$string =~ s/\s+$//;
 
   return ($string =~ /^$email[0]$/) unless $strict;
 
