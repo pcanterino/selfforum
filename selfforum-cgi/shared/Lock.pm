@@ -38,6 +38,7 @@ use base qw(Exporter);
   violent_unlock_file
   set_master_lock
   release_file
+  file_removed
 );
 
 %EXPORT_TAGS = (
@@ -138,7 +139,7 @@ sub w_unlock_file ($;$) {
 
         # try do decrement the reference counter
         #
-        if (set_ref($filename,-1,$timeout)) {
+        if (set_ref($filename, -1, $timeout)) {
           delete $LOCKED{$filename};
           return 1;
         }
@@ -323,6 +324,15 @@ sub w_release_file ($) {
 
   # done
   1;
+}
+
+sub w_file_removed ($) {
+  my $filename = shift;
+
+  unlink reffile($filename);
+  unlink lockfile($filename);
+  unlink lockfile(reffile($filename));
+  unlink masterlockfile($filename);
 }
 
 ################################################################################
@@ -584,6 +594,10 @@ sub x_release_file ($) {
   1;
 }
 
+sub x_file_removed ($) {
+  release_file (shift);
+}
+
 ### sub w_simple_lock ($;$) ####################################################
 ### sub w_simple_unlock ($) ####################################################
 #
@@ -600,7 +614,7 @@ sub w_simple_lock ($;$) {
   my $timeout  = shift || $Timeout;
   my $lockfile = lockfile $filename;
 
-  for (1..$timeout) {
+  for (0..$timeout) {
     unlink $lockfile and return 1;
     sleep(1);
   }
@@ -640,7 +654,7 @@ sub x_simple_lock ($;$) {
   my $timeout  = shift || $Timeout;
   my $lockfile = lockfile $filename;
 
-  for (1..$timeout) {
+  for (0..$timeout) {
     symlink $filename,$lockfile and return 1;
     sleep(1);
   }
@@ -702,7 +716,7 @@ sub w_set_ref ($$$) {
     unlink $reffile                                       or return;
   }
   else {
-    local $\="\n";
+    local $\;
     sysopen (REF, $reffile, O_WRONLY | O_TRUNC | O_CREAT) or return;
     print REF $old                                        or do {
                                                             close REF;
@@ -761,7 +775,7 @@ sub x_set_ref ($$$) {
     unlink $reffile                                       or return;
   }
   else {
-    local $\="\n";
+    local $\;
     sysopen (REF, $reffile, O_WRONLY | O_TRUNC | O_CREAT) or return;
     print REF $old                                        or do {
                                                             close REF;
@@ -793,16 +807,14 @@ sub get_ref ($) {
   my $reffile  = reffile $filename;
   my $old;
   local *REF;
+  local $/;
 
-  if (sysopen (REF, $reffile, O_RDONLY)) {
-    local $/="\n";
-    read REF, $old, -s $reffile;
-    close REF;
-    chomp $old;
-  }
+  sysopen (REF, $reffile, O_RDONLY)    or return 0;
+    $old = <REF>;
+  close REF;
 
   # return value
-  $old or 0;
+  $old;
 }
 
 ################################################################################
@@ -831,6 +843,7 @@ BEGIN {
     *violent_unlock_file = \&x_violent_unlock_file;
     *set_master_lock     = \&x_set_master_lock;
     *release_file        = \&x_release_file;
+    *file_removed        = \&x_file_removed;
 
     *simple_lock         = \&x_simple_lock;
     *simple_unlock       = \&x_simple_unlock;
@@ -845,6 +858,7 @@ BEGIN {
     *violent_unlock_file = \&w_violent_unlock_file;
     *set_master_lock     = \&w_set_master_lock;
     *release_file        = \&w_release_file;
+    *file_removed        = \&w_file_removed;
 
     *simple_lock         = \&w_simple_lock;
     *simple_unlock       = \&w_simple_unlock;

@@ -70,7 +70,10 @@ sub read_admin_conf ($) {
                       quoteChars    => $char?$char -> getFirstChild -> getData:undef};
 
       my $voting = $forum -> getElementsByTagName ('Voting', 0) -> item (0);
-      $conf {Voting} = {voteLock => $voting -> getAttribute ('voteLock')};
+      $conf {Voting} = {
+        voteLock => $voting -> getAttribute ('voteLock'),
+        Limit    => $voting -> getAttribute ('Limit')
+      };
 
       # Severance
       $conf {Severance} = &get_severance ($forum -> getElementsByTagName ('Severance', 0) -> item (0));

@@ -71,7 +71,7 @@ if (defined ($tid) and defined ($mid)) {
       cgi          => $cgi,
       tree         => $tree,
       firsttime    => 1,
-      cachefile    => $conf -> {files} -> {cacheFile}
+      cachepath    => $conf -> {files} -> {cachePath}
     }
   );
 }

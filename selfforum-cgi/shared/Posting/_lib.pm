@@ -491,9 +491,9 @@ sub get_all_threads ($$;$)
   my ($last_thread, $last_message, $dtd, @unids, %threads);
   local (*FILE, $/);
 
-  open FILE, $file or return undef;
+  open FILE,"< $file" or return;
   my $xml = join '', <FILE>;
-  close(FILE) or return undef;
+  close(FILE) or return;
 
   if (wantarray)
   {

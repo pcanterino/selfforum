@@ -66,7 +66,7 @@ my ($tid, $mid) = map {$_ || 0} split /;/ => $fup, 2;
 $tid = ($tid=~/(\d+)/)[0] || 0;
 $mid = ($mid=~/(\d+)/)[0] || 0;
 
-my $cache = new Posting::Cache ($conf->{files}->{cacheFile});
+my $cache = new Posting::Cache ($conf->{files}->{cachePath});
 my $hash;
 
 if ($hash = $cache -> pick ({thread => $tid, posting => $mid})) {
@@ -105,7 +105,7 @@ print_posting_as_HTML (
     cgi          => $cgi,
     tree         => $tree,
     voted        => $voted || '',
-    cachefile    => $conf -> {files} -> {cacheFile}
+    cachepath    => $conf -> {files} -> {cachePath}
   }
 );
 

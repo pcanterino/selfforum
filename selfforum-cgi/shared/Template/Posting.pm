@@ -183,7 +183,7 @@ sub print_posting_as_HTML ($$$) {
       close STDOUT;
 
       if ($param->{firsttime}) {
-        my $cache = new Posting::Cache ($param->{cachefile});
+        my $cache = new Posting::Cache ($param->{cachepath});
         $cache -> add_view (
           { thread  => $param -> {thread},
             posting => $param -> {posting}
