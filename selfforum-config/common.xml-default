@@ -1,72 +1,257 @@
 <?xml version="1.0"?>
-
 <Config>
   <Property name="files">
-    <Variable name="messagePath">e:/localhosts/i_selfhtml/htdocs/selfaktuell/forum/messages/</Variable>
-    <Variable name="forum">e:/localhosts/i_selfhtml/htdocs/selfaktuell/forum/messages/selfforum.xml</Variable>
-    <Variable name="adminDefault">e:/localhosts/i_selfhtml/cgi-local/user/config/fo_admin_default.xml</Variable>
+    <Variable name="messagePath">/home/groups/s/se/selfforum/data/forum/messages/</Variable>
+    <Variable name="forum">/home/groups/s/se/selfforum/data/forum/messages/forum.xml</Variable>
+    <Variable name="adminDefault">/home/groups/s/se/selfforum/cgi-config/forum/admin/fo_admin_default.xml</Variable>
+    <Variable name="cachePath">/home/groups/s/se/selfforum/data/forum/cache/</Variable>
+    <Variable name="forum_base">/dev/</Variable>
+    <Variable name="sev_lock">/home/groups/s/se/selfforum/data/forum/messages/sevlock</Variable>
+    <Variable name="archivePath">/home/groups/s/se/selfforum/data/forum/archive/</Variable>
+    <Variable name="archiveIndex">index.xml</Variable>
   </Property>
-
   <Property name="template">
-
     <Property name="messages">
       <Property name="selbermachen">
-        <Variable name="src">/selfaktuell/forum/images/01.gif</Variable>
+        <Variable name="src">/dev/images/01.gif</Variable>
         <Variable name="width">419</Variable>
         <Variable name="height">119</Variable>
-        <Variable name="alt">F&#252;r dein Problem gibt es nur eine L&#246;sung: SELFmade von Selbermachen.</Variable></Property>
-
+        <Variable name="alt">F&#252;r dein Problem gibt es nur eine L&#246;sung: SELFmade von Selbermachen.</Variable>
+      </Property>
       <Property name="archiv">
-        <Variable name="src">/selfaktuell/forum/images/02.gif</Variable>
+        <Variable name="src">/dev/images/02.gif</Variable>
         <Variable name="width">302</Variable>
         <Variable name="height">119</Variable>
-        <Variable name="alt">Die Antwort auf deine Frage findest du im Archiv.</Variable></Property>
-
+        <Variable name="alt">Die Antwort auf deine Frage findest du im Archiv.</Variable>
+      </Property>
       <Property name="formulierung">
-        <Variable name="src">/selfaktuell/forum/images/03.gif</Variable>
+        <Variable name="src">/dev/images/03.gif</Variable>
         <Variable name="width">248</Variable>
         <Variable name="height">119</Variable>
-        <Variable name="alt">Was willst du jetzt eigentlich wissen?</Variable></Property>
-
+        <Variable name="alt">Was willst du jetzt eigentlich wissen?</Variable>
+      </Property>
       <Property name="selfhtml">
-        <Variable name="src">/selfaktuell/forum/images/04.gif</Variable>
+        <Variable name="src">/dev/images/04.gif</Variable>
         <Variable name="width">428</Variable>
         <Variable name="height">119</Variable>
-        <Variable name="alt">Schau mal in SELFHTML nach, um eine Antwort auf deine Frage zu finden!</Variable></Property>
-
+        <Variable name="alt">Schau mal in SELFHTML nach, um eine Antwort auf deine Frage zu finden!</Variable>
+      </Property>
       <Property name="ende">
-        <Variable name="src">/selfaktuell/forum/images/05.gif</Variable>
+        <Variable name="src">/dev/images/05.gif</Variable>
         <Variable name="width">158</Variable>
         <Variable name="height">119</Variable>
-        <Variable name="alt">Jetzt reicht's aber!</Variable></Property>
-
+        <Variable name="alt">Jetzt reicht's aber!</Variable>
+      </Property>
       <Property name="reihenfolge">
-        <Variable name="src">/selfaktuell/forum/images/06.gif</Variable>
+        <Variable name="src">/dev/images/06.gif</Variable>
         <Variable name="width">462</Variable>
         <Variable name="height">119</Variable>
-        <Variable name="alt">Erstmal selber probieren, dann bei Problemen: SELFHTML, danach: dieses Forum.</Variable></Property>
-
+        <Variable name="alt">Erstmal selber probieren, dann bei Problemen: SELFHTML, danach: dieses Forum.</Variable>
+      </Property>
       <Property name="fehlamplatz">
-        <Variable name="src">/selfaktuell/forum/images/07.gif</Variable>
+        <Variable name="src">/dev/images/07.gif</Variable>
         <Variable name="width">275</Variable>
         <Variable name="height">119</Variable>
-        <Variable name="alt">Stopp! So etwas hat hier nichts zu suchen.</Variable></Property>
-
+        <Variable name="alt">Stopp! So etwas hat hier nichts zu suchen.</Variable>
+      </Property>
       <Property name="links">
-        <Variable name="src">/selfaktuell/forum/images/08.gif</Variable>
+        <Variable name="src">/dev/images/08.gif</Variable>
         <Variable name="width">213</Variable>
         <Variable name="height">100</Variable>
-        <Variable name="alt">Schau mal unter folgenden Links nach:</Variable></Property>
-
+        <Variable name="alt">Schau mal unter folgenden Links nach:</Variable>
+      </Property>
       <Property name="panik">
-        <Variable name="src">/selfaktuell/forum/images/10.gif</Variable>
+        <Variable name="src">/dev/images/10.gif</Variable>
         <Variable name="width">224</Variable>
         <Variable name="height">119</Variable>
-        <Variable name="alt">??!%${</Variable></Property>
-
+        <Variable name="alt">??!%${</Variable>
+      </Property>
     </Property>
   </Property>
 
+<!--
+  ************************************************************************************
+  ************************************************************************************
+-->
+
+  <Limit>
+    <Application>
+      <Script>fo_view</Script>
+      <Script>fo_voting</Script>
+      <Script>fo_admin</Script>
+      <Script>fo_arcview</Script>
+    </Application>
+
+    <Property name="show">
+      <Property name="assign">
+        <Property name="cgi">
+          <Variable name="user">i</Variable>
+          <Variable name="thread">t</Variable>
+          <Variable name="posting">m</Variable>
+          <Variable name="command">c</Variable>
+          <Variable name="month">month</Variable>
+          <Variable name="year">year</Variable>
+        </Property>
+        <Property name="thread">
+          <Variable name="main">_THREAD</Variable>
+          <Variable name="start">TREE_START</Variable>
+          <Variable name="line">TREE_LINE</Variable>
+          <Variable name="closed">TREE_CLOSED</Variable>
+          <Variable name="startNC">TREE_START_NC</Variable>
+          <Variable name="lineNC">TREE_LINE_NC</Variable>
+          <Variable name="closedNC">TREE_CLOSED_NC</Variable>
+          <Variable name="link">_LINK</Variable>
+          <Variable name="name">_NAME</Variable>
+          <Variable name="command">_COMMAND</Variable>
+          <Variable name="subject">_TITLE</Variable>
+          <Variable name="cat">_CATEGORY</Variable>
+          <Variable name="time">_TIME</Variable>
+          <Variable name="year">_YEAR</Variable>
+          <Variable name="month">_MONTH</Variable>
+          <Variable name="tid">_TID</Variable>
+          <Variable name="mid">_POSTING</Variable>
+        </Property>
+      </Property>
+
+      <Property name="Posting">
+        <Variable name="templateFile">/home/groups/s/se/selfforum/cgi-config/forum/posting.tmpl.xml</Variable>
+
+        <Property name="assign">
+          <Variable name="mainDoc">DOC_POSTING</Variable>
+          <Variable name="errorDoc">DOC_ERROR</Variable>
+          <Variable name="cssFile">_CSS_FILE</Variable>
+          <Variable name="message">_MESSAGE</Variable>
+          <Variable name="name">_BEF_NAME</Variable>
+          <Variable name="email">_BEF_MAIL</Variable>
+          <Variable name="time">_BEF_TIME</Variable>
+          <Variable name="home">_BEF_HOME</Variable>
+          <Variable name="image">_BEF_IMAGE</Variable>
+          <Variable name="messageTitle">_BEF_TITLE</Variable>
+          <Variable name="parentCat">_REF_CATEGORY</Variable>
+          <Variable name="messageCat">_BEF_CATEGORY</Variable>
+          <Variable name="parentTitle">_REF_TITLE</Variable>
+          <Variable name="parentName">_REF_NAME</Variable>
+          <Variable name="parentTime">_REF_TIME</Variable>
+          <Variable name="parentLink">_REF_LINK</Variable>
+          <Variable name="startCite">CITE_START</Variable>
+          <Variable name="endCite">CITE_END</Variable>
+          <Variable name="notAvailable">_N_A</Variable>
+          <Variable name="occupied">_OCCUPIED</Variable>
+          <Variable name="corrupt">_CORRUPT</Variable>
+          <Variable name="errorText">_ERROR_TEXT</Variable>
+          <Variable name="firsttime">_FIRSTTIME</Variable>
+          <Variable name="voted">_VOTED</Variable>
+        </Property>
+
+        <Property name="form">
+
+          <Property name="action">
+
+            <Property name="post">
+              <Variable name="url">/cgi-bin/forum/fo_posting.pl</Variable>
+              <Variable name="assign">_FORM_ACTION</Variable>
+            </Property>
+
+            <Property name="vote">
+              <Variable name="url">/cgi-bin/forum/fo_voting.pl</Variable>
+              <Variable name="assign">_VOTE_ACTION</Variable>
+            </Property>
+          </Property>
+
+          <Property name="data">
+
+            <Property name="followUp">
+              <Property name="assign">
+                <Variable name="name">_FORM_FUP_NAME</Variable>
+                <Variable name="value">_FORM_FUP_VALUE</Variable>
+              </Property>
+              <Variable name="name">fup</Variable>
+              <Variable name="maxlength">20</Variable>
+            </Property>
+
+            <Property name="userID">
+              <Property name="assign">
+                <Variable name="name">_FORM_UID_NAME</Variable>
+                <Variable name="value">_FORM_UID_VALUE</Variable>
+              </Property>
+              <Variable name="name">userid</Variable>
+              <Variable name="maxlength">25</Variable>
+            </Property>
+
+            <Property name="uniqueID">
+              <Property name="assign">
+                <Variable name="name">_FORM_UNID_NAME</Variable>
+                <Variable name="value">_FORM_UNID_VALUE</Variable>
+              </Property>
+              <Variable name="name">unid</Variable>
+              <Variable name="maxlength">25</Variable>
+            </Property>
+
+            <Property name="quoteChar">
+              <Property name="assign">
+                <Variable name="name">_FORM_QCHAR_NAME</Variable>
+                <Variable name="value">_FORM_QCHAR_VALUE</Variable>
+              </Property>
+              <Variable name="name">qchar</Variable>
+              <Variable name="maxlength">5</Variable>
+            </Property>
+
+            <Property name="posterName">
+              <Property name="assign">
+                <Variable name="name">_FORM_NAME_NAME</Variable>
+                <Variable name="value">_FORM_NAME_VALUE</Variable>
+              </Property>
+              <Variable name="name">name</Variable>
+              <Variable name="maxlength">60</Variable>
+              <Variable name="minlength">2</Variable>
+            </Property>
+
+            <Property name="posterEmail">
+              <Property name="assign">
+                <Variable name="name">_FORM_MAIL_NAME</Variable>
+                <Variable name="value">_FORM_MAIL_VALUE</Variable>
+              </Property>
+              <Variable name="name">email</Variable>
+              <Variable name="maxlength">60</Variable>
+              <Variable name="minlength">7</Variable>
+            </Property>
+
+            <Property name="posterBody">
+              <Property name="assign">
+                <Variable name="name">_FORM_BODY_NAME</Variable>
+                <Variable name="value">_FORM_BODY_VALUE</Variable>
+              </Property>
+              <Variable name="name">body</Variable>
+              <Variable name="maxlength">12288</Variable>
+              <Variable name="minlength">10</Variable>
+            </Property>
+
+            <Property name="posterSignature">
+              <Variable name="assignValue">_FORM_SIGN_VALUE</Variable>
+            </Property>
+
+            <Property name="posterURL">
+              <Property name="assign">
+                <Variable name="name">_FORM_URL_NAME</Variable>
+                <Variable name="value">_FORM_URL_VALUE</Variable>
+              </Property>
+              <Variable name="name">url</Variable>
+              <Variable name="maxlength">1024</Variable>
+            </Property>
+
+            <Property name="posterImage">
+              <Property name="assign">
+                <Variable name="name">_FORM_IMG_NAME</Variable>
+                <Variable name="value">_FORM_IMG_VALUE</Variable>
+              </Property>
+              <Variable name="name">image</Variable>
+              <Variable name="maxlength">1024</Variable>
+            </Property>
+          </Property>
+        </Property>
+      </Property>
+    </Property>
+  </Limit>
 </Config>
 
-<!-- Ende -->
+<!-- The End -->
