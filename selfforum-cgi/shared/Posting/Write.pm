@@ -38,46 +38,60 @@ sub write_posting ($) {
   my ($thread,$tid);
   my $mid   = 'm'.($param -> {lastMessage} + 1);
 
-  my $pars = {quoteChars => $param -> {quoteChars},
-              messages   => $param -> {messages}};
+  my $pars = {
+    quoteChars => $param -> {quoteChars},
+    messages   => $param -> {messages}
+  };
 
-  my %error = (threadWrite => '1 could not write thread file',
-               forumWrite  => '2 could not write forum file',
-               threadFile  => '3 could not load thread file',
-               noParent    => '4 could not find parent message');
+  my %error = (
+    threadWrite => '1 could not write thread file',
+    forumWrite  => '2 could not write forum file',
+    threadFile  => '3 could not load thread file',
+    noParent    => '4 could not find parent message'
+  );
 
   # neue Nachricht
   unless ($param -> {parentMessage}) {
     $tid   = 't'.($param -> {lastThread} + 1);
-    $thread = create_new_thread ({msg      => $mid,
-                                  ip       => $param -> {ip},
-                                  name     => $param -> {author},
-                                  email    => $param -> {email},
-                                  home     => $param -> {homepage},
-                                  image    => $param -> {image},
-                                  category => $param -> {category},
-                                  subject  => $param -> {subject},
-                                  time     => $param -> {time},
-                                  dtd      => $param -> {dtd},
-                                  thread   => $tid,
-                                  body     => $param -> {body},
-                                  pars     => $pars});
+    $thread = create_new_thread (
+      { msg      => $mid,
+        ip       => $param -> {ip},
+        name     => $param -> {author},
+        email    => $param -> {email},
+        home     => $param -> {homepage},
+        image    => $param -> {image},
+        category => $param -> {category},
+        subject  => $param -> {subject},
+        time     => $param -> {time},
+        dtd      => $param -> {dtd},
+        thread   => $tid,
+        body     => $param -> {body},
+        pars     => $pars
+      }
+    );
 
     save_file ($param -> {messagePath}.$tid.'.xml',\($thread -> toString)) or return $error{threadWrite};
 
     # Thread eintragen
-    $param -> {parsedThreads}
-           -> {$param -> {lastThread} + 1} = [{mid     => $param -> {lastMessage} + 1,
-                                               unid    => $param -> {uniqueID},
-                                               name    => plain($param -> {author}),
-                                               cat     => plain(length($param -> {category})?$param->{category}:''),
-                                               subject => plain($param -> {subject}),
-                                               time    => plain($param -> {time})}];
+    $param
+      -> {parsedThreads}
+      -> {$param -> {lastThread} + 1} = [
+          { mid     => $param -> {lastMessage} + 1,
+            unid    => $param -> {uniqueID},
+            name    => plain($param -> {author}),
+            cat     => plain(length($param -> {category})?$param->{category}:''),
+            subject => plain($param -> {subject}),
+            time    => plain($param -> {time})
+          }
+         ];
 
-    my $forum = create_forum_xml_string ($param -> {parsedThreads},
-                                        {dtd         => $param -> {dtd},
-                                         lastMessage => $mid,
-                                         lastThread  => $tid});
+    my $forum = create_forum_xml_string (
+         $param -> {parsedThreads},
+         { dtd         => $param -> {dtd},
+           lastMessage => $mid,
+           lastThread  => $tid
+         }
+       );
 
     save_file ($param -> {forumFile}, $forum) or return $error{forumWrite};
     release_file ($param -> {messagePath}.$tid.'.xml');
@@ -91,34 +105,43 @@ sub write_posting ($) {
 
     unless (write_lock_file ($tfile)) {
       violent_unlock_file ($tfile);
-      return $error{threadFile};}
+      return $error{threadFile};
+    }
 
     else {
-      $xml = eval {local $SIG{__DIE__}; new XML::DOM::Parser (KeepCDATA => 1) -> parsefile ($tfile);};
+      $xml = eval {
+        local $SIG{__DIE__};
+        new XML::DOM::Parser (KeepCDATA => 1) -> parsefile ($tfile);
+      };
 
       if ($@) {
         violent_unlock_file ($tfile) unless (write_unlock_file ($tfile));
-        return $error{threadFile};}
+        return $error{threadFile};
+      }
 
       my $mnode = get_message_node ($xml, $tid, 'm'.$param -> {parentMessage});
 
       unless (defined $mnode) {
         violent_unlock_file ($tfile) unless (write_unlock_file ($tfile));
-        return $error{noParent};}
+        return $error{noParent};
+      }
 
       my $pheader = get_message_header ($mnode);
 
-      my $message = create_message ($xml,
-                                   {msg      => $mid,
-                                    ip       => $param -> {ip},
-                                    name     => $param -> {author},
-                                    email    => $param -> {email},
-                                    home     => $param -> {homepage},
-                                    image    => $param -> {image},
-                                    category => length($param -> {category})?$param -> {category}:$pheader -> {category},
-                                    subject  => length($param -> {subject})?$param -> {subject}:$pheader -> {subject},
-                                    time     => $param -> {time},
-                                    pars     => $pars});
+      my $message = create_message (
+        $xml,
+        { msg      => $mid,
+          ip       => $param -> {ip},
+          name     => $param -> {author},
+          email    => $param -> {email},
+          home     => $param -> {homepage},
+          image    => $param -> {image},
+          category => length($param -> {category})?$param -> {category}:$pheader -> {category},
+          subject  => length($param -> {subject})?$param -> {subject}:$pheader -> {subject},
+          time     => $param -> {time},
+          pars     => $pars
+        }
+      );
 
       $mnode -> appendChild ($message);
 
@@ -131,7 +154,8 @@ sub write_posting ($) {
 
       unless (save_file ($tfile, \($xml -> toString))) {
         violent_unlock_file ($tfile) unless (write_unlock_file ($tfile));
-        return $error{threadWrite};}
+        return $error{threadWrite};
+      }
 
       violent_unlock_file ($tfile) unless (write_unlock_file ($tfile));
 
@@ -148,21 +172,25 @@ sub write_posting ($) {
 
       for (@{$param -> {parsedThreads} -> {$param -> {thread}}}) {
         if ($_ -> {mid} == $param -> {parentMessage}) {
-          splice @{$param -> {parsedThreads} -> {$param -> {thread}}},$i,0,
-            {mid     => $param -> {lastMessage} + 1,
-             unid    => $param -> {uniqueID},
-             name    => plain ($param -> {author}),
-             cat     => plain(length($cat)?$cat:''),
-             subject => plain(length($subj)?$subj:''),
-             level   => $_ -> {level} + 1,
-             time    => plain ($param -> {time})};
+          splice @{$param -> {parsedThreads} -> {$param -> {thread}}}, $i, 0,
+            { mid     => $param -> {lastMessage} + 1,
+              unid    => $param -> {uniqueID},
+              name    => plain ($param -> {author}),
+              cat     => plain(length($cat)?$cat:''),
+              subject => plain(length($subj)?$subj:''),
+              level   => $_ -> {level} + 1,
+              time    => plain ($param -> {time})
+            };
           last;}
         $i++;}
 
-      my $forum = create_forum_xml_string ($param -> {parsedThreads},
-                                          {dtd         => $param -> {dtd},
-                                           lastMessage => $mid,
-                                           lastThread  => 't'.$param -> {lastThread}});
+      my $forum = create_forum_xml_string (
+        $param -> {parsedThreads},
+        { dtd         => $param -> {dtd},
+          lastMessage => $mid,
+          lastThread  => 't'.$param -> {lastThread}
+        }
+      );
 
       save_file ($param -> {forumFile}, $forum) or return $error{forumWrite};
     }
