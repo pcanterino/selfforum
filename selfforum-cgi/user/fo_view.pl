@@ -25,12 +25,16 @@ BEGIN {
   $Config  = "$Bin/config";
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 
-#  my $null = $0; #$null =~ s/\\/\//g; # for win :-(
+#  my $null = $0;
 #  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-#  $Config  = "$Bin/../../../cgi-config/devforum";
-#  $Shared  = "$Bin/../../../cgi-shared";
+#  $Config  = "$Bin/../../daten/forum/config";
+#  $Shared  = "$Bin/../../cgi-shared";
 #  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
+
+# setting umask, remove or comment it, if you don't need
+#
+umask 006;
 
 use lib "$Shared";
 use CGI::Carp qw(fatalsToBrowser);
@@ -40,9 +44,19 @@ use Conf::Admin;
 use Template::Forum;
 use Template::Posting;
 
-use CGI qw(param header);
+use CGI qw(
+  param
+  header
+);
 
-print header(-type => 'text/html');
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+print header(
+  -type    => 'text/html',
+  -expires => '+10m'
+);
 
 my $conf = read_script_conf ($Config, $Shared, $Script);
 
