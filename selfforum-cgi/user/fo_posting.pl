@@ -104,7 +104,7 @@ sub check_reply_dupe () {
 
     $flocked = 1;
 
-    ($threads, $last_thread, $last_message, my $unids) = get_all_threads (forum_filename, 1, 0);
+    ($threads, $last_thread, $last_message, undef, my $unids) = get_all_threads (forum_filename, 1, 0);
     ($ftid,$fmid) = split /;/,$dparam{$formdata -> {followUp} -> {name}},2;
 
     # Thread existiert nicht

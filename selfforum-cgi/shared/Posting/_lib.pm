@@ -326,12 +326,12 @@ sub delete_messages ($)
 #         $deleted  hold deleted (invisible) messages in result (1) oder not (0)
 #         $sorted   direction of message sort: descending (0) (default) or ascending (1)
 # Return: scalar context: hash reference
-#           list context: list (\%threads, $last_thread, $last_message, \@unids)
+#           list context: list (\%threads, $last_thread, $last_message, $dtd, \@unids)
 #
 sub get_all_threads ($$;$)
 {
   my ($file, $deleted, $sorted) = @_;
-  my ($last_thread, $last_message, @unids, %threads);
+  my ($last_thread, $last_message, $dtd, @unids, %threads);
   local (*FILE, $/);
 
   open FILE, $file or return undef;
@@ -340,6 +340,7 @@ sub get_all_threads ($$;$)
 
   if (wantarray)
   {
+    ($dtd)          = $xml =~ /<!DOCTYPE\s+\S+\s+SYSTEM\s+"([^"]+)">/;
     ($last_thread)  = map {/(\d+)/} $xml =~ /<Forum.+?lastThread="([^"]+)"[^>]*>/;
     ($last_message) = map {/(\d+)/} $xml =~ /<Forum.+?lastMessage="([^"]+)"[^>]*>/;
   }
@@ -440,7 +441,7 @@ sub get_all_threads ($$;$)
   }
 
   wantarray ?
-    (\%threads, $last_thread, $last_message, \@unids)
+    (\%threads, $last_thread, $last_message, $dtd, \@unids)
   : \%threads;
 }
 
