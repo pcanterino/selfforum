@@ -3,6 +3,53 @@
 <Template metaon="{&amp;&amp;" metaoff="&amp;&amp;}">
 
 <!--
+  ** Archive entry
+  -->
+<Scrap id="ARC_DOC_START"><![CDATA[
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html><head>
+<title>SELFHTML Forumsarchiv</title>
+<link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}" />
+</head>
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top"></a>{&& LOCATION &&}</td></tr>
+</table><table cellpadding="4" cellspacing="0" border="0" width="100%"><tr>
+<td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forumsarchiv</h2></td>
+</tr><tr>
+<td bgcolor="#EEEEEE" class="doc" valign="top" align="center">
+{&& IMG_X5 &&}
+</td><td bgcolor="#FFFFFF" valign="top" nowrap="nowrap">
+<p>{&& IMG_XGDOWN &&}&nbsp;<a href="#a1"><b>Forumsarchiv</b></a><br />
+{&& IMG_XGDOWN &&}&nbsp;<a href="#a2"><b>Downloadm&ouml;glichkeit</b></a></p>
+</td></tr><tr><td bgcolor="#EEEEEE" class="doc" colspan="2"><a href="#bottom">{&& IMG_XGDOWN &&}</a></td></tr>
+</table>
+<h2 class="Sh2"><a class="an" name="a1">Forumsarchiv</a></h2>
+<p>Das Forumsarchiv besteht aus dem alten Forumsarchiv, das Forumsnachrichten aus dem Zeitraum zwischen Juli 1998 bis Oktober 2000 enth&auml;lt, und dem neuen Forumsarchiv, das Forumsnachrichten ab Mai 2001 enth&auml;lt. Die Zweiteilung hat technische Gr&uuml;nde: das neue Archiv ist in die seit Mai 2001 eingesetzte neue Forums-Software und deren Datenhaltung integriert.</p>
+<p>Beachten Sie, da&szlig; das alte Forums-Archiv auch durchsuchbar ist. Rufen Sie dazu die {&& IMG_X3 &&} <a href="/cgi-local/self/such.pl"><b>Suche</b></a> auf und kreuzen Sie dort im Formular die Zeitr&auml;ume an, die Sie durchsuchen wollen. Das neue Archiv ist derzeit noch nicht durchsuchbar. Die Durchsuchbarkeit wird zu einem sp&auml;teren Zeitpunkt implementiert.</p>
+]]></Scrap>
+
+<Scrap id="ARC_DOC_END"><![CDATA[
+<br />{&& UPNDOWN &&}
+<h2 class="Sh2"><a class="an" name="a2">Downloadm&ouml;glichkeit</a></h2>
+<p>Der fr&uuml;her m&ouml;gliche, quartalsweise Download des Archivs entf&auml;llt.</p>
+<br />&#160;<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" colspan="2">
+<a href="#top">{&& IMG_XGOUP &&}</a>
+</td></tr>
+<tr><td colspan="2" bgcolor="#FFEEDD" class="nav">{&& LOCATION &&}</td></tr></table>
+<p><a class="an" name="bottom">&copy; 2000</a> {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:selfhtml@teamone.de">selfhtml@teamone.de</a></p>
+</body></html>
+]]></Scrap>
+
+<Scrap id="ARC_DOC_ENTRY"><![CDATA[
+{&& IMG_X3 &&} {&& LOC_YEAR &&}<br />
+]]></Scrap>
+
+<!--
   ** Thread view
   -->
 
@@ -132,11 +179,11 @@
   -->
 
 <Scrap id="LOCATION"><![CDATA[
-{&& PARTOF &&}&nbsp;{&& LINK_SELFAKTUELL &&}
-{&& PARTOF &&}&nbsp;{&& LINK_FORUM &&}
-{&& PARTOF &&}&nbsp;{&& LINK_ARCHIV &&}
-{&& %IF _MONTH &&}{&& %IF _YEAR &&}{&& PARTOF &&}&nbsp;{&& LOC_YEAR &&}{&& %ENDIF &&}{&& %ENDIF &&}
-{&& %IF _T_TITLE &&}{&& %IF _MONTH &&}{&& PARTOF &&}&nbsp;{&& LOC_MONTH &&}{&& %ENDIF &&}{&& %ENDIF &&}
+ {&& PARTOF &&}&nbsp;{&& LINK_SELFAKTUELL &&}
+ {&& PARTOF &&}&nbsp;{&& LINK_FORUM &&}
+ {&& PARTOF &&}&nbsp;{&& LINK_ARCHIV &&}
+ {&& %IF _MONTH &&}{&& %IF _YEAR &&}{&& PARTOF &&}&nbsp;{&& LOC_YEAR &&}{&& %ENDIF &&}{&& %ENDIF &&}
+ {&& %IF _T_TITLE &&}{&& %IF _MONTH &&}{&& PARTOF &&}&nbsp;{&& LOC_MONTH &&}{&& %ENDIF &&}{&& %ENDIF &&}
 ]]></Scrap>
 
 <Scrap id="UPNDOWN"><![CDATA[
