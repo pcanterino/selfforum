@@ -4,8 +4,8 @@ package Template;
 #                                                                              #
 # File:        shared/Template.pm                                              #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-04-12                          #
-#              Frank Schoenmann <fs@tower.de>, 2001-06-04                      #
+# Authors:     André Malo       <nd@o3media.de>, 2001-06-16                    #
+#              Frank Schoenmann <fs@tower.de>,   2001-06-04                    #
 #                                                                              #
 # Description: Handle XML based HTML-Templates                                 #
 #                                                                              #

@@ -181,9 +181,9 @@ sub cut_tail ($) {
                       my $monthpath = $monthdir . '/';
                       my $file = $monthpath . "t$tid.xml";
 
-                      mkdir $yeardir unless (-d $yeardir);
+                      mkdir $yeardir, 0777 unless (-d $yeardir);
                       if (-d $yeardir) {
-                        mkdir $monthdir unless (-d $monthdir);
+                        mkdir $monthdir, 0777 unless (-d $monthdir);
                         if (-d $monthdir) {
                           save_file (
                             $file,

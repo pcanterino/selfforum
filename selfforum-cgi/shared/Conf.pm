@@ -164,6 +164,8 @@ sub parse_script_conf ($\%$) {
 #         $Shared - /path/to/shared-dir   #        -- " --
 #         $Script - scriptname
 #
+# Return: hashref of config hash
+#
 sub read_script_conf ($$$) {
   my ($Config, $Shared, $Script) = @_;
 

@@ -70,8 +70,8 @@ my $voted;
 
 my ($tid, $mid) = map {$_ || 0} split /;/ => $fup, 2;
 
-$tid = ($tid=~/(\d+)/)[0] || 0;
-$mid = ($mid=~/(\d+)/)[0] || 0;
+$tid = (defined $tid and $tid=~/(\d+)/)? $1: 0;
+$mid = (defined $mid and $mid=~/(\d+)/)? $1: 0;
 
 if ($tid and $mid and $unid) {
 

@@ -163,6 +163,7 @@ sub print_posting_as_HTML ($$$) {
           })
       } if (%$pheader);
 
+      $|++;
       print ${$template -> scrap (
         $assign->{mainDoc},
         { $assign->{name}                            => plain(defined $header->{name}  ? $header->{name}  : ''),

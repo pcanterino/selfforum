@@ -25,7 +25,7 @@ use Lock qw(:ALL);
 #
 $VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
-my $O_BINARY = eval "O_BINARY";
+my $O_BINARY = eval 'local $SIG{__DIE__}; O_BINARY';
 $O_BINARY = 0 if ($@);
 
 ### sub new ####################################################################
@@ -416,10 +416,9 @@ sub r_add_posting {
   local $\;
 
   unless (-d $self -> threaddir($param)) {
-    mkdir $self->threaddir($param)                   or return;
+    mkdir $self->threaddir($param), 0777             or return;
   }
-  sysopen (
-    FILE,
+  sysopen (FILE,
     $self->cachefile($param),
     O_WRONLY | O_CREAT | O_TRUNC
   )                                                  or return;
@@ -530,7 +529,7 @@ sub vote_wrap {
     }
     else {
       unless (-d $self->threaddir($param)) {
-        mkdir $self->threaddir($param)                     or return;
+        mkdir $self->threaddir($param), 0777                     or return;
       }
       my $filename = $self->cachefile($param);
 

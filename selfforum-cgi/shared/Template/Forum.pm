@@ -105,6 +105,7 @@ sub print_forum_as_HTML ($$$) {
 
     for (@threads) {
       $tpar -> {thread} = "$_";
+      $|++;
       print ${html_thread ($threads -> {$_}, $template, $tpar)},"\n",'<dd>&nbsp;</dd>',"\n";}
 
     print "</dl>\n",${$template -> scrap ($assign -> {mainDocEnd})};}
