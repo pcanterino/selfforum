@@ -44,12 +44,12 @@ our $assign   = $show_posting -> {assign};
 our $formmust = $show_posting -> {form} -> {must};
 our $formdata = $show_posting -> {form} -> {data};
 our $formact  = $show_posting -> {form} -> {action};
-our $template = new Template "$Bin/".$show_posting -> {templateFile};
+our $template = new Template $show_posting -> {templateFile};
 our $pars = {};
 our ($failed, %dparam, $threads, $last_thread, $last_message, $ftid, $fmid, $flocked);
 
-sub forum_filename () {$conf -> {wwwRoot} . $conf -> {files} -> {forum};}
-sub message_path () {$conf -> {wwwRoot} . $conf -> {files} -> {messagePath};}
+sub forum_filename () {$conf -> {files} -> {forum};}
+sub message_path () {$conf -> {files} -> {messagePath};}
 
 ################################
 

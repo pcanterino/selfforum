@@ -218,7 +218,7 @@
 <Scrap id="LINK_ARCHIV"><![CDATA[ <a href="/selfaktuell/forum/forumsarchiv.htm"><b>Forumsarchiv</b></a> ]]></Scrap>
 <Scrap id="LINK_SUCHE"><![CDATA[ <a href="/cgi-local/sfasuch.pl"><b>Forumsarchiv-Suche</b></a> ]]></Scrap>
 
-<Scrap id="_CSS_FILE"><![CDATA[ /selfaktuell/src/wselfhtm.css ]]></Scrap>
+<Scrap id="_CSS_FILE"><![CDATA[ /selfaktuell/src/forum.css ]]></Scrap>
 
 <!--
 	Bilder

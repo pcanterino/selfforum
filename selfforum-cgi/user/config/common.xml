@@ -2,9 +2,9 @@
 
 <Config>
   <Property name="files">
-    <Variable name="messagePath">/selfaktuell/forum/messages/</Variable>
-    <Variable name="forum">/selfaktuell/forum/messages/selfforum.xml</Variable>
-    <Variable name="adminDefault">config/fo_admin_default.xml</Variable>
+    <Variable name="messagePath">e:/localhosts/i_selfhtml/htdocs/selfaktuell/forum/messages/</Variable>
+    <Variable name="forum">e:/localhosts/i_selfhtml/htdocs/selfaktuell/forum/messages/selfforum.xml</Variable>
+    <Variable name="adminDefault">e:/localhosts/i_selfhtml/cgi-local/user/config/fo_admin_default.xml</Variable>
   </Property>
 
   <Property name="template">

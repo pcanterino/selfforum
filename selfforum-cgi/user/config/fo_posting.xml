@@ -3,7 +3,7 @@
 <Config>
   <Property name="show">
     <Property name="Posting">
-      <Variable name="templateFile">config/answer.tmp.xml</Variable>
+      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/answer.tmp.xml</Variable>
 
       <Property name="assign">
         <Variable name="docNew">DOC_OPENING</Variable>

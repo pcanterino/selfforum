@@ -113,7 +113,7 @@
 <Scrap id="LINK_SELFLIVE"><![CDATA[ <a href="../live/"><b>SELFHTML&nbsp;live!</b></a> ]]></Scrap>
 <Scrap id="LINK_SELFFORUM"><![CDATA[ <a href="./"><b>SELFHTML&nbsp;Forum</b></a> ]]></Scrap>
 
-<Scrap id="_CSS_FILE"><![CDATA[ ../src/wselfhtm.css ]]></Scrap>
+<Scrap id="_CSS_FILE"><![CDATA[ ../src/forum.css ]]></Scrap>
 
 <!--
 	Bilder
