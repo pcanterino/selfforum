@@ -1,0 +1,308 @@
+<?xml version="1.0"?>
+<Template metaon="{&amp;&amp;" metaoff="&amp;&amp;}">
+
+  <Scrap id="DOC_FORUM_START"><![CDATA[
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+<!--	<meta http-equiv="expires" content="0">-->
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta name="robots" content="noindex,noarchive">
+
+    <title>SELFHTML Forum</title>
+
+    <link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}">
+
+    <script type="text/javascript"><!--
+    function Chat () { F1 = open("{&& URL_CHAT &&}","Fenster1","width=600,height=450"); }
+    function News () { F1 = open("{&& URL_NEWS &&}","Fenster2","width=520,height=400,scrollbars=yes,resizable=yes,status=yes"); }
+    function NewMessage () { alert("Der Verweis zum Erstellen einer neuen Nachricht\nbefindet sich am Ende dieser Seite."); }
+    //--></script>
+   <link rel="shortcut icon" href="/src/favicon.ico">
+
+   <style type="text/css">
+     .deleted {
+       text-decoration:line-through;
+     }
+   </style>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}</td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+    <td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center">
+
+    <table border="0" cellpadding="5" cellspacing="5" width="100%"><tr>
+    <td bgcolor="#FFEEDD" align="center">
+      <p>
+<a href="http://selfaktuell.teamone.de/news.htm" OnClick="if (!window.News) return true; News(); return false;"><img src="/src/xview.gif" width="30" height="20" border="0" alt="News"><br><b>News</b></a>
+<br><br>
+<form method="POST" action="http://selfsuche.teamone.de/cgi-bin/such.pl">
+<b>Suche&nbsp;nach:</b><br>
+<input type="text" name="suchausdruck" size="10" maxlength="50" style="width:90px; font-family:monospace; font-size:10pt;">
+<input type="hidden" name="feld" value="alle">
+<input type="hidden" name="hits" value="100">
+<input type="hidden" name="case" value="on">
+<input type="hidden" name="index_1" value="on">
+<input type="hidden" name="index_2" value="on">
+<input type="hidden" name="index_3" value="on">
+<input type="hidden" name="index_4" value="on">
+</form>
+
+
+    <b>QuickLink:</b><br>
+    <a href="http://selfforum.selfhtml.com.fr/">en franais!</a><br>
+    <a href="http://selfforum.teamone.de/archiv/">Forumsarchiv</a><br>
+    <a href="http://selfforum.teamone.de/faq/">Forums-FAQ</a><br>
+    <a href="http://selfhtml.teamone.de/">SELFHTML</a><br>
+    <a href="http://selfsuche.teamone.de/cgi-bin/such.pl">Suche</a><br>
+    <a href="http://selfaktuell.teamone.de/live/chat.htm" OnClick="if (!window.Chat) return true; Chat(); return false;">Chat</a><br>
+      </p>
+    </td>
+    </tr></table>
+<br></td>
+    <td bgcolor="#FFFFFF" valign="top">
+	<p>{&& IMG_XGDOWN &&}&nbsp;<a href="#a1"><b>Aktuelle Nachrichten</b></a><br>
+	   {&& IMG_X3 &&}&nbsp;{&& LINK_NEU &&}<br></p>
+	<p><a name="zu_diesem_Forum" class="an">Dies</a> ist ein Forum als Erg&auml;nzung zu der Dokumentation {&& IMG_X1 &&}&nbsp;<a href="http://selfhtml.teamone.de/"><b>SELFHTML</b></a>.</p>
+	<p>Von allen hier Teilnehmenden werden HTML-Grundkenntnisse erwartet. Es wird erwartet, da&szlig; bei Problemen erst einmal in SELFHTML, im {&& IMG_X1 &&}&nbsp;<a href="http://selfforum.teamone.de/archiv/"><b>Forumsarchiv</b></a> oder in anderen Quellen nach einer L&ouml;sung gesucht wird.</p>
+	<p>Zum Mitmachen im SELFHTML Forum gibt es einige grunds&auml;tzliche Verhaltensregeln. Diese Regeln sind in der {&& IMG_X3 &&}&nbsp;<a href="http://selfforum.teamone.de/faq/"><b>Forums-FAQ</b></a> nachzulesen. Es wird erwartet, da&szlig; Forumsteilnehmer die Forums-FAQ kennen und die dort genannten Regeln einhalten.</p>
+	{&& %IF _LOAD_TIME &&}
+	<p>Ladezeitpunkt: {&& _LOAD_TIME &&}</p>{&& %ENDIF &&}</td></tr>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr>
+</table>
+<h2 class="Sh2"><a class="an" name="a1">Aktuelle Nachrichten</a></h2>
+
+<p><b>Mitmachen:</b> Um auf eine aktuelle Nachricht zu antworten, einfach diese &ouml;ffnen und lesen. Alle Nachrichten enthalten ein Formular zum Antworten.<br>
+<b>Tip:</b> Nachrichten in neuem Fenster &ouml;ffnen (rechte Maustaste). Dann bleibt diese Indexdatei im Hintergrund ge&ouml;ffnet.</p>
+  ]]></Scrap>
+
+  <Scrap id="DOC_FORUM_END"><![CDATA[
+<h2 class="Sh2"><a class="an" name="alte_Nachrichten">Alte Nachrichten</a></h2>
+<p>Siehe {&& IMG_X1 &&}&nbsp;<a href="http://selfforum.teamone.de/archiv/"><b>Forumsarchiv</b></a>!</p>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top">{&& IMG_XGOUP &&}</a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}</td></tr>
+</table>
+<p>&copy; 2000 {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:{&& MAIL_SELF &&}">{&& MAIL_SELF &&}</a></p>
+</body>
+</html>
+  ]]></Scrap>
+
+<Scrap id="_N_A"><![CDATA[Das Forum ist zur Zeit aus Wartungsgr&uuml;nden geschlossen. Versuchen Sie es bitte sp&auml;ter nocheinmal.]]></Scrap>
+<Scrap id="_OCCUPIED"><![CDATA[Das Forum ist vor&uuml;bergehend nicht verf&uuml;gbar. Versuchen Sie es bitte in einigen Minuten nocheinmal.]]></Scrap>
+<Scrap id="_CORRUPT"><![CDATA[	Das angeforderte Posting ist besch&auml;digt (XML-Parse-Error). Bitte wenden Sie sich mit Angabe von Datum und Zeit des Fehlers an den Administrator. ]]></Scrap>
+<Scrap id="_DELETE_FAILED"><![CDATA[ Das L&ouml;schen des Postings ist fehlgeschlagen. Bitte pr&uuml;fen Sie die Konsistenz der Daten! ]]></Scrap>
+<Scrap id="_RECOVERY_FAILED"><![CDATA[ Das Wiederherstellen des Postings ist fehlgeschlagen. Bitte pr&uuml;fen Sie die Konsistenz der Daten! ]]></Scrap>
+
+  <Scrap id="DOC_ERROR"><![CDATA[
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+    <meta http-equiv="expires" content="0">
+    <meta name="robots" content="noindex">
+
+    <title>SELFHTML Forum: Fehler</title>
+
+    <link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}</td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+    <td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum:<br>Fehler</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center">
+    {&& QUICKLINKS &&}
+<br></td>
+    <td bgcolor="#FFFFFF" valign="top">
+    <p>{&& IMG_XGDOWN &&}&nbsp;<a href="#a1"><b>Fehler</b></a></p>{&& %IF _LOAD_TIME &&}
+    <p>Ladezeitpunkt: {&& _LOAD_TIME &&}</p>{&& %ENDIF &&}</td></tr>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr>
+</table>
+<h2 class="Sh2"><a class="an" name="a1">Fehler</a></h2>
+<p>{&& _ERROR_TEXT &&}</p>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top">{&& IMG_XGOUP &&}</a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}</td></tr>
+</table>
+<p>&copy; 2000 {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:{&& MAIL_SELF &&}">{&& MAIL_SELF &&}</a></p>
+</body>
+</html>
+  ]]></Scrap>
+
+  <Scrap id="DOC_DELETED"><![CDATA[
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+    <meta http-equiv="expires" content="0">
+    <meta name="robots" content="noindex">
+
+    <title>SELFHTML Forum L&ouml;sch-Script: Posting gel&ouml;scht</title>
+
+    <link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}</td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+    <td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum L&ouml;sch-Script:<br>Posting gel&ouml;scht</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center">
+    {&& QUICKLINKS &&}
+<br></td>
+    <td bgcolor="#FFFFFF" valign="top">
+    <p>{&& IMG_XGDOWN &&}&nbsp;<a href="#a1"><b>Fehler</b></a></p>{&& %IF _LOAD_TIME &&}
+    <p>Ladezeitpunkt: {&& _LOAD_TIME &&}</p>{&& %ENDIF &&}</td></tr>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr>
+</table>
+<h2 class="Sh2"><a class="an" name="a1">Posting gel&ouml;scht</a></h2>
+<p>
+  <table border="0">
+   <tr>
+    <td>Thread:</td>
+    <td>{&& _TID &&} ({&& _CATEGORY &&}) {&& _TITLE &&} </td>
+   </tr>
+   <tr>
+    <td>Message:</td>
+    <td>{&& _MID &&}
+   </tr>
+   <tr>
+    <td>Zeitstempel:</td>
+    <td>{&& _TIME &&}
+   </tr>
+   <tr>
+    <td>IP:</td>
+    <td>{&& _IP &&}
+   </tr>
+   <tr>
+    <td>Name:</td>
+    <td>{&& _NAME &&}</td>
+   </tr>
+   <tr>
+    <td>EMail:</td>
+    <td>{&& _BEF_MAIL &&}</td>
+   </tr>
+  </table>
+</p>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top">{&& IMG_XGOUP &&}</a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}</td></tr>
+</table>
+<p>&copy; 2000 {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:{&& MAIL_SELF &&}">{&& MAIL_SELF &&}</a></p>
+</body>
+</html>
+  ]]></Scrap>
+
+  <Scrap id="QUICKLINKS"><![CDATA[
+    <table border="0" cellpadding="5" cellspacing="5" width="100%"><tr>
+    <td bgcolor="#FFEEDD" align="center">
+      <p>
+    <b>QuickLink:</b><br>
+    <a href="http://selfforum.teamone.de/archiv/">Forumsarchiv</a><br>
+    <a href="http://selfforum.teamone.de/faq/">Forums-FAQ</a><br>&nbsp;<br>
+    <a href="http://selfhtml.teamone.de/">SELFHTML</a><br>
+    <a href="http://selfaktuell.teamone.de/news.htm" OnClick="if (!window.News) return true; News(); return false;">News</a><br>
+    <a href="http://selfaktuell.teamone.de/live/chat.htm" OnClick="if (!window.Chat) return true; Chat(); return false;">Chat</a><br>
+    <a href="http://selfsuche.teamone.de/cgi-bin/such.pl">Suche</a><br>
+      </p>
+    </td>
+    </tr></table>
+  ]]></Scrap>
+
+  <!-- not deleted -->
+
+  <Scrap id="TREE_START"><![CDATA[
+{&& IMG_X3 &&} (<b>{&& _CATEGORY &&}</b>) <a href="{&& _LINK &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}, {&& _COMMAND &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_START_NC"><![CDATA[
+{&& IMG_X3 &&} <a href="{&& _LINK &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}, {&& _COMMAND &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_LINE"><![CDATA[
+{&& IMG_X3 &&} ({&& _CATEGORY &&}) <a href="{&& _LINK &&}">{&& _TITLE &&}</a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}, {&& _COMMAND &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_LINE_NC"><![CDATA[
+{&& IMG_X3 &&} <a href="{&& _LINK &&}">{&& _TITLE &&}</a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}, {&& _COMMAND &&}
+  ]]></Scrap>
+
+  <!-- deleted -->
+
+  <Scrap id="TREE_START_DELETED"><![CDATA[
+{&& IMG_X3 &&} <span class="deleted">(<b>{&& _CATEGORY &&}</b>) <a href="{&& _LINK &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}</span>, {&& _COMMAND &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_START_NC_DELETED"><![CDATA[
+{&& IMG_X3 &&} <span class="deleted"><a href="{&& _LINK &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}</span>, {&& _COMMAND &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_LINE_DELETED"><![CDATA[
+{&& IMG_X3 &&} <span class="deleted">({&& _CATEGORY &&}) <a href="{&& _LINK &&}">{&& _TITLE &&}</a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}</span>, {&& _COMMAND &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_LINE_NC_DELETED"><![CDATA[
+{&& IMG_X3 &&} <span class="deleted"><a href="{&& _LINK &&}">{&& _TITLE &&}</a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}</span>, {&& _COMMAND &&}
+  ]]></Scrap>
+
+
+<!--
+    ***** ATOMICS *****
+    Grundelemente
+-->
+
+<!--
+    Links/URLs
+-->
+
+<Scrap id="_CSS_FILE"><![CDATA[ /teamone.de/selfforum/dokumente/src/forum.css ]]></Scrap>
+
+<Scrap id="LINK_SELFHTML"><![CDATA[ <a href="http://selfhtml.teamone.de/"><b>SELFHTML</b></a> ]]></Scrap>
+<Scrap id="LINK_SELFAKTUELL"><![CDATA[ <a href="http://selfaktuell.teamone.de/"><b>SELFHTML aktuell</b></a> ]]></Scrap>
+<Scrap id="LINK_LIVE"><![CDATA[ <a href="http://selfaktuell.teamone.de/live/"><b>SELFHTML live</b></a> ]]></Scrap>
+<Scrap id="LINK_FORUM"><![CDATA[ <a href="http://selfforum.teamone.de/"><b>SELFHTML&nbsp;Forum</b></a> ]]></Scrap>
+<Scrap id="LINK_UNRECHT"><![CDATA[ <a href="http://selfaktuell.teamone.de/talk/rechtundlinks.htm"><b>Recht + Links</b></a> ]]></Scrap>
+<Scrap id="LINK_FAQ"><![CDATA[ <a href="http://selfforum.teamone.de/faq/"><b>Forums-FAQ</b></a> ]]></Scrap>
+<Scrap id="LINK_ARCHIV"><![CDATA[ <a href="http://selfforum.teamone.de/archiv/"><b>Forumsarchiv</b></a> ]]></Scrap>
+<Scrap id="LINK_SUCHE"><![CDATA[ <a href="http://selfsuche.teamone.de/cgi-bin/such.pl"><b>SELFHTML Suche</b></a> ]]></Scrap>
+<Scrap id="LINK_NEU"><![CDATA[ <a href="neu.shtml" target="_blank"><b>Neue Nachricht verfassen</b></a> ]]></Scrap>
+
+<Scrap id="MAIL_SELF"><![CDATA[ selfhtml@teamone.de ]]></Scrap>
+
+<Scrap id="URL_NEWS"><![CDATA[ http://selfaktuell.teamone.de/news.htm ]]></Scrap>
+<Scrap id="URL_CHAT"><![CDATA[ http://selfaktuell.teamone.de/live/chat.htm ]]></Scrap>
+
+<!--
+    Bilder
+-->
+
+<Scrap id="IMG_XGMAIL"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail"> ]]></Scrap>
+<Scrap id="IMG_XGOUP"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/xgoup.gif" width="14" height="10" border="0" alt="nach oben"> ]]></Scrap>
+<Scrap id="IMG_XGDOWN"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/xgdown.gif" width="14" height="10" border="0" alt="nach unten"> ]]></Scrap>
+<Scrap id="IMG_X1"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/x1.gif" width="15" height="13" border="0" alt="Ordner"> ]]></Scrap>
+<Scrap id="IMG_X2"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/x2.gif" width="16" height="13" border="0" alt="Teil von"> ]]></Scrap>
+<Scrap id="IMG_X3"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/x3.gif" width="15" height="10" border="0" alt="Seite"> ]]></Scrap>
+<Scrap id="IMG_X3NEU"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/x3n.gif" width="15" height="10" border="0" alt="neue Seite im eigenen Fenster"> ]]></Scrap>
+<Scrap id="IMG_X5"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/x5.gif" width="30" height="20" vspace="6" border="0" alt="Informationsseite"> ]]></Scrap>
+<Scrap id="IMG_XWEB"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/xweb.gif" width="106" height="109" border="0" alt="SELFHTML"> ]]></Scrap>
+<Scrap id="IMG_XVIEW"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/xview.gif" width="30" height="20" border="0" alt="News"> ]]></Scrap>
+<Scrap id="IMG_SMILE"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/smile2.gif" width="15" height="15" alt="Smile" border=0> ]]></Scrap>
+<Scrap id="IMG_XGMESSAGE"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/xmessage.gif" width="14" height="10" border="0" alt="weiter unten"> ]]></Scrap>
+<Scrap id="IMG_XCLOSED"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/x1.gif" width="15" height="13" border="0" alt="Thread aufklappen" title="Thread aufklappen"> ]]></Scrap>
+<Scrap id="IMG_XOPEN"><![CDATA[ <img src="/teamone.de/selfforum/dokumente/src/x2.gif" width="16" height="13" border="0" alt="Thread zuklappen" title="Thread zuklappen"> ]]></Scrap>
+
+</Template>
+
+<!-- eof -->
