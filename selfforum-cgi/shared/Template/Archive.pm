@@ -4,7 +4,7 @@ package Template::Archive;
 #                                                                              #
 # File:        shared/Template/Archive.pm                                      #
 #                                                                              #
-# Authors:     Frank Schoenmann <fs@tower.de>, 2001-06-04                      #
+# Authors:     Frank Schoenmann <fs@tower.de>, 2001-06-08                      #
 #                                                                              #
 # Description: archive display                                                 #
 #                                                                              #
@@ -41,6 +41,7 @@ use Template::_thread;
 #
 use base qw(Exporter);
 @Template::Archive::EXPORT = qw(
+    print_year_as_HTML
     print_month_as_HTML
     print_thread_as_HTML
 );
@@ -55,7 +56,60 @@ use base qw(Exporter);
 #         $param      hash reference
 # Return: -none-
 #
+sub print_year_as_HTML($$$) {
+    my ($yeardir, $tempfile, $param) = @_;
 
+    my $assign = $param->{'assign'};
+
+    my $template = new Template $tempfile;
+
+    #
+    # check if this year's archive exist
+    #
+    unless (-e $yeardir) {
+        print ${$template->scrap(
+            $assign->{'error'},
+            {
+                $assign->{'errorText'}  => "Es existieren keine Nachrichten für dieses Jahr."
+            }
+        )};
+    }
+
+    my $tmplparam = {
+            $assign->{'year'}           => $param->{'year'},
+#           $assign->{'month'}          => $param->{'month'},
+#           $assign->{'monthName'}      => month($param->{'month'})
+    };
+
+    #
+    # yearDocStart
+    #
+    print ${$template->scrap(
+        $assign->{'yearDocStart'},
+        $tmplparam
+    )};
+
+    for (my $month = 1; $month <= 12; $month++) {
+        if (-e $yeardir.$month.'/') {
+            print ${$template->scrap(
+                $assign->{'yearDocEntry'},
+                {
+                    $assign->{'year'}       => $param->{'year'},
+                    $assign->{'month'}      => $month,
+                    $assign->{'monthName'}  => month($month)
+                }
+            )};
+        }
+    }
+
+    #
+    # yearDocEnd
+    #
+    print ${$template->scrap(
+        $assign->{'yearDocEnd'},
+        $tmplparam
+    )};
+}
 
 ### print_month_as_HTML () #####################################################
 #
