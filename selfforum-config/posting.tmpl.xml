@@ -82,6 +82,7 @@
 
 <Scrap id="_N_A"><![CDATA[      Das angeforderte Posting ist nicht verf&uuml;gbar. ]]></Scrap>
 <Scrap id="_OCCUPIED"><![CDATA[ Das angeforderte Posting ist vor&uuml;bergehend nicht verf&uuml;gbar. Versuchen Sie es bitte in einigen Minuten nocheinmal. ]]></Scrap>
+<Scrap id="_CORRUPT"><![CDATA[  Das angeforderte Posting ist besch&auml;digt (XML-Parse-Error). Bitte wenden Sie sich mit Angabe von Datum und Zeit des Fehlers an den Administrator. ]]></Scrap>
 
   <Scrap id="DOC_ERROR"><![CDATA[
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
