@@ -61,7 +61,6 @@ sub set_error {
   my $self = shift;
 
   $self -> {verb_error} = +shift;
-
   return;
 }
 

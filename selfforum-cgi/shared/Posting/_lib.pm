@@ -443,37 +443,31 @@ sub sort_thread ($$) {
 # Params: $smsg  Reference of array of references of hashs
 # Return: -none-
 #
-sub delete_messages ($)
-{
+sub delete_messages ($) {
   my $smsg = shift;
-
   my ($z, $oldlevel, @path) = (0,0,0);
 
-  for (@$smsg)
-  {
-    if ($_ -> {'deleted'})
-    {
-      my $n = $_ -> {'answers'} + 1;
-      $smsg -> [$_] -> {'answers'} -= $n for (@path);
-      splice @$smsg,$z,$n;
-    }
-    else
-    {
-      if ($_ -> {'level'} > $oldlevel)
-      {
-        push @path,$z;
-        $oldlevel = $_ -> {'level'};
-      }
-      elsif ($_ -> {'level'} < $oldlevel)
-      {
-        splice @path,$_ -> {'level'} - $oldlevel;
-        $oldlevel = $_ -> {'level'};
-      }
-      else
-      {
-        $path[-1] = $z;
-      }
+  while ($z <= $#{$smsg}) {
 
+    if ($smsg -> [$z] -> {level} > $oldlevel) {
+      push @path => $z;
+      $oldlevel = $smsg -> [$z] -> {level};
+    }
+    elsif ($smsg -> [$z] -> {level} < $oldlevel) {
+      splice @path, $smsg -> [$z] -> {level};
+      push @path => $z;
+      $oldlevel = $smsg -> [$z] -> {'level'};
+    }
+    else {
+      $path[-1] = $z;
+    }
+
+    if ($smsg -> [$z] -> {deleted}) {
+      my $n = $smsg -> [$z] -> {answers} + 1;
+      $smsg -> [$_] -> {answers} -= $n for (@path);
+      splice @$smsg, $z, $n;
+    }
+    else {
       $z++;
     }
   }
@@ -527,18 +521,20 @@ sub get_all_threads ($$;$)
       if (defined($10))
       {
         push @stack,$cmno if (defined $cmno);
-        push @msg, {mid     => $1,
-                    unid    => $2,
-                    deleted => $3,
-                    archive => $4,
-                    name    => $5,
-                    cat     => $6,
-                    subject => $7,
-                    time    => $8,
-                    level   => $level++,
-                    unids   => [],
-                    kids    => [],
-                    answers => 0};
+        push @msg, {
+          mid     => $1,
+          unid    => $2,
+          deleted => $3 || 0,
+          archive => $4 || 0,
+          name    => $5,
+          cat     => $6,
+          subject => $7,
+          time    => $8,
+          level   => $level++,
+          unids   => [],
+          kids    => [],
+          answers => 0
+        };
 
         if (defined $cmno)
         {
@@ -561,18 +557,20 @@ sub get_all_threads ($$;$)
       }
       elsif (defined ($9))
       {
-        push @msg, {mid     => $1,
-                    unid    => $2,
-                    deleted => $3,
-                    archive => $4,
-                    name    => $5,
-                    cat     => $6,
-                    subject => $7,
-                    time    => $8,
-                    level   => $level,
-                    unids   => [],
-                    kids    => [],
-                    answers => 0};
+        push @msg, {
+          mid     => $1,
+          unid    => $2,
+          deleted => $3 || 0,
+          archive => $4 || 0,
+          name    => $5,
+          cat     => $6,
+          subject => $7,
+          time    => $8,
+          level   => $level,
+          unids   => [],
+          kids    => [],
+          answers => 0
+        };
 
         if (defined $cmno)
         {
