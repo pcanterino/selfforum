@@ -40,6 +40,7 @@ use base qw(Exporter);
   hr_time
   short_hr_time
   long_hr_time
+  month
 
   get_all_threads
   create_forum_xml_string
