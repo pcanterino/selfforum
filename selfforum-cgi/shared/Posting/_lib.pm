@@ -1,17 +1,17 @@
-# Posting/_lib.pm
+package Posting::_lib;
 
-# ====================================================
-# Autor: n.d.p. / 2001-01-07
-# lm   : n.d.p. / 2001-02-25
-# ====================================================
-# Funktion:
-#    * Schnittstellen fuer den Zugriff auf Messages
-#    * Zeitdarstellung
-# ====================================================
+################################################################################
+#                                                                              #
+# File:        shared/Posting/_lib.pm                                          #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-02-25                          #
+#              Frank Schoenmann <fs@tower.de>, 2001-03-02                      #
+#                                                                              #
+# Description: Message access interface, time format routines                  #
+#                                                                              #
+################################################################################
 
 use strict;
-
-package Posting::_lib;
 
 use vars qw(@EXPORT_OK);
 use base qw(Exporter);
@@ -26,21 +26,22 @@ use XML::DOM;
 
 @EXPORT_OK = qw(get_message_header get_message_body get_message_node parse_single_thread
                 hr_time short_hr_time long_hr_time
-                get_all_threads
-                create_forum_xml_string
+                get_all_threads create_forum_xml_string
                 save_file);
 
 # ====================================================
 # Zugriff uebers DOM
 # ====================================================
 
-###########################
-# sub get_message_header
+### get_message_header () ######################################################
 #
-# Messageheader auslesen
-###########################
-
-sub get_message_header ($) {
+# Read message header, return as a hash
+#
+# Params: $node  XML message node
+# Return: Hash reference (name, category, subject, email, home, image, time)
+#
+sub get_message_header ($)
+{
   my $node = shift;
   my %conf;
 
@@ -54,28 +55,33 @@ sub get_message_header ($) {
     my $subject = $header -> getElementsByTagName ('Subject', 0) -> item (0);
     my $date    = $header -> getElementsByTagName ('Date', 0) -> item (0);
 
-    %conf = (name     => ($name    -> hasChildNodes)?$name    -> getFirstChild -> getData:undef,
-             category => ($cat     -> hasChildNodes)?$cat     -> getFirstChild -> getData:undef,
-             subject  => ($subject -> hasChildNodes)?$subject -> getFirstChild -> getData:undef,
-             email    => (defined ($email) and $email -> hasChildNodes)?$email -> getFirstChild -> getData:undef,
-             home     => (defined ($home)  and $home  -> hasChildNodes)?$home  -> getFirstChild -> getData:undef,
-             image    => (defined ($image) and $image -> hasChildNodes)?$image -> getFirstChild -> getData:undef,
-             time     => $date -> getAttribute ('longSec'));
+  %conf = (
+    name     => ($name    -> hasChildNodes)?$name    -> getFirstChild -> getData:undef,
+    category => ($cat     -> hasChildNodes)?$cat     -> getFirstChild -> getData:undef,
+    subject  => ($subject -> hasChildNodes)?$subject -> getFirstChild -> getData:undef,
+    email    => (defined ($email) and $email -> hasChildNodes)?$email -> getFirstChild -> getData:undef,
+    home     => (defined ($home)  and $home  -> hasChildNodes)?$home  -> getFirstChild -> getData:undef,
+    image    => (defined ($image) and $image -> hasChildNodes)?$image -> getFirstChild - >getData:undef,
+    time     => $date -> getAttribute ('longSec')
+  );
+
   \%conf;
 }
 
-###########################
-# sub get_message_header
+### get_message_body () ########################################################
 #
-# Messagebody auslesen
-###########################
-
+# Read message body
+#
+# Params: $xml  XML tree
+#         $mid  Message ID
+# Return: Scalar reference
+#
 sub get_message_body ($$)
 {
   my ($xml, $mid) = @_;
   my $body;
 
-  foreach ($xml -> getElementsByTagName ('ContentList', 1) -> item (0) -> getElementsByTagName ('MessageContent', 0))
+  foreach ($xml->getElementsByTagName ('ContentList', 1)->item (0)->getElementsByTagName ('MessageContent', 0))
   {
     if ($_ -> getAttribute ('mid') eq $mid)
     {
@@ -87,26 +93,38 @@ sub get_message_body ($$)
   \$body;
 }
 
-###########################
-# sub get_message_header
+### get_message_node () ########################################################
 #
-# Messagenode bestimmen
-###########################
+# Search a specific message in a XML tree
+#
+# Params: $xml  XML tree
+#         $tid  Thread ID
+#         $mid  Message ID
+# Return: Message XML node, Thread XML node
+#
+sub get_message_node ($$$)
+{
+  my ($xml, $tid, $mid) = @_;
+  my ($mnode, $tnode);
 
-sub get_message_node ($$$) {
-  my ($xml,$tid,$mid) = @_;
-  my ($mnode,$tnode);
-
-  for ( $xml -> getElementsByTagName ('Thread')) {
-    if ($_ -> getAttribute ('id') eq $tid) {
+  for ($xml->getElementsByTagName ('Thread'))
+  {
+    if ($_->getAttribute ('id') eq $tid)
+    {
       $tnode = $_;
-      for ($tnode -> getElementsByTagName ('Message')) {
-        if ($_ -> getAttribute ('id') eq $mid) {
+      for ($tnode -> getElementsByTagName ('Message'))
+      {
+        if ($_ -> getAttribute ('id') eq $mid)
+        {
           $mnode = $_;
-          last;}}
-      last;}}
+          last;
+        }
+      }
+      last;
+    }
+  }
 
-  wantarray?($mnode, $tnode):$mnode;
+  wantarray ? ($mnode, $tnode) : $mnode;
 }
 
 ###########################
@@ -242,36 +260,50 @@ sub sort_thread ($$) {
   \@smsg;
 }
 
-###########################
-# sub delete_messages
+### delete_message () ##########################################################
 #
-# geoeschte Nachrichten
-# herausfiltern
-###########################
-
-sub delete_messages ($) {
+# Filter out deleted messages
+#
+# Params: $smsg  Reference of array of references of hashs
+# Return: -none-
+#
+sub delete_messages ($)
+{
   my $smsg = shift;
 
   my ($z, $oldlevel, @path) = (0,0,0);
 
-  for (@$smsg) {
-    if ($_ -> {deleted}) {
-      my $n = $_ -> {answers}+1;
-      for (@path) {$smsg -> [$_] -> {answers} -= $n;}
-      splice @$smsg,$z,$n;}
-
-    else {
-      if ($_ -> {level} > $oldlevel) {
+  for (@$smsg)
+  {
+    if ($_ -> {'deleted'})
+    {
+      my $n = $_ -> {'answers'} + 1;
+      for (@path)
+      {
+        $smsg -> [$_] -> {'answers'} -= $n;
+      }
+      splice @$smsg,$z,$n;
+    }
+    else
+    {
+      if ($_ -> {'level'} > $oldlevel)
+      {
         push @path,$z;
-        $oldlevel = $_ -> {level};}
+        $oldlevel = $_ -> {'level'};
+      }
+      elsif ($_ -> {'level'} < $oldlevel)
+      {
+        splice @path,$_ -> {'level'} - $oldlevel;
+        $oldlevel = $_ -> {'level'};
+      }
+      else
+      {
+        $path[-1] = $z;
+      }
 
-      elsif ($_ -> {level} < $oldlevel) {
-        splice @path,$_ -> {level}-$oldlevel;
-        $oldlevel = $_ -> {level};}
-
-      else { $path[-1] = $z; }
-
-      $z++;}}
+      $z++;
+    }
+  }
 
   return;
 }
@@ -283,7 +315,8 @@ sub delete_messages ($) {
 # parsen
 ###########################
 
-sub get_all_threads ($$;$) {
+sub get_all_threads ($$;$)
+{
   my ($file, $deleted, $sorted) = @_;
   my ($last_thread, $last_message, @unids, %threads);
   local *FILE;
@@ -389,7 +422,7 @@ sub get_all_threads ($$;$) {
     $threads{$tid} = $smsg if (@$smsg);
   }
 
-  wantarray?(\%threads, $last_thread, $last_message, \@unids): \%threads;
+  wantarray ? (\%threads, $last_thread, $last_message, \@unids) : \%threads;
 }
 
 ###########################
@@ -444,21 +477,26 @@ sub create_forum_xml_string ($$) {
   \$xml;
 }
 
-###########################
-# sub save_file
+### save_file () ###############################################################
 #
-# Datei speichern
-###########################
-
-sub save_file ($$) {
-  my ($filename,$content) = @_;
+# Save a file
+#
+# Params: $filename  Filename
+#         $content   File content as scalar reference
+# Return: Status (1 - ok, 0 - error)
+#
+sub save_file ($$)
+{
+  my ($filename, $content) = @_;
   local *FILE;
 
-  open FILE,">$filename.temp" or return;
+  open FILE, ">$filename.temp" or return;
 
-  unless (print FILE $$content) {
+  unless (print FILE $$content)
+  {
     close FILE;
-    return;};
+    return;
+  }
 
   close FILE or return;
 
@@ -515,7 +553,3 @@ sub long_hr_time ($) {
 
 # making require happy
 1;
-
-# ====================================================
-# end of Posting::_lib
-# ====================================================

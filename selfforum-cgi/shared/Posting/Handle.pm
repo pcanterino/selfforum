@@ -17,7 +17,8 @@ use base qw(Exporter);
 
 @EXPORT = qw(hide_posting recover_posting modify_posting);
 
-use Posting::_lib qw(get_message_node save_file);
+use Posting::_lib qw(get_message_node save_file get_all_threads
+                     create_forum_xml_string);
 
 use XML::DOM;
 
@@ -33,13 +34,27 @@ use XML::DOM;
 sub hide_posting($$$)
 {
     my ($forum, $tpath, $info) = @_;
-    my ($tid, $mid, $indexFile) = ('t' . $info->{'thread'},
-                                   'm' . $info->{'posting'},
+    my ($tid, $mid, $indexFile) = ($info->{'thread'},
+                                   $info->{'posting'},
                                    $info->{'indexFile'});
 
-    my $tfile = $tpath . '/' . $tid . '.xml';
-    change_posting_visibility($tfile, $tid, $mid, 1);
-    change_posting_visibility($forum, $tid, $mid, 1);
+    # Thread
+    my $tfile = $tpath . '/t' . $tid . '.xml';
+    change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 1);
+
+    # Forum
+    change_posting_visibility($forum, 't'.$tid, 'm'.$mid, 1);
+
+    #my $f = get_all_threads($forum, 1, 0);
+    #for (@{f->{$tid}})
+    #{
+    #    if ($_->{'mid'} == $mid)
+    #    {
+    #        $_->{'deleted'} = 1;
+    #    }
+    #}
+    #
+    #create_forum_xml_string($f, );
 }
 
 ### recover_posting() ##########################################################
@@ -54,13 +69,27 @@ sub hide_posting($$$)
 sub recover_posting($$$)
 {
     my ($forum, $tpath, $info) = @_;
-    my ($tid, $mid, $indexFile) = ('t' . $info->{'thread'},
-                                   'm' . $info->{'posting'},
+    my ($tid, $mid, $indexFile) = ($info->{'thread'},
+                                   $info->{'posting'},
                                    $info->{'indexFile'});
 
-    my $tfile = $tpath . '/' . $tid . '.xml';
-    change_posting_visibility($tfile, $tid, $mid, 0);
-    change_posting_visibility($forum, $tid, $mid, 0);
+    # Thread
+    my $tfile = $tpath . '/t' . $tid . '.xml';
+    change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 0);
+
+    # Forum
+    change_posting_visibility($forum, 't'.$tid, 'm'.$mid, 0);
+
+    #my $f = get_all_threads($forum, 1, 0);
+    #for (@{f->{$tid}})
+    #{
+    #    if ($_->{'mid'} == $mid)
+    #    {
+    #        $_->{'deleted'} = 0;
+    #    }
+    #}
+    #
+    #create_forum_xml_string($f, );
 }
 
 ### change_posting_visibility () ###############################################
@@ -155,4 +184,5 @@ sub change_posting_value($$$$)
 }
 
 
+# Let it be true
 1;
