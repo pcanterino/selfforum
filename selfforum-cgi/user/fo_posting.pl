@@ -39,39 +39,29 @@ use CGI::Carp qw(fatalsToBrowser);
 my $conf         = read_script_conf ($Bin, $Shared, $Script);
 my $adminDefault = read_admin_conf ($conf -> {files} -> {adminDefault});
 
-# Initializing the request
-my $response = new Posting::Response ($conf, $adminDefault);
+# Initialize the request
+#
+my $request = new Posting::Request ($conf, $adminDefault);
 
 # fetch and parse the cgi-params
 #
-$response -> parse_cgi;
-
-# no further checks after fatal errors
-#
-if ($response -> success or $response -> error_type ne 'fatal') {
-  $response -> success (
-       $response -> check_reply
-    && $response -> check_dupe
-    && $response -> success
-  );
-}
-
+$request -> parse_cgi;
 
 # handle errors or save the posting
 #
-$response -> handle_error or $response -> save;
+$request -> handle_error or $request -> save;
 
 # show response
 #
-$response -> response;
+$request -> response;
 
 #
 #
 ### main end ###################################################################
 
 ################################################################################
-### Posting::Response ##########################################################
-package Posting::Response;
+### Posting::Request ###########################################################
+package Posting::Request;
 
 use Lock          qw(:ALL);
 use Posting::_lib qw(
@@ -81,15 +71,12 @@ use Posting::_lib qw(
       KEEP_DELETED
     );
 
-use autouse 'CheckRFC' => qw(is_email is_URL);
+use autouse 'CheckRFC' => qw[ is_email($) is_URL($@) ];
 use CGI;
-
-sub success {$_[0] -> {check_success} = defined $_[1]?$_[1]:$_[0] -> {check_success}}
-sub error_type {$_[0] -> {error} -> {type}}
 
 ### sub new ####################################################################
 #
-# initialising the Posting::Response object
+# initialising the Posting::Request object
 # check parameters and fill in object properties
 #
 sub new {
@@ -142,7 +129,7 @@ sub save {
     # if a reply - is it legal?
     # is it a dupe?
     #
-    if ($self -> check_reply and $self -> check_dupe) {
+    if ($self -> check_reply_dupe) {
 
       # we've got an opening
       #
@@ -247,34 +234,96 @@ sub load_main_file {
   1;
 }
 
-### sub check_reply ############################################################
+### sub check_reply_dupe #######################################################
 #
 # check whether a reply is legal
 # (followup posting must exists)
-#
-# Return: Status Code (Bool)
-#
-sub check_reply {
-  my $self = shift;
-
-  # return true unless it's not a reply
-  #
-  return 1 unless $self -> {response} -> {reply};
-
-
-}
-
-### sub check_dupe #############################################################
 #
 # check whether this form request is a dupe
 # (unique id already exists)
 #
 # Return: Status Code (Bool)
 #
-sub check_dupe {
+sub check_reply_dupe {
   my $self = shift;
 
-  return 1 if ($self -> {response} -> {new_thread});
+  # return true unless it's not a reply
+  #
+  return 1 unless (
+    $self -> {response} -> {reply}
+    and $self -> {response} -> {new}
+  );
+
+  my %unids;
+
+  if ($self -> {response} -> {reply}) {
+
+    my ($threads, $ftid, $fmid, $i, %msg, %unids) = (
+          $self -> {forum} -> {threads},
+          $self -> {fup_tid},
+          $self -> {fup_mid}
+       );
+
+    # thread doesn't exist
+    #
+    unless (exists($threads -> {$ftid})) {
+      $self -> {error} = {
+        spec => 'no_reply',
+        type => 'fatal'
+      };
+      return;
+    }
+
+    # build a reverse lookup hash (mid => number in array)
+    # and ignore invisible messages
+    # (users can't reply to "deleted" msg)
+    #
+    for ($i=0; $i < @{$threads -> {$ftid}}; $i++) {
+
+      if ($threads -> {$ftid} -> [$i] -> {deleted}) {
+        $i+=$threads -> {$ftid} -> [$i] -> {answers};
+      }
+      else {
+        $msg{$threads -> {$ftid} -> [$i] -> {mid}}=$i;
+      }
+    }
+
+    # message doesn't exist
+    #
+    unless (exists($msg{$fmid})) {
+      $self -> {error} = {
+        spec => 'no_reply',
+        type => 'fatal'
+      };
+      return;
+    }
+
+    # build a unique id lookup hash
+    # use the unids of parent message's kids
+    #
+    %unids = map {$_ => 1} @{$threads -> {$ftid} -> [$msg{$fmid}] -> {unids}};
+  }
+  else {
+    # build a unique id lookup hash, too
+    # but use only the level-zero-messages
+    #
+    %unids = map {$_ => 1} @{$self -> {unids}};
+  }
+
+  # now check on dupe
+  #
+  if (exists ($unids{
+                $self -> {cgi_object} -> param (
+                  $self -> {conf} -> {form_data} -> {uniqueID} -> {name})})) {
+    $self -> {error} = {
+      spec => 'dupe',
+      type => 'fatal'
+    };
+    return;
+  }
+
+  # ok, looks fine
+  1;
 }
 
 ### sub check_cgi ##############################################################
@@ -291,19 +340,19 @@ sub check_cgi {
   #
   my %got_keys     = map {($_ => 1)} $self -> {cgi_object} -> param;
   my $cnt_got_keys = keys %got_keys;
-  my $formdata = $self -> {conf} -> {form_data};
-  my $formmust = $self -> {conf} -> {form_must};
+  my $formdata     = $self -> {conf} -> {form_data};
+  my $formmust     = $self -> {conf} -> {form_must};
 
   # user requested the 'new thread' page
-  # (no params or only the user-ID has been submitted)
+  # (no params but perhaps the user-ID have been submitted)
   #
   if ($cnt_got_keys == 0 or (
         exists ($formdata -> {userID})
         and $cnt_got_keys == 1
         and $got_keys{$formdata -> {userID} -> {name}}
-        )
-     ) {
+        )) {
     $self -> {response} -> {new_thread} = 1;
+    $self -> {check_success} = 1;
     return 1;
   }
 
