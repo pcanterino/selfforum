@@ -4,7 +4,7 @@ package Posting::_lib;
 #                                                                              #
 # File:        shared/Posting/_lib.pm                                          #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-03-03                          #
+# Authors:     André Malo <nd@o3media.de>, 2001-06-11                          #
 #              Frank Schoenmann <fs@tower.de>, 2001-06-04                      #
 #                                                                              #
 # Description: Message access interface, time format routines                  #
@@ -15,6 +15,7 @@ use strict;
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 
+use Time::German;
 use XML::DOM;
 
 # ====================================================
@@ -481,14 +482,14 @@ sub delete_messages ($) {
 #
 # Read and Parse the main file (without any XML-module, they are too slow)
 #
-# Params: $file     /path/to/filename of the main file
-#         $deleted  hold deleted (invisible) messages in result (1) oder not (0)
-#         $sorted   direction of message sort: descending (0) (default) or ascending (1)
-# Return: scalar context: hash reference
+# Params: $file    - /path/to/filename of the main file
+#         $deleted - hold deleted (invisible) messages in result (1) oder not (0)
+#         $sorted  - direction of message sort: descending (0) (default) or ascending (1)
+#
+# Return: scalar context: hash reference (\%threads)
 #           list context: list (\%threads, $last_thread, $last_message, $dtd, \@unids)
 #
-sub get_all_threads ($$;$)
-{
+sub get_all_threads ($$;$) {
   my ($file, $deleted, $sorted) = @_;
   my ($last_thread, $last_message, $dtd, @unids, %threads);
   local (*FILE, $/);
@@ -497,8 +498,7 @@ sub get_all_threads ($$;$)
   my $xml = join '', <FILE>;
   close(FILE) or return;
 
-  if (wantarray)
-  {
+  if (wantarray) {
     ($dtd)          = $xml =~ /<!DOCTYPE\s+\S+\s+SYSTEM\s+"([^"]+)">/;
     ($last_thread)  = map {/(\d+)/} $xml =~ /<Forum.+?lastThread="([^"]+)"[^>]*>/;
     ($last_message) = map {/(\d+)/} $xml =~ /<Forum.+?lastMessage="([^"]+)"[^>]*>/;
@@ -608,49 +608,56 @@ sub get_all_threads ($$;$)
     : \%threads;
 }
 
-###########################
-# sub create_forum_xml_string
+### create_forum_xml_string () #################################################
 #
-# Forumshauptdatei erzeugen
-###########################
-
+# compose main file xml string
+#
+# Params: $threads - parsed threads (see also 'get_all_threads')
+#         $params  - hashref (see doc for details)
+#
+# Return: scalarref of the xml string
+#
 sub create_forum_xml_string ($$) {
   my ($threads, $param) = @_;
   my ($level, $thread, $msg);
 
-  my $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
-           .'<!DOCTYPE Forum SYSTEM "'.$param -> {dtd}.'">'."\n"
-           .'<Forum lastMessage="'.$param -> {lastMessage}.'" lastThread="'.$param -> {lastThread}.'">';
+  my $xml =
+      '<?xml version="1.0" encoding="UTF-8"?>'."\n"
+    . '<!DOCTYPE Forum SYSTEM "'.$param -> {dtd}.'">'."\n"
+    . '<Forum lastMessage="'.$param -> {lastMessage}.'" lastThread="'.$param -> {lastThread}.'">';
 
-  foreach $thread (sort {$b <=> $a} keys %$threads) {
+  for $thread (sort {$b <=> $a} keys %$threads) {
     $xml .= '<Thread id="t'.$thread.'">';
     $level = -1;
 
-    foreach $msg (@{$threads -> {$thread}}) {
-      $xml .= '</Message>' x ($level - $msg -> {level} + 1) if ($msg -> {level} <= $level);
+    for $msg (@{$threads -> {$thread}}) {
+      $xml  .= '</Message>' x ($level - $msg -> {level} + 1) if ($msg -> {level} <= $level);
+
       $level = $msg -> {level};
-      $xml .= '<Message id="m'.$msg -> {mid}.'"'
-                  .' unid="'.$msg -> {unid}.'"'
-                  .(($msg -> {deleted})?' invisible="1"':'')
-                  .(($msg -> {archive})?' archive="1"':'')
-                  .'>'
-             .'<Header>'
-             .'<Author>'
-             .'<Name>'
-                  .plain($msg -> {name})
-                  .'</Name>'
-             .'<Email></Email>'
-             .'</Author>'
-             .'<Category>'
-                  .((length $msg -> {cat})?plain($msg -> {cat}):'')
-                  .'</Category>'
-             .'<Subject>'
-                  .plain($msg -> {subject})
-                  .'</Subject>'
-             .'<Date longSec="'
-                  .$msg -> {time}
-                  .'"/>'
-             .'</Header>';}
+      $xml  .=
+          '<Message id="m'.$msg -> {mid}.'"'
+            . ' unid="'.$msg -> {unid}.'"'
+            . (($msg -> {deleted})?' invisible="1"':'')
+            . (($msg -> {archive})?' archive="1"':'')
+            . '>'
+        . '<Header>'
+        . '<Author>'
+        . '<Name>'
+            . plain($msg -> {name})
+        . '</Name>'
+        . '<Email />'
+        . '</Author>'
+        . '<Category>'
+            . ((length $msg -> {cat})?plain($msg -> {cat}):'')
+        . '</Category>'
+        . '<Subject>'
+            . plain($msg -> {subject})
+        . '</Subject>'
+        . '<Date longSec="'
+            . $msg -> {time}
+            . '"/>'
+        . '</Header>';
+    }
 
     $xml .= '</Message>' x ($level + 1);
     $xml .= '</Thread>';}
@@ -688,64 +695,55 @@ sub save_file ($$)
   1;
 }
 
-# ====================================================
-# Zeitdarstellung
-# ====================================================
-
-###########################
-# sub hr_time
+################################################################################
+#
+# several time formatting routines
+#
+# hr_time
 #     02. Januar 2001, 12:02 Uhr
 #
-# sub short_hr_time
+# short_hr_time
 #     02. 01. 2001, 12:02 Uhr
 #
-# sub long_hr_time
+# long_hr_time
 #     Dienstag, 02. Januar 2001, 12:02:01 Uhr
 #
-# formatierte Zeitangabe
-###########################
+# very_short_hr_time
+#     02. 01. 2001
+#
+sub month($) {
+  (qw(Januar Februar), "M\303\244rz", qw(April Mai Juni Juli August September Oktober November Dezember))[shift (@_) - 1];
+                       # ^^^^^^^^ - UTF8 #
+}
 
 sub hr_time ($) {
-  my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mai Juni Juli August September Oktober November Dezember));
-                                   # ^^^^^^^^ - UTF8 #
+  my (undef, $min, $hour, $day, $mon, $year) = germantime (shift);
 
-  my (undef, $min, $hour, $day, $mon, $year) = localtime ($_[0]);
-
-  sprintf ('%02d. %s %04d, %02d:%02d Uhr', $day, $month[$mon], $year+1900, $hour, $min);
+  sprintf ('%02d. %s %04d, %02d:%02d Uhr', $day, month($mon+1), $year+1900, $hour, $min);
 }
 
 sub short_hr_time ($) {
-  my (undef, $min, $hour, $day, $mon, $year) = localtime ($_[0]);
+  my (undef, $min, $hour, $day, $mon, $year) = germantime (shift);
 
   sprintf ('%02d. %02d. %04d, %02d:%02d Uhr', $day, $mon+1, $year+1900, $hour, $min);
 }
 
 sub long_hr_time ($) {
-  my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mai Juni Juli August September Oktober November Dezember));
-                                   # ^^^^^^^^ - UTF8 #
-
   my @wday  = qw(Sonntag Montag Dienstag Mittwoch Donnerstag Freitag Samstag);
-  my ($sek, $min, $hour, $day, $mon, $year, $wday) = localtime ($_[0]);
+  my ($sek, $min, $hour, $day, $mon, $year, $wday) = germantime (shift);
 
-  sprintf ('%s, %02d. %s %04d, %02d:%02d:%02d Uhr', $wday[$wday], $day, $month[$mon], $year+1900, $hour, $min, $sek);
+  sprintf ('%s, %02d. %s %04d, %02d:%02d:%02d Uhr', $wday[$wday], $day, month($mon+1), $year+1900, $hour, $min, $sek);
 }
 
 sub very_short_hr_time($) {
-  my (undef, $min, $hour, $day, $mon, $year) = localtime ($_[0]);
+  my (undef, $min, $hour, $day, $mon, $year) = germantime (shift);
 
   sprintf ('%02d. %02d. %04d', $day, $mon+1, $year+1900);
 }
 
-sub month($) {
-    my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mai Juni Juli August September Oktober November Dezember));
-                                     # ^^^^^^^^ - UTF8 #
-
-    return $month[$_[0]-1];
-}
-
-# ====================================================
-# Modulinitialisierung
-# ====================================================
-
-# making require happy
+# keep 'require' happy
 1;
+
+#
+#
+### end of Posting::_lib #######################################################
