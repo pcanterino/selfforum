@@ -65,11 +65,12 @@ use base qw(Exporter);
 #
 # Return: -none-
 #
-sub print_posting_as_HTML ($$$) {
+sub print_posting_as_HTML ($$$;$) {
   my ($threadpath, $tempfile, $param) = @_;
 
   my $template = new Template $tempfile;
   my $assign = $param -> {assign};
+  my $show_deleted = $param->{showDeleted};
 
   my $view = get_view_params ({
     adminDefault => $param -> {adminDefault}
@@ -105,7 +106,8 @@ sub print_posting_as_HTML ($$$) {
       else {
         my ($mnode, $tnode) = get_message_node ($xml, 't'.$param -> {thread}, 'm'.$param -> {posting});
 
-        unless ($mnode and not $mnode->getAttribute('invisible')) {
+        # do not show if not wanted
+        if(!$mnode || ($mnode->getAttribute('invisible') && !$show_deleted)) { # and not $mnode->getAttribute('invisible')) {
           print ${$template -> scrap (
             $assign -> {errorDoc},
             { $assign -> {errorText} => $template -> insert ($assign -> {'notAvailable'}) }
