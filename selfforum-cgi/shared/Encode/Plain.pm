@@ -4,7 +4,7 @@ package Encode::Plain;
 #                                                                              #
 # File:        shared/Encode/Plain.pm                                          #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-04-12                          #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: Encode text for HTML Output (entities, spaces)                  #
 #                                                                              #
@@ -17,14 +17,17 @@ use vars qw(
   %unimap
   $utf8
   $v56
-  $VERSION
 );
 
 ################################################################################
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 $v56 = eval {local $SIG{__DIE__}; require 5.6.0;};
 
@@ -525,7 +528,7 @@ BEGIN {
   );
 }
 
-# keeping require happy
+# keep 'require' happy
 1;
 
 #
