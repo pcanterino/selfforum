@@ -13,7 +13,6 @@ package Arc::Archive;
 use strict;
 use vars qw(
   @EXPORT
-  $VERSION
 );
 
 use Arc::Test;

@@ -13,7 +13,6 @@ package Arc::Starter;
 use strict;
 use vars qw(
   @EXPORT
-  $VERSION
 );
 
 ################################################################################
