@@ -60,7 +60,7 @@ sub encoded_body ($;$) {
   my $params = shift;
 
   $posting =~ s/\015\012|\015|\012/\n/g; # normalize newlines
-  $posting =~ s/[^\S\n]$//gm;            # kill whitespaces at the end of all lines
+  $posting =~ s/[^\S\n]+$//gm;           # kill whitespaces at the end of all lines
   $posting =~ s/\s+$//;                  # kill whitespaces (newlines) at the end of the string (text)
 
   # check the special syntaxes:
@@ -73,7 +73,7 @@ sub encoded_body ($;$) {
   my @links = grep {
        is_URL ( $_ -> [1] => ':ALL')
     or is_URL (($_ -> [1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '' => 'http')
-    or (  $_ -> [1] =~ m<^\.?\.?/(?!/)|\?>
+    or (  $_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)>
       and is_URL (rel_uri ($_ -> [1], $base) => 'http'))
   } @rawlinks;
 
@@ -83,7 +83,7 @@ sub encoded_body ($;$) {
   push @rawimages => [$1 => $2] while ($posting =~ /\[([Ii][Mm][Aa][Gg][Ee]):\s*([^\]\s]+)\s*\]/g);
   my @images = grep {
        is_URL ($_ -> [1] => 'strict_http')
-    or (  $_ -> [1] =~ m<^\.?\.?/(?!/)|\?>
+    or (  $_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)>
       and is_URL (rel_uri ($_ -> [1], $base) => 'http'))
   } @rawimages;
 
@@ -93,8 +93,7 @@ sub encoded_body ($;$) {
   push @rawiframes => [$1 => $2] while ($posting =~ /\[([Ii][Ff][Rr][Aa][Mm][Ee]):\s*([^\]\s]+)\s*\]/g);
   my @iframes = grep {
        is_URL ($_ -> [1] => 'http')
-    or is_URL (($_ -> [1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '' => 'http')
-    or (  $_ -> [1] =~ m<^\.?\.?/(?!/)|\?>
+    or (  $_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)>
       and is_URL (rel_uri ($_ -> [1], $base) => 'http'))
   } @rawiframes;
 

@@ -21,17 +21,17 @@ use vars qw(
 # locate the script
 #
 BEGIN {
-#  my $null = $0; $null =~ s/\\/\//g; # for win :-(
-#  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-#  $Shared  = "$Bin/../shared";
-#  $Config  = "$Bin/config";
-#  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
-
-  my $null = $0; #$null =~ s/\\/\//g; # for win :-(
+  my $null = $0; $null =~ s/\\/\//g; # for win :-(
   $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-  $Config  = "$Bin/../../../cgi-config/devforum";
-  $Shared  = "$Bin/../../../cgi-shared";
+  $Shared  = "$Bin/../shared";
+  $Config  = "$Bin/config";
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+
+#  my $null = $0; #$null =~ s/\\/\//g; # for win :-(
+#  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+#  $Config  = "$Bin/../../../cgi-config/devforum";
+#  $Shared  = "$Bin/../../../cgi-shared";
+#  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
 
 use lib "$Shared";

@@ -75,6 +75,7 @@ sub create_message ($$) {
 
   my $header = $xml -> createElement ('Header');
   my $author = $xml -> createElement ('Author');
+  $header  -> appendChild ($author);
 
   my @may = (
     ['name'     => 'Name'        => $author],
@@ -104,7 +105,6 @@ sub create_message ($$) {
   my $date = $xml -> createElement ('Date');
   $date -> setAttribute ('longSec'=> $par -> {time});
 
-  $header  -> appendChild ($author);
   $header  -> appendChild ($date);
   $message -> appendChild ($header);
 

@@ -141,7 +141,7 @@ BEGIN {
 
   @email = ();
   for $domain (
-    qq< $sub_domain (?: $Period $X $sub_domain )+ >,
+    qq< $sub_domain (?: $Period $X $sub_domain )* $Period [A-Za-z][A-Za-z][A-Za-z]?[A-Za-z]? >,
     qq< $sub_domain (?: $Period $X $sub_domain )* >
   ) {
     my $route       = qq< \@ $X $domain (?: , $X \@ $X $domain )* : $X >;
