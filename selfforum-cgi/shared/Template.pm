@@ -5,6 +5,7 @@ package Template;
 # File:        shared/Template.pm                                              #
 #                                                                              #
 # Authors:     André Malo <nd@o3media.de>, 2001-04-12                          #
+#              Frank Schoenmann <fs@tower.de>, 2001-06-04                      #
 #                                                                              #
 # Description: Handle XML based HTML-Templates                                 #
 #                                                                              #
@@ -109,13 +110,21 @@ sub list {
 #
 # fill in a template scrap
 #
-# Params: $name - name of the scrap
+# Params: $name    name of the scrap
+#         ...
+#         $no_nl   1 - remove newlines (\n)
+#                  0 - do no such thing
 #
 # Return: scalar reference - filled in scrap
 #
 sub scrap {
   my $self = shift;
   my $name = shift;
+
+  my $no_nl;
+  if (!ref $_[$#_]) {
+      $no_nl = pop @_;
+  }
 
   croak "no template file specified"
     unless (defined $self -> {file});
@@ -167,6 +176,9 @@ sub scrap {
     \$scrap,
     \%params
   );
+
+  # remove newlines
+  $scrap =~ s/\n|\r\n|\n\r|\r//g if ($no_nl);
 
   # return
   \$scrap;
