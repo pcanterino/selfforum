@@ -21,12 +21,18 @@ use XML::DOM;
 # Export
 # ====================================================
 
+use constant SORT_ASCENT  => 0; # (young postings first)
+use constant SORT_DESCENT => 1;
+use constant KEEP_DELETED => 1;
+use constant KILL_DELETED => 0;
+
 use base qw(Exporter);
 @Posting::_lib::EXPORT_OK = qw(
   get_message_header get_message_body get_message_node get_body_node parse_single_thread parse_xml_file
   hr_time short_hr_time long_hr_time
   get_all_threads create_forum_xml_string
   save_file
+  SORT_ASCENT   SORT_DESCENT   KEEP_DELETED   KILL_DELETED
 );
 
 # ====================================================
