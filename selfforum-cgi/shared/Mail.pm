@@ -186,18 +186,12 @@ sub encode_qp ($)
 
 sub get_list ($$) {
   my ($start,$list)=splice @_;
-  my $string="";
 
-  return "" unless (length($list));
-  if (ref($list)) {
-    return "" unless (@$list);
-    foreach (@$list) {
-      $string.="$start: $_\n";}}
-  else {
-    $string="$start: $list\n";}
+  return $start . ': ' . $list . "\n" if (defined $list and not ref $list and length $list);
 
-  # Rueckgabe
-  $string;
+  return $start . ': ' . join (', ',@$list) . "\n" if (ref $list);
+
+  '';
 }
 
 ##############################################
