@@ -1,0 +1,4 @@
+DirectoryIndex index.shtml
+Options +Includes
+AddHandler server-parsed shtml
+ 

@@ -1,0 +1,296 @@
+<!--
+Document Type Declaration fuer das Administrieren des SELFHTML-Forums
+Autor: Thomas J. Sebestyen        thomasj.sebestyen@meta-text.net
+
+Version 1.00        27.12.2000
+
+Last modified: 30.12.2000
+-->
+
+<!ENTITY % boolean "(0 | 1)">
+<!-- Parameterentity fuer ja (1) oder nein (0) Fragen -->
+
+
+
+
+
+<!ELEMENT                Forum    (ForumView, Serverance, Messaging, InstantJob, UserManagement)   >
+<!-- *****************************************************************************************************
+      'Forum' ist das rootelement und beinhaltet alle anderen Elemente
+***************************************************************************************************** -->
+
+
+
+<!ELEMENT      ForumView   (ThreadView, MessageView, Flags, Quoting)   >
+<!-- *****************************************************************************************************
+      'ForumView' beinhaltet die Elemente, die das Ausssehen des Forums bestimmen
+***************************************************************************************************** -->
+
+
+
+
+
+<!ELEMENT      Serverance  ((AfterByte | AfterThread | AfterMessage | AfterHours | AfterLastPosting)+, Archiving) >
+<!-- *****************************************************************************************************
+      'Serverance' enthaelt die Elemente, die das automatischens Abtrennen und die Archivierung des Forums
+       bestimmen;  fuer das Abtrennen duerfen mehrere Optionen gelichzeitig angegeben werden.
+***************************************************************************************************** -->
+<!ATTLIST      Serverance
+               executeArchiving  %boolean;   "1"
+               executeServerance (sequential | asymmetrical | instant)   #REQUIRED
+>
+<!-- *****************************************************************************************************
+      Das Attribut 'executeArchiving' bestimmt ob eine Archivierung durchgefuehrt
+         wird (1, default Einstellung) oder nicht (0).
+      Das Attribut 'executeServerance' bestimmt das Abtrennverhalten f&uuml;r das Forum:
+         sequential =
+         asymmetrical =
+         instant = ist nur fuer die manuelle durchfuehrung einer Abtrennung im Forum
+***************************************************************************************************** -->
+
+
+<!ELEMENT      Archiving   (General | UserVotings ) >
+<!-- *****************************************************************************************************
+      'Archiving' enthaelt die Elemente, die die Archivierungsart des Forums bestimmen.
+***************************************************************************************************** -->
+
+<!ELEMENT   General  EMPTY >
+<!-- *****************************************************************************************************
+      'General' bestimmt, dass alles archiviert wird.
+***************************************************************************************************** -->
+
+<!ELEMENT   UserVotings EMPTY >
+<!-- *****************************************************************************************************
+      'UserVotings' bestimmt, dass nur die ausgewaehlten Nachrichten archiviert werden.
+***************************************************************************************************** -->
+
+
+
+<!ELEMENT      AfterByte         (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'AfterByte' bestimmt ab wieviel Byte Groesse der Hauptdatei das Forum archiviert wird.
+***************************************************************************************************** -->
+
+<!ELEMENT      AfterThread       (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'AfterThread' bestimmt die Anzahl der Threads in der Hauptdatei nach der das Forum archiviert wird.
+***************************************************************************************************** -->
+
+<!ELEMENT      AfterMessage      (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'AfterMessages' bestimmt die Anzahl der Nachrichten in der Hauptdatei nach der das Forum archiviert wird.
+***************************************************************************************************** -->
+
+<!ELEMENT      AfterHours        (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'AfterHours' bestimmt die Anzahl der Stunden der aeltesten Postings in der Hauptdatei
+         nach der das Forum archiviert wird.
+***************************************************************************************************** -->
+
+<!ELEMENT      AfterLastPosting  (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'AfterLastPosting' bestimmt, dass bei der Archivierung alle Threads beruecksichtigt werden, deren
+         juengste Message laenger als die hier eingestelte Zeit in der Forumshauptdatei verweilt.
+***************************************************************************************************** -->
+
+
+
+
+
+<!ELEMENT      Messaging   (CallByUser)   >
+<!-- *****************************************************************************************************
+      'Messaging' beinhaltet die Optionen fuer die Benachrichtinungsschema im Forum
+***************************************************************************************************** -->
+<!ATTLIST      Messaging
+               callUserAnswer    %boolean;   "0"
+               callAdminThread   %boolean;   "0"
+               callAdminNA       %boolean;   "1"
+               callAdminHQ       %boolean;   "0"
+               callAdminVoting   %boolean;   "0"
+               callAdminArchving %boolean;   "1"
+               callByUser        %boolean;   "0"
+>
+<!-- *****************************************************************************************************
+      Das Attribut 'callUserAnswer' bestimmt ob der User bei einer Antwort auf seine Frage
+         per Mail benachrichtigt wird (1) oder nicht (0, default Einstellung).
+      Das Attribut 'callAdminThread' bestimmt ob die Forumsleitung beim Eroeffen eines neuen
+         Threades per Mail benachrichtigt wird (1) oder nicht (0, default Einstellung).
+      Das Attribut 'callAdminNA' bestimmt ob die Forumsleitung beim Setzen des Flags NA
+         per Mail benachrichtigt wird (1, default Einstellung) oder nicht (0).
+      Das Attribut 'callAdminHQ' bestimmt ob die Forumsleitung beim Setzen des Flags HQ
+         per Mail benachrichtigt wird (1) oder nicht (0, default Einstellung).
+      Das Attribut 'callAdminVoting' bestimmt ob die Forumsleitung bei Uservoting fur eine Nachricht
+         per Mail benachrichtigt wird (1) oder nicht (0, default Einstellung).
+      Das Attribut 'callAdminArchiving' bestimmt ob die Forumsleitung bei automatischer Archivierung
+         per Mail benachrichtigt wird (1, default Einstellung) oder nicht (0).
+      Das Attribut 'callByUser' bestimmt ob die Forumsleitung bei Messages von in der 'CallByUser'
+         Liste gefuehrten User, per Mail benachrichtigt wird (1) oder nicht (0, default Einstellung).
+***************************************************************************************************** -->
+
+<!ELEMENT      CallByUser  (Name | Email | IpAddress)*   >
+<!-- *****************************************************************************************************
+      'CallAdminUser' beinhaltet die Liste der User-Elemente bei deren Auftauchen
+       in Messages die Forumsleitung per Mail benachrichtig wird.
+***************************************************************************************************** -->
+
+<!ELEMENT                Name                        (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'Name' enthaelt den Namen eines Messageautors
+***************************************************************************************************** -->
+
+<!ELEMENT                Email                        (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'Email' enthaelt die E-Mail-Adresse eines Messageautors
+***************************************************************************************************** -->
+
+<!ELEMENT                IpAddress   (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'IpAddress        ' enthaelt die IP-Adresse eines Messageautors
+***************************************************************************************************** -->
+
+
+
+
+<!ELEMENT      InstantJob  (Serverance | ForumClose) >
+<!-- *****************************************************************************************************
+      'InstantJob' beinhaltet die zu ausfuehrende Sofortmassnahmen fuer das Forum
+***************************************************************************************************** -->
+<!--  'Serverance' ermoeglicht es nach dem bereist bestimmten Kriterien eine manuelle Archivierung und
+        ein manuelles Abtrennen des Forums durchzufuehren -->
+<!ATTLIST      InstantJob
+               executeJob  %boolean;   "0"
+>
+<!-- *****************************************************************************************************
+      Das Attribut 'executeJob' bestimmt ob eine der Sofortmassnahmen durchgefuehrt
+         wird (1) oder nicht (0, default Einstellung).
+***************************************************************************************************** -->
+
+
+<!ELEMENT      ForumClose  (FileUrl)  >
+<!-- *****************************************************************************************************
+      'ForumClose' enthaelt die Optionen die das Schliessen und Wiedereroeffnen das Forums regeln.
+***************************************************************************************************** -->
+<!ATTLIST      ForumClose
+               reason   (maintenance | annoyance) #REQUIRED
+>
+<!-- *****************************************************************************************************
+      Das Attribut 'reason' gibt den Grund der Schliessung an.
+         maintenance = Wartung, annoyance = Aergernis
+***************************************************************************************************** -->
+
+<!ELEMENT      FileUrl  (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'FileUrl' enthaelt den Pfad zu einer Datei die waehrend der Schliessung angezeigt wird.
+***************************************************************************************************** -->
+
+
+
+
+<!ELEMENT      ThreadView  (ShowThread) >
+<!-- *****************************************************************************************************
+      'ThreadView' beinhaltet die Optionen, die das Ausssehen der Threades bestimmen
+***************************************************************************************************** -->
+<!ATTLIST      ThreadView
+               threadOpen     %boolean;   "0"
+               countMessages  %boolean;   "1"
+               sortThreads    %boolean;   "0"
+               sortMessages   %boolean;   "0"
+>
+<!-- *****************************************************************************************************
+      Das Attribut 'threadsOpen' bestimmt ob der Threadbaum
+         aufgeklappt(1) oder nicht (0, default Einstellung).
+      Das Attribut 'countMessages' bestimmt ob die Zahl der Nachrichten im Thread
+         ausgegeben werden soll (1, default Einstellung) oder nicht (0).
+      Das Attribut 'sortThreads' bestimmt ob die Threads in der Forumshauptdatei aufsteigend praesentiert
+         werden sollen, also aelteste zuerst (1) oder juengste zuerst (0, default Einstellung).
+      Das Attribut 'sortMessages' bestimmt ob die Nachrichten in der Forumshauptdatei aufsteigend praesentiert
+         werden sollen, also aelteste zuerst (1) oder juengste zuerst (0, default Einstellung).
+***************************************************************************************************** -->
+
+<!ELEMENT      ShowThread  (ShowAll | ShowNone | ShowNumber)>
+<!-- *****************************************************************************************************
+      'ShowThread' bestimmt ob in jeden Message der komplette Thread angezeigt werden
+         soll, oder nicht, oder nur eine betimmnte Anzahl von Nahrichten angezeigt werden soll.
+***************************************************************************************************** -->
+
+<!ELEMENT      ShowAll   EMPTY >
+<!-- *****************************************************************************************************
+      'ShowAll' bestimmt, dass in jeden Message der komplette Thread (alle anderen Messages
+       angezeigt) werden soll.
+***************************************************************************************************** -->
+
+<!ELEMENT      ShowNone   EMPTY >
+<!-- *****************************************************************************************************
+      'ShowNone' bestimmt, dass in den Messages der Thread nicht (keine andere Mesages)
+       angezeigt werden soll.
+***************************************************************************************************** -->
+
+<!ELEMENT      ShowNumber  (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'ShowNumber' gibt die Anzahl der Messages an der vom Thread in einem Message angezeigt werden soll.
+***************************************************************************************************** -->
+
+
+
+
+<!ELEMENT      MessageView EMPTY >
+<!-- *****************************************************************************************************
+      'MessageView' beinhaltet die Optionen, die beim Posten einer Message ausgefuhrt werden
+***************************************************************************************************** -->
+<!ATTLIST      MessageView
+               previewON   %boolean; "1"
+>
+<!-- *****************************************************************************************************
+      Das Attribut 'previewON' bestimmt ob vor dem Speichern einer neue Message zunaechst in einer
+         Vorschau angezeigt werden soll (1, default Einstellung) oder nicht (0).
+***************************************************************************************************** -->
+
+
+
+<!ELEMENT      Flags EMPTY  >
+<!-- *****************************************************************************************************
+      'Flags' beinhaltet die Optionen, die die Grafiken vor einer Nachricht bestimmen
+***************************************************************************************************** -->
+<!ATTLIST      Flags
+               showNA   %boolean; "0"
+               showHQ   %boolean; "1"
+>
+<!-- *****************************************************************************************************
+      Das Attribut 'showNA' bestimmt ob die NA-Grafik angezeigt werden soll (1)
+         oder nicht (0, default Einstellung).
+      Das Attribut 'showHQ' bestimmt ob die HQ-Grafik angezeigt werden soll (1, default Einstellung)
+         oder nicht (0).
+***************************************************************************************************** -->
+
+<!ELEMENT      Quoting  (Chars?) >
+<!-- *****************************************************************************************************
+      'Quoting' beinhaltet die Optionen, die das Kennzeihen von Zitaten in Nachrichten bestimmen.
+***************************************************************************************************** -->
+<!ATTLIST      Quoting
+               quotingON   %boolean; "1"
+>
+<!-- *****************************************************************************************************
+      Das Attribut 'quotingON' bestimmt ob Zitate in den Nachrichten gekennzeichnet werden
+      sollten (1, default Einstellung) oder nicht (0).
+***************************************************************************************************** -->
+
+<!ELEMENT      Chars (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'Chars'  enthaelt das/die Zeichen mit den(en) Zitate in den Nachrichten gekennzeichnet werden
+***************************************************************************************************** -->
+
+
+
+<!ELEMENT      UserManagement (DeleteUser)>
+<!-- *****************************************************************************************************
+      'UserManagement'  enthaelt Optionen die die Benutzerverwaltung betreffen
+***************************************************************************************************** -->
+
+<!ELEMENT      DeleteUser     (AfterDays) >
+<!-- *****************************************************************************************************
+      'DeleteUser' enthaelt Optionen die das Loeschen von Userprofiles bestimmen.
+***************************************************************************************************** -->
+<!ELEMENT      AfterDays     (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'AfterDays' bestimmt die Anzahl der Tage nach dem ein nicht benutzer Userprofile geloescht wird.
+***************************************************************************************************** -->
