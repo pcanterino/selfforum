@@ -4,7 +4,7 @@ package Time::German;
 #                                                                              #
 # File:        shared/Time/German.pm                                           #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-06-10                    #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: determine time offset German Time <=> GMT (seconds)             #
 #                                                                              #
@@ -14,14 +14,17 @@ use strict;
 use vars qw(
   @EXPORT_OK
   %EXPORT_TAGS
-  $VERSION
 );
 
 ################################################################################
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #
