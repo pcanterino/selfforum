@@ -16,6 +16,7 @@ use vars qw(
   $Shared
   $Script
   $Config
+  $VERSION
 );
 
 BEGIN {
@@ -25,12 +26,16 @@ BEGIN {
   $Config  = "$Bin/../../cgi-config/forum";
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 
-#  my $null = $0; #$null =~ s/\\/\//g; # for win :-(
+#  my $null = $0;
 #  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-#  $Config  = "$Bin/../../../cgi-config/devforum";
-#  $Shared  = "$Bin/../../../cgi-shared";
+#  $Config  = "$Bin/../../daten/forum/config";
+#  $Shared  = "$Bin/../../cgi-shared";
 #  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
+
+# setting umask, remove or comment it, if you don't need
+#
+umask 006;
 
 use lib "$Shared";
 use CGI::Carp qw(fatalsToBrowser);
@@ -45,6 +50,10 @@ use Template::Archive qw(
 );
 
 use CGI qw(param header path_info);
+
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 print header(-type => 'text/html');
 
