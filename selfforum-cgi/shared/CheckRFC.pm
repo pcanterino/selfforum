@@ -11,7 +11,6 @@ package CheckRFC;
 ################################################################################
 
 use strict;
-
 use vars qw(%url $email @EXPORT);
 
 use autouse 'Carp' => qw(croak);
