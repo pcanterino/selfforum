@@ -13,9 +13,6 @@ package Posting::_lib;
 
 use strict;
 
-use vars qw(@EXPORT_OK);
-use base qw(Exporter);
-
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 
 use XML::DOM;
@@ -24,10 +21,13 @@ use XML::DOM;
 # Export
 # ====================================================
 
-@EXPORT_OK = qw(get_message_header get_message_body get_message_node get_body_node parse_single_thread parse_xml_file
-                hr_time short_hr_time long_hr_time
-                get_all_threads create_forum_xml_string
-                save_file);
+use base qw(Exporter);
+@Posting::_lib::EXPORT_OK = qw(
+  get_message_header get_message_body get_message_node get_body_node parse_single_thread parse_xml_file
+  hr_time short_hr_time long_hr_time
+  get_all_threads create_forum_xml_string
+  save_file
+);
 
 # ====================================================
 # Access via XML::DOM
