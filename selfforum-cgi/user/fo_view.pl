@@ -54,7 +54,7 @@ if (defined ($tid) and defined ($mid)) {
       thread       => $tid,
       posting      => $mid,
       adminDefault => $adminDefault,
-      messages     => $show_posting -> {messages},
+      messages     => $conf -> {template} -> {messages},
       form         => $show_posting -> {form},
       cgi          => $cgi,
       tree         => $tree

@@ -68,12 +68,40 @@
 </html>
   ]]></Scrap>
 
-  <Scrap id="TREE_CLOSED"><![CDATA[
-<a href="{&& _COMMAND &&}">{&& IMG_XCLOSED &&}</a> (<b>{&& _CATEGORY &&}</b>) <a href="{&& _LINK &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
-  ]]></Scrap>
+<Scrap id="_N_A"><![CDATA[Das Forum ist zur Zeit aus Wartungsgr&uuml;nden geschlossen. Versuchen Sie es bitte sp&auml;ter nocheinmal.]]></Scrap>
+<Scrap id="_OCCUPIED"><![CDATA[Das Forum ist tempor&auml;r nicht verf&uuml;gbar. Versuchen Sie es bitte in einigen Minuten nocheinmal.]]></Scrap>
 
-  <Scrap id="TREE_CLOSED_NC"><![CDATA[
-<a href="{&& _COMMAND &&}">{&& IMG_XCLOSED &&}</a> <a href="{&& _LINK &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  <Scrap id="DOC_ERROR"><![CDATA[
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+	<meta http-equiv="expires" content="0">
+	<meta name="robots" content="noindex">
+
+	<title>SELFHTML Forum: Fehler</title>
+
+	<link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%"><tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_SELFLIVE &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_SELFFORUM &&}</td></tr></table><table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+	<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum:<br>Fehler</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center">{&& IMG_X5 &&}</td>
+	<td bgcolor="#FFFFFF" valign="top">
+		<p>{&& IMG_XGDOWN &&}&nbsp;<a href="#a1"><b>Fehler</b></a></p></td></tr>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr>
+</table>
+<h2 class="Sh2"><a class="an" name="a1">Fehler</a></h2>
+<p>{&& _ERROR_TEXT &&}</p>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top">{&& IMG_XGOUP &&}</a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_SELFLIVE &&} {&& IMG_X2 &&}&nbsp;{&& LINK_SELFFORUM &&}</td></tr>
+</table>
+<p>&copy; 2000 {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:{&& MAIL_SELF &&}">{&& MAIL_SELF &&}</a></p>
+</body>
+</html>
   ]]></Scrap>
 
   <Scrap id="TREE_START"><![CDATA[

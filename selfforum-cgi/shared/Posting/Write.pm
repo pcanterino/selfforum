@@ -78,7 +78,8 @@ sub write_new_thread ($) {
     body     => encoded_body(
       \($param -> {body}),
       { quoteChars => $param -> {quoteChars},
-        messages   => $param -> {messages}
+        messages   => $param -> {messages},
+        base_uri   => $param -> {base_uri}
       }
     ),
     time     => $param -> {time},
@@ -179,7 +180,8 @@ sub write_reply_posting ($) {
         ${encoded_body(
           \($param -> {body}),
           { quoteChars => $param -> {quoteChars},
-            messages   => $param -> {messages}
+            messages   => $param -> {messages},
+            base_uri   => $param -> {base_uri}
           }
         )}
       )
@@ -236,7 +238,7 @@ sub write_reply_posting ($) {
   return (0, $thread, $mid);
 }
 
-# keeping 'require' happy
+# keep 'require' happy
 #
 1;
 

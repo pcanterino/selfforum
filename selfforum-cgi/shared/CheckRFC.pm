@@ -4,23 +4,39 @@ package CheckRFC;
 #                                                                              #
 # File:        shared/CheckRFC.pm                                              #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-03-30                    #
+# Authors:     Andre Malo       <nd@o3media.de>, 2001-04-14                    #
 #                                                                              #
 # Description: implement several string checks on RFC correctness              #
 #                                                                              #
 ################################################################################
 
 use strict;
-use vars qw(%url $email @EXPORT);
+use vars qw(
+  $v56
+  %url
+  @email
+  @EXPORT
+  @ISA
+);
 
-use autouse 'Carp' => qw(croak);
+$v56 = eval q[
+  local $SIG{__DIE__};
+  require 5.6.0;
+];
+
+use Carp qw(croak);
 
 ################################################################################
 #
 # Export
 #
-use base qw(Exporter);
-@EXPORT = qw(is_URL is_email);
+require Exporter;
+@ISA = qw(Exporter);
+
+@EXPORT = qw(
+  is_URL
+  is_email
+);
 
 ### is_URL ($@) ################################################################
 #
@@ -28,7 +44,8 @@ use base qw(Exporter);
 #
 # Params: $string  string to check
 #         @schemes possible URL schemes in $string
-#                  qw(http ftp news nntp telnet gopher wais mailto file prospero)
+#                  qw( http strict_http ftp news nntp telnet
+#                      gopher wais mailto strict_mailto file prospero)
 #                  if there's no scheme given, 'http' is default
 #                  use ':ALL' (without quotes) for all schemes
 #
@@ -36,12 +53,27 @@ use base qw(Exporter);
 #
 sub is_URL ($@) {
   my ($string, @schemes) = @_;
+
+  return unless (defined ($string) and length ($string));
+
   @schemes = qw(http) unless (@schemes);
   @schemes = keys %url if (@schemes == 1 and $schemes[0] eq ':ALL');
 
   for (@schemes) {
     croak "unknown url scheme '$_'" unless exists $url{$_};
-    return 1 if $string =~ /$url{$_}/;
+    unless (/mailto/) {
+      return 1 if ($string =~ /$url{$_}/);
+    }
+    else {
+      return unless ($string =~ /^mailto:(.+)/);
+
+      if ($_ eq 'mailto') {
+        return 1 if (is_email ($1));
+      }
+      elsif ($_ eq 'strict_mailto') {
+        return 1 if (is_email ($1,1));
+      }
+    }
   }
 
   # no match => return false
@@ -52,20 +84,25 @@ sub is_URL ($@) {
 #
 # check email (comments can be nested)
 #
-# Params: $string string to check
+# Params: $string - string to check
+#         $strict - (optional) check strict RFC syntax (no TLD needed) if true
 #
 # Return: Status code (Bool)
 #
-sub is_email ($) {
+sub is_email ($;$) {
   my $string = shift;
+  my $strict = shift;
 
   # false if any non-ascii chars
+  return unless (defined ($string) and length ($string));
   return if $string =~ /[\200-\377]/;
 
   # remove nested comments
-  while ($string =~ s/\([^()]*\)//g) {};
+  1 while ($string =~ s/\([^()]*\)//g);
 
-  return ($string =~ /^$email$/);
+  return ($string =~ /^$email[0]$/) unless $strict;
+
+  return ($string =~ /^$email[1]$/);
 }
 
 ### BEGIN # (1) ################################################################
@@ -75,41 +112,59 @@ sub is_email ($) {
 BEGIN {
   # Thanx to J. Friedl:
 
-  my $esc        = '\\\\';
+  my $esc         = '\\\\';
   my $Period      = '\.';
-  my $space      = '\040';
+  my $space       = '\040';
   my $tab         = '\t';
-  my $OpenBR     = '\[';
+  my $OpenBR      = '\[';
   my $CloseBR     = '\]';
-  my $OpenParen  = '\(';
+  my $OpenParen   = '\(';
   my $CloseParen  = '\)';
-  my $NonASCII   = '\x80-\xff';
+  my $NonASCII    = '\x80-\xff';
   my $ctrl        = '\000-\037';
-  my $CRlist     = '\n\015';
-  my $qtext = qq/[^$esc$NonASCII$CRlist\"]/;
-  my $dtext = qq/[^$esc$NonASCII$CRlist$OpenBR$CloseBR]/;
+  my $CRlist      = '\n\015';
+  my $qtext       = qq/[^$esc$NonASCII$CRlist\"]/;
+  my $dtext       = qq/[^$esc$NonASCII$CRlist$OpenBR$CloseBR]/;
   my $quoted_pair = qq< $esc [^$NonASCII] >;
-  my $ctext   = qq< [^$esc$NonASCII$CRlist()] >;
-  my $Cnested = qq< $OpenParen $ctext* (?: $quoted_pair $ctext* )* $CloseParen >;
-  my $comment = qq< $OpenParen $ctext* (?: (?: $quoted_pair | $Cnested ) $ctext* )* $CloseParen >;
-  my $X = qq< [$space$tab]* (?: $comment [$space$tab]* )* >;
+  my $ctext       = qq< [^$esc$NonASCII$CRlist()] >;
+  my $Cnested     = qq< $OpenParen $ctext* (?: $quoted_pair $ctext* )* $CloseParen >;
+  my $comment     = qq< $OpenParen $ctext* (?: (?: $quoted_pair | $Cnested ) $ctext* )* $CloseParen >;
+  my $X           = qq< [$space$tab]* (?: $comment [$space$tab]* )* >;
   my $atom_char   = qq/[^($space)<>\@,;:\".$esc$OpenBR$CloseBR$ctrl$NonASCII]/;
-  my $atom = qq< $atom_char+ (?!$atom_char) >;
-  my $quoted_str = qq< \" $qtext * (?: $quoted_pair $qtext * )* \" >;
-  my $word = qq< (?: $atom | $quoted_str ) >;
+  my $atom        = qq< $atom_char+ (?!$atom_char) >;
+  my $quoted_str  = qq< \" $qtext * (?: $quoted_pair $qtext * )* \" >;
+  my $word        = qq< (?: $atom | $quoted_str ) >;
   my $domain_ref  = $atom;
   my $domain_lit  = qq< $OpenBR (?: $dtext | $quoted_pair )* $CloseBR >;
   my $sub_domain  = qq< (?: $domain_ref | $domain_lit ) $X >;
-  my $domain = qq< $sub_domain (?: $Period $X $sub_domain )* >;
-  my $route = qq< \@ $X $domain (?: , $X \@ $X $domain )* : $X >;
-  my $local_part = qq< $word $X (?: $Period $X $word $X )* >;
-  my $addr_spec  = qq< $local_part \@ $X $domain >;
-  my $route_addr = qq[ < $X (?: $route )? $addr_spec > ];
-  my $phrase_ctrl = '\000-\010\012-\037';
-  my $phrase_char = qq/[^()<>\@,;:\".$esc$OpenBR$CloseBR$NonASCII$phrase_ctrl]/;
-  my $phrase = qq< $word $phrase_char * (?: (?: $comment | $quoted_str ) $phrase_char * )* >;
-  $email = qq< $X (?: $addr_spec | $phrase  $route_addr ) >;
-  $email = qr /$email/x;
+  my $domain;
+
+  @email = ();
+  for $domain (
+    qq< $sub_domain (?: $Period $X $sub_domain )+ >,
+    qq< $sub_domain (?: $Period $X $sub_domain )* >
+  ) {
+    my $route       = qq< \@ $X $domain (?: , $X \@ $X $domain )* : $X >;
+    my $local_part  = qq< $word $X (?: $Period $X $word $X )* >;
+    my $addr_spec   = qq< $local_part \@ $X $domain >;
+    my $route_addr  = qq[ < $X (?: $route )? $addr_spec > ];
+    my $phrase_ctrl = '\000-\010\012-\037';
+    my $phrase_char = qq/[^()<>\@,;:\".$esc$OpenBR$CloseBR$NonASCII$phrase_ctrl]/;
+    my $phrase      = qq< $word $phrase_char * (?: (?: $comment | $quoted_str ) $phrase_char * )* >;
+    my $email       = qq< $X (?: $addr_spec | $phrase  $route_addr ) >;
+
+    if ($v56) {
+      eval q<
+        local $SIG{__DIE__};
+        $email = qr/$email/x;
+      >;
+    }
+    else {
+      $email =~ s/\s+//g;
+    }
+
+    push @email => $email;
+  }
 }
 
 ### BEGIN # (2) ################################################################
@@ -143,7 +198,7 @@ BEGIN {
   my $password       =  "(?:(?:$uchar|[;?&=])*)";
   my $port           =  '(?:[0-5]?\d\d?\d?\d?|6[0-4]\d\d\d|65[0-4]\d\d|655[0-2]\d|6553[0-5])';
   my $ip4part        =  '(?:[01]?\d\d?|2[0-4]\d|25[0-5])';
-  my $hostnumber     =  '(?:(?!0+\.0+\.0+\.0+)'."$ip4part\\.$ip4part\\.$ip4part\\.$ip4part)";
+  my $hostnumber     =  '(?:(?!0+\.0+\.0+\.0+)(?!255\.255\.255\.255)'."$ip4part\\.$ip4part\\.$ip4part\\.$ip4part)";
   my $toplabel       =  "(?:(?:$alpha(?:$alphadigit|-)*$alphadigit)|$alpha)";
   my $domainlabel    =  "(?:(?:$alphadigit(?:$alphadigit|-)*$alphadigit)|$alphadigit)";
   my $hostname       =  "(?:(?:$domainlabel\\.)*$toplabel)";
@@ -172,16 +227,13 @@ BEGIN {
   my $search         =  "(?:(?:$httpuchar|[;:\@&=~])*)";
   my $hpath          =  "(?:$hsegment(?:/$hsegment)*)";
   my $httpurl        =  "(?:http://$hostport(?:/$hpath(?:\\?$search)?)?(?:#$xchar*)?)";
+  my $strict_httpurl =  "(?:http://$hostport(?:/$hpath(?:\\?$search)?)?)";
 
   # GOPHER (see also RFC1436)
   my $gopher_plus    =  "(?:$xchar*)";
   my $selector       =  "(?:$xchar*)";
   my $gtype          =  "(?:$xchar)";
   my $gopherurl      =  "(?:gopher://$hostport(?:/$gtype(?:$selector(?:%09$search(?:%09$gopher_plus)?)?)?)?)";
-
-  # MAILTO (see also RFC822)
-  my $encoded822addr =  "(?:$email)";
-  my $mailtourl      =  "(?:mailto:$encoded822addr)";
 
   # NEWS (see also RFC1036)
   my $article        =  "(?:(?:$uchar|[;/?:&=])+\@$host)";
@@ -212,18 +264,38 @@ BEGIN {
   my $ppath          =  "(?:$psegment(?:/$psegment)*)";
   my $prosperourl    =  "(?:prospero://$hostport/$ppath(?:$fieldspec)*)";
 
-  %url = (
-    http     => qr/^$httpurl$/,
-    ftp      => qr/^$ftpurl$/,
-    news     => qr/^$newsurl$/,
-    nntp     => qr/^$nntpurl$/,
-    telnet   => qr/^$telneturl$/,
-    gopher   => qr/^$gopherurl$/,
-    wais     => qr/^$waisurl$/,
-    mailto   => qr/^$mailtourl$/,
-    file     => qr/^$fileurl$/,
-    prospero => qr/^$prosperourl$/
-  );
+  if ($v56) {
+    eval q[%url = (
+      http          => qr/^$httpurl$/,
+      strict_http   => qr/^$strict_httpurl$/,
+      ftp           => qr/^$ftpurl$/,
+      news          => qr/^$newsurl$/,
+      nntp          => qr/^$nntpurl$/,
+      telnet        => qr/^$telneturl$/,
+      gopher        => qr/^$gopherurl$/,
+      wais          => qr/^$waisurl$/,
+      mailto        => 0,
+      strict_mailto => 0,
+      file          => qr/^$fileurl$/,
+      prospero      => qr/^$prosperourl$/
+    );];
+  }
+  else {
+    %url = (
+      http          => "^$httpurl\$",
+      strict_http   => "^$strict_httpurl\$",
+      ftp           => "^$ftpurl\$",
+      news          => "^$newsurl\$",
+      nntp          => "^$nntpurl\$",
+      telnet        => "^$telneturl\$",
+      gopher        => "^$gopherurl\$",
+      wais          => "^$waisurl\$",
+      mailto        => 0,
+      strict_mailto => 0,
+      file          => "^$fileurl\$",
+      prospero      => "^$prosperourl\$"
+    );
+  }
 }
 
 # keeping require happy

@@ -1,17 +1,16 @@
-# Template/Forum.pm
+package Template::Forum;
 
-# ====================================================
-# Autor: n.d.p. / 2001-01-12
-# lm   : n.d.p. / 2001-01-12
-# ====================================================
-# Funktion:
-#      Erzeugung der HTML-Ausgabe der
-#      Forumshauptdatei
-# ====================================================
+################################################################################
+#                                                                              #
+# File:        shared/Template/Forum.pm                                        #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-04-19                          #
+#                                                                              #
+# Description: print Forum main file to STDOUT                                 #
+#                                                                              #
+################################################################################
 
 use strict;
-
-package Template::Forum;
 
 use Lock qw(:READ);
 use Encode::Plain; $Encode::Plain::utf8 = 1;
@@ -20,19 +19,23 @@ use Template;
 use Template::_conf;
 use Template::_thread;
 
-# ====================================================
-# Funktionsexport
-# ====================================================
-
+################################################################################
+#
+# Export
+#
 use base qw(Exporter);
 @Template::Forum::EXPORT = qw(print_forum_as_HTML);
 
-################################
-# sub print_forum_as_HTML
+### sub print_forum_as_HTML ($$$) ##############################################
 #
-# HTML erstellen
-################################
-
+# print Forum main file to STDOUT
+#
+# Params: $mainfile - main xml file name
+#         $tempfile - template file name
+#         $param    - hash reference (see doc for details)
+#
+# Return: ~none~
+#
 sub print_forum_as_HTML ($$$) {
   my ($mainfile, $tempfile, $param) = @_;
   my $assign = $param -> {assign};
@@ -42,29 +45,39 @@ sub print_forum_as_HTML ($$$) {
   my ($threads, $stat);
 
   unless ($stat = lock_file ($mainfile)) {
-    if ($stat == 0) {
+    if (defined $stat) {
       violent_unlock_file ($mainfile);
-      print "aha!"
-      # ueberlastet
+      print ${$template -> scrap (
+        $assign -> {errorDoc},
+        { $assign -> {errorText} => $template -> insert ($assign -> {'occupied'}) }
+      )};
     }
-
     else {
-     # Mastersperre...
+      print ${$template -> scrap (
+        $assign -> {errorDoc},
+        { $assign -> {errorText} => $template -> insert ($assign -> {'notAvailable'}) }
+      )};
     }}
 
   else {
-    my $view = get_view_params ({adminDefault => $param -> {adminDefault}
-                               });
+    my $view = get_view_params (
+      { adminDefault => $param -> {adminDefault} }
+    );
 
     $threads = get_all_threads ($mainfile, $param -> {showDeleted}, $view -> {sortedMsg});
     violent_unlock_file ($mainfile) unless (unlock_file ($mainfile));
 
-    print ${$template -> scrap ($assign -> {mainDocStart},
-                               {$assign -> {loadingTime} => plain (long_hr_time (time)) } )},"\n<dl>";
+    print ${$template -> scrap (
+      $assign -> {mainDocStart},
+      {  $assign -> {loadingTime} => plain (long_hr_time (time)) }
+      )
+    },"\n<dl>";
 
-    my $tpar = {template => $param -> {tree},
-                cgi      => $param -> {cgi},
-                start    => -1};
+    my $tpar = {
+      template => $param -> {tree},
+      cgi      => $param -> {cgi},
+      start    => -1
+    };
 
     my @threads;
 
@@ -82,13 +95,9 @@ sub print_forum_as_HTML ($$$) {
   return;
 }
 
-# ====================================================
-# Modulinitialisierung
-# ====================================================
-
-# making require happy
+# keep require happy
 1;
 
-# ====================================================
-# end of Template::Forum
-# ====================================================
+#
+#
+### end of Template::Forum #####################################################

@@ -1,230 +1,247 @@
-# Posting.pm
+package Encode::Posting;
 
-# ====================================================
-# Autor: n.d.p. / 2001-01-07
-# lm   : n.d.p. / 2001-02-25
-# ====================================================
-# Funktion:
-#      Spezielle Codierung eines Postingtextes
-# ====================================================
+################################################################################
+#                                                                              #
+# File:        shared/Encode/Posting.pm                                        #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-04-10                          #
+#                                                                              #
+# Description: prepare a Posting text for saving and visual (HTML) output      #
+#                                                                              #
+################################################################################
 
 use strict;
 
-package Encode::Posting;
-
-use vars qw(@EXPORT);
 use Encode::Plain; $Encode::Plain::utf8 = 1;
+use CheckRFC;
 
-# ====================================================
-# Funktionsexport
-# ====================================================
-
-use base qw(Exporter);
-@EXPORT = qw(encoded_body answer_field message_field);
-
-################################
-# sub encoded_body
+################################################################################
 #
-# Nachrichtentext in gueltiges
-# HTML konvertieren
-################################
+# Export
+#
+use base qw(Exporter);
+@Encode::Posting::EXPORT = qw(
+  encoded_body
+  answer_field
+  message_field
+);
 
+### sub rel_uri ($$) ###########################################################
+#
+# generate an absolute URI from a absolute|relative one
+# (not for public use)
+#
+# Params: $uri  - URI
+#         $base - base URI
+#
+# Return: abs URI as string
+#
+sub rel_uri ($$) {
+  my ($uri, $base) = @_;
+
+  "http://$ENV{HTTP_HOST}".
+    ($uri =~ m|^/|
+      ? $uri
+      : "$base$uri");
+}
+
+### sub encoded_body ($;$) #####################################################
+#
+# prepare posting text for saving
+#
+# Params: $posting - scalar reference of the raw text
+#         $params  - hash reference
+#                    (quoteChars messages)
+#
+# Return: scalar reference of the encoded text
+#
 sub encoded_body ($;$) {
   my $posting = ${+shift};
   my $params = shift;
 
-  $posting =~ s/[ \t]$//gm;        # Whitespaces am Zeilenende entfernen
-  $posting =~s /\s+$//;            # Whitespaces am Stringende entfernen
-  $posting = ${plain (\$posting)}; # Sonderzeichen maskieren
+  $posting =~ s/\015\012|\015|\012/\n/g; # normalize newlines
+  $posting =~ s/[^\S\n]$//gm;            # kill whitespaces at the end of all lines
+  $posting =~ s/\s+$//;                  # kill whitespaces (newlines) at the end of the string (text)
 
-  # Quotingzeichen normalisieren (\177)
-  my $quote = plain($params -> {quoteChars});
-  my $qquote = quotemeta $quote;
+  # check the special syntaxes:
+
+  my $base = $params -> {base_uri};
+  # collect all [link:...] strings
+  #
+  my @rawlinks;
+  push @rawlinks => [$1 => $2] while ($posting =~ /\[([Ll][Ii][Nn][Kk]):\s*([^\]\s]+)\s*\]/g);
+  my @links = grep {
+       is_URL ( $_ -> [1] => ':ALL')
+    or is_URL (($_ -> [1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '' => 'http')
+    or (  $_ -> [1] =~ m<^\.?\.?/(?!/)|\?>
+      and is_URL (rel_uri ($_ -> [1], $base) => 'http'))
+  } @rawlinks;
+
+  # collect all [image:...] strings
+  #
+  my @rawimages;
+  push @rawimages => [$1 => $2] while ($posting =~ /\[([Ii][Mm][Aa][Gg][Ee]):\s*([^\]\s]+)\s*\]/g);
+  my @images = grep {
+       is_URL ($_ -> [1] => 'strict_http')
+    or (  $_ -> [1] =~ m<^\.?\.?/(?!/)|\?>
+      and is_URL (rel_uri ($_ -> [1], $base) => 'http'))
+  } @rawimages;
+
+  # collect all [iframe:...] strings
+  #
+  my @rawiframes;
+  push @rawiframes => [$1 => $2] while ($posting =~ /\[([Ii][Ff][Rr][Aa][Mm][Ee]):\s*([^\]\s]+)\s*\]/g);
+  my @iframes = grep {
+       is_URL ($_ -> [1] => 'http')
+    or is_URL (($_ -> [1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '' => 'http')
+    or (  $_ -> [1] =~ m<^\.?\.?/(?!/)|\?>
+      and is_URL (rel_uri ($_ -> [1], $base) => 'http'))
+  } @rawiframes;
+
+  # collect all [msg:...] strings
+  #
+  $params -> {messages} = {} unless (defined $params -> {messages});
+  my %msg = map {lc($_) => $params -> {messages} -> {$_}} keys %{$params -> {messages}};
+
+  my @rawmsgs;
+  push @rawmsgs => [$1 => $2] while ($posting =~ /\[([Mm][Ss][Gg]):\s*([^\]\s]+)\s*\]/g);
+  my @msgs = grep {exists ($msg{lc($_ -> [1])})} @rawmsgs;
+
+  # encode Entities and special characters
+  #
+  $posting = ${plain (\$posting)};
+
+  # encode the special syntaxes
+  #
+  $posting =~ s!$_!<a href="$1">$1</a>!
+    for (map {qr/\[\Q${plain(\$_->[0])}\E:\s*(\Q${plain(\$_->[1])}\E)\s*\]/} @links);
+
+  $posting =~ s!$_!<img src="$1" border=0 alt="">!
+    for (map {qr/\[\Q${plain(\$_->[0])}\E:\s*(\Q${plain(\$_->[1])}\E)\s*\]/} @images);
+
+  $posting =~ s!$_!<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>!
+    for (map {qr/\[\Q${plain(\$_->[0])}\E:\s*(\Q${plain(\$_->[1])}\E)\s*\]/} @iframes);
+
+  %msg = map {plain($_) => $msg{$_}} keys %msg;
+  $posting =~ s!$_!'<img src="'.$msg{lc $1} -> {src}.'" width='.$msg{lc $1}->{width}.' height='.$msg{lc $1}->{height}.' border=0 alt="'.plain($msg{lc $1}->{alt}).'">'!e
+    for (map {qr/\[\Q${plain(\$_->[0])}\E:\s*(\Q${plain(\$_->[1])}\E)\s*\]/} @msgs);
+
+  # normalize quote characters (quote => \177)
+  #
+  my $quote = plain(defined $params -> {quoteChars} ? $params -> {quoteChars} : '');
   my $len = length ($quote);
-  $posting =~ s!^((?:$qquote)+)(.*)$!"\177" x (length($1)/$len) .$2!gem if (length ($qquote));
+  $posting =~ s!^((?:\Q$quote\E)+)!"\177" x (length($1)/$len)!gem if ($len);
 
-  # Multine
+  # \n => <br>, fix spaces
+  #
   $posting = ${multiline (\$posting)};
 
-  # normaler Link
-  $posting =~ s{\[link:\s*
-               ((?:ftp://                          # hier beginnt $1
-               |   https?://
-               |   about:
-               |   view-source:
-               |   gopher://
-               |   mailto:
-               |   news:
-               |   nntp://
-               |   telnet://
-               |   wais://
-               |   prospero://
-               |   \.\.?/                          # relativ auf dem server
-               |   /                               # absolut auf dem server
-               |   (?:[a-zA-Z.\d]+)?\??            # im forum
-               )   [^\s<'()\[\]]+                  # auf jeden Fall kein \s und kein ] etc.
-               )                                   # hier ist $1 zuende
-               \s*(?:\]|(\s|&(?!amp;)|\(|\)|<br>)) # der Begrenzer (\s, ] oder Zeilenende)
-              }
-              {<a href="$1">$1</a>$2}gix;          # und der Link
-
-  # javascript-links extra
-  my $klammer1='\((?:[^)])*\)';
-  my $klammer2="\\((?:$klammer1|(?:[^)])*)\\)";
-  my $klammer3="\\((?:$klammer2|(?:[^)])*)\\)";
-  my $klammer4="\\((?:$klammer3|(?:[^)])*)\\)";
-
-  $posting =~ s{\[link:\s*
-               (javascript:                        # hier beginnt $1
-               (?:
-                 $klammer4                         # Klammern bis Verschachtelungstiefe 4 (sollte reichen?)
-               | '[^\'\\]*(?:\\.[^\'\\]*)*'        # mit ' quotierter String, J.F. sei gedankt
-                                                   # im String sind Escapes zugelassen (also auch \')
-                                                   # damit werden (korrekt gesetzte) Javascript-Links moeglich
-               | [^\s<()'\]]+)+                    # auf jeden Fall kein \s und kein ] (ausser im String)
-               )                                   # hier ist $1 zuende
-               \s*(?:\s|\]|(\(|\)|&(?!amp;)|<br>)) # der Begrenzer (\s, ] oder Zeilenende)
-              }
-              {<a href="$1">$1</a>$2}gix;          # und der Link
-
-  # images
-  $posting =~ s{\[image:\s*
-               ((?:https?://
-               |   \.\.?/                          # relativ auf dem server
-               |   /                               # absolut auf dem server
-               |   (?:[a-zA-Z.\d]+)?\??            # im forum
-               )   [^\s<'()\[\]]+                  # auf jeden Fall kein \s und kein ] etc.
-               )                                   # hier ist $1 zuende
-               \s*(?:\]|(\s|\(|\)|&(?!amp;)|<br>)) # der Begrenzer (\s, ] oder Zeilenende)
-              }
-              {<img src="$1" border=0 alt="">$2}gix; # und das Bild
-
-  # iframe
-  $posting =~ s{\[iframe:\s*
-               ((?:ftp://
-               |   https?://
-               |   about:
-               |   view-source:
-               |   gopher://
-               |   mailto:
-               |   news:
-               |   nntp://
-               |   telnet://
-               |   wais://
-               |   prospero://
-               |   \.\.?/                          # relativ auf dem server
-               |   /                               # absolut auf dem server
-               |   [a-zA-Z\d]+(?:\.html?|/)        # im forum (koennen eh nur threads oder verweise
-                                                   # auf tiefere verzeichnisse sein)
-               )[^\s<'()\]]+                       # auf jeden Fall kein \s und kein ] etc. (s.o.)
-               )                                   # hier ist $1 zuende
-               \s*(?:\]|(\s|\(|\)|&(?!amp;)|<br>)) # der Begrenzer (\s, ] oder Zeilenende)
-              }
-              {<iframe src="$1" width="90%" height="90%"><a href="$1">$1</a></iframe>$2}gix;
-
-  # [msg...]
-  $params -> {messages} = {} unless (defined $params -> {messages});
-  my %msg = %{$params -> {messages}};
-  foreach (keys %msg) {
-    $posting =~ s/\[msg:\s*$_(?:\s*\]|\s)/'<img src="'.$msg{$_} -> {src}.'" width='.$msg{$_}->{width}.' height='.$msg{$_}->{height}.' border=0 alt="'.plain($msg{$_}->{alt}).'">'/gei;}
-
-  # Rueckgabe
+  # return
+  #
   \$posting;
 }
 
-################################
-# sub answer_field
+### sub answer_field ($$) ######################################################
 #
-# Antwort HTML einer Message
-# erzeugen
-################################
-
+# create the content of the answer textarea
+#
+# Params: $posting - scalar reference
+#                    (posting text, 'encoded_body' encoded)
+#         $params  - hash reference
+#                    (quoteArea quoteChars messages)
+#
+# Return: scalar reference
+#
 sub answer_field ($$) {
   my $posting = shift;
-  my $params = shift;
-  $params = {} unless (defined $params);
+  my $params = shift || {};
 
-  # ================
-  # Antwortfeld
-  # ================
   my $area = $$posting;
-
   my $qchar = $params -> {quoteChars};
 
-  $area =~ s/(?:^|(<br>))(?!<br>)/$1 || '' . "\177"/eg if ($params -> {quoteArea}); # Antwortfeld quoten?!
-  $area =~ s/\177/$qchar/g; # normalisierte Quotes jedenfalls in Chars umsetzen
+  $area =~ s/<br>/\n/g;            # <br> => \n
+  $area =~ s/&(?:#160|nbsp);/ /g;  # nbsp => ' '
 
-  # HTML-Zeug zurueckuebersetzen
+  $area =~ s/^(.)/\177$1/gm if ($params -> {quoteArea}); # shift a quoting character
+  $area =~ s/^(\177+)/$qchar x length ($1)/gem;          # decode normalized quoting characters
 
-  $params -> {messages} = {} unless (defined $params -> {messages}); # um Fehlermeldungen auszuschliessen...
-  my %msg = map {($params -> {messages} -> {$_} -> {src} => $_)} keys %{$params -> {messages}};
+  # recode special syntaxes
+  # from HTML to [...] constructions
+  #
+  $params -> {messages} = {} unless (defined $params -> {messages}); # avoid error messages
+  my %msg = map {
+    $params -> {messages} -> {$_} -> {src} => $_
+  } keys %{$params -> {messages}};                                   # we have to lookup reverse ...
 
-  $area =~ s{<iframe\s+src="([^"]*)"[^>]+>.*?</iframe>|<img\s+src="([^"]*)"\s+width[^>]+>|<img src="([^"]*)"[^>]*>|<a href="([^"]*)">.*?</a>}
-            {if    (defined $1) {"[iframe: $1]"}
-             elsif (defined $2) {"[msg: $msg{$2}]"}
-             elsif (defined $3) {"[image: $3]"}
-             elsif (defined $4) {"[link: $4]"}}eg;
-  $area =~ s/<br>/\n/g;
-  $area =~ s/&(?:#160|nbsp);/ /g;
+  # [msg...]
+  $area =~ s{(<img\s+src="([^"]+)"\s+width[^>]+>)} {
+    defined $msg{$2}
+    ? "[msg: $msg{$2}]"
+    : $1;
+  }ge;
 
-  # Rueckgabe
+  # [iframe...]
+  $area =~ s{<iframe\s+src="([^"]*)"[^>]+>.*?</iframe>} {[iframe: $1]}g;
+
+  # [image...]
+  $area =~ s{<img src="([^"]*)"[^>]*>}{[image: $1]}g;
+
+  # [link...]
+  $area =~ s{<a href="([^"]*)">.*?</a>}{[link: $1]}g;
+
+  # return
+  #
   \$area;
 }
 
-################################
-# sub message_field
+### sub message_field ($$) #####################################################
 #
-# HTML eines Postingtextes
-# erzeugen
-################################
-
+# prepare the posting text for visual output
+#
+# Params: $posting - scalar reference
+#                    (raw posting text, 'encoded_body' encoded)
+#         $params  - hash reference
+#                    (quoteChars quoting startCite endCite)
+#
+# Return: scalar rerence (prepared posting text)
+#
 sub message_field ($$) {
   my $posting = ${+shift};
-  my $params = shift;
-  $params = {} unless (defined $params);
+  my $params = shift || {};
 
-  # ================
-  # Postingtext
-  # ================
+
+  if ($params -> {quoting}) {       # quotes are displayed as special?
+    my @array = [0 => []];
+
+    for (split /<br>/ => $posting) {
+      my $l = length ((/^(\177*)/)[0]);
+      if ($array[-1][0] == $l) {
+        push @{$array[-1][-1]} => $_;
+      }
+      else {
+        push @array => [$l => [$_]];
+      }
+    }
+    shift @array unless @{$array[0][-1]};
+
+    $posting = join '<br>' => map {
+      $_->[0]
+        ? join join ('<br>' => @{$_->[-1]}) => ($params->{startCite}, $params->{endCite})
+        : (join '<br>' => @{$_->[-1]});
+    } @array;
+  }
+
   my $qchar = $params -> {quoteChars};
+  $posting =~ s/\177/$qchar/g; # \177 => quote chars
 
-  if ($params -> {quoting}) {    # Quotes bekommen eine extra Klasse?
-    # ueberfluessige Abstaende entfernen,
-    # sie werden eh wieder auseinandergezogen...
-    $posting =~ s/(\177(?:[^<]|<(?!br>))*<br>)<br>(?=\177)/$1/g;
-    $posting =~ s/(\177(?:[^<]|<(?!br>))*<br>)<br>(?!\177)/$1/g;
-
-    my ($last_level, $level, $line, $q, @new)=(-1,0);
-
-    foreach $line (split (/<br>/,$posting)) { # Zeilenweise gucken,
-      ($q) = ($line =~ /^(\177+)/g);          # wieviele
-      $level = length ($q or '');             # Quotingchars am Anfang stehen
-      if ($level != $last_level) {            # wenn sich was verandert...
-                                              # ... dann TU ETWAS!
-
-        if    ($last_level <= 0 and $level > 0) {$last_level = $level; $line='<br>'.$params -> {startCite} . $line}
-        elsif ($level > 0) {$last_level = $level; $line=$params -> {endCite} . '<br>' . $params -> {startCite} . $line}
-        elsif ($level == 0 and $last_level > 0) {$last_level = -1; $line = $params -> {endCite} . '<br>' . $line}}
-
-      push @new,$line}
-
-    $new[0] =~ s/^<br>//;
-    $posting = (join '<br>',@new) . (($last_level > 0)?$params -> {endCite}:'');}
-
-  $posting =~ s/\177/$qchar/g; # normalisierte Quotes in Chars umsetzen
-
-  # Rueckgabe
+  # return
+  #
   \$posting;
 }
 
-
-# ====================================================
-# Modulinitialisierung
-# ====================================================
-
-# making require happy
+# keeping 'require' happy
 1;
 
-# ====================================================
-# end of Encode::Posting
-# ====================================================
+#
+#
+### end of Encode::Posting #####################################################

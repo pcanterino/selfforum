@@ -31,8 +31,9 @@ sub get_view_params ($) {
   my $default = $param -> {adminDefault};
   my %hash;
 
-  %hash = (quoteChars    => $default -> {View} -> {quoteChars},
-           sortedMsg     =>  $default -> {View} -> {sortMessages},
+  %hash = (quoting       => $default -> {View} -> {quoting},
+           quoteChars    => $default -> {View} -> {quoteChars},
+           sortedMsg     => $default -> {View} -> {sortMessages},
            sortedThreads => $default -> {View} -> {sortThreads}
           );
 

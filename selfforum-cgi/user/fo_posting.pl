@@ -375,7 +375,8 @@ sub save {
           lastMessage   => $f -> {last_message},
           parsedThreads => $f -> {threads},
           dtd           => $f -> {dtd},
-          messages      => $self -> {template} -> {messages} || {},
+          messages      => $self -> {conf} -> {template} -> {messages} || {},
+          base_uri      => $self -> {conf} -> {original} -> {files} -> {forum_base}
         };
 
         # set the variables if defined..
@@ -423,8 +424,8 @@ sub save {
           #
           $self -> {response} -> {doc}  = $self -> {conf} -> {assign} -> {docThx};
           $self -> {response} -> {pars} = {
-            $thx -> {time}     => plain (hr_time($time)),
-            $thx -> {body}     => message_as_HTML (
+            $thx -> {time} => plain (hr_time($time)),
+            $thx -> {body} => message_as_HTML (
               $xml,
               $self -> {template},
               { posting    => $mid,
@@ -500,7 +501,7 @@ sub load_main_file {
   my $lock_stat;
 
   unless ($lock_stat = write_lock_file ($self -> {conf} -> {forum_file_name})) {
-    if (defined $lock_stat and $lock_stat == 0) {
+    if (defined $lock_stat) {
       # occupied or no w-bit set for the directory..., hmmm
       #
       violent_unlock_file ($self -> {conf} -> {forum_file_name});

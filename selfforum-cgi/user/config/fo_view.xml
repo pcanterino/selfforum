@@ -38,6 +38,13 @@
         <Variable name="mainDocEnd">DOC_FORUM_END</Variable>
         <Variable name="loadingTime">_LOAD_TIME</Variable>
         <Variable name="cssFile">_CSS_FILE</Variable>
+        <Variable name="errorDoc">DOC_ERROR</Variable>
+        <Variable name="startCite">CITE_START</Variable>
+        <Variable name="endCite">CITE_END</Variable>
+
+        <Variable name="notAvailable">_N_A</Variable>
+        <Variable name="occupied">_OCCUPIED</Variable>
+        <Variable name="errorText">_ERROR_TEXT</Variable>
       </Property>
 
     </Property>
@@ -47,6 +54,7 @@
 
       <Property name="assign">
         <Variable name="mainDoc">DOC_POSTING</Variable>
+        <Variable name="errorDoc">DOC_ERROR</Variable>
         <Variable name="cssFile">_CSS_FILE</Variable>
         <Variable name="message">_MESSAGE</Variable>
         <Variable name="name">_BEF_NAME</Variable>
@@ -63,6 +71,10 @@
         <Variable name="parentLink">_REF_LINK</Variable>
         <Variable name="startCite">CITE_START</Variable>
         <Variable name="endCite">CITE_END</Variable>
+
+        <Variable name="notAvailable">_N_A</Variable>
+        <Variable name="occupied">_OCCUPIED</Variable>
+        <Variable name="errorText">_ERROR_TEXT</Variable>
       </Property>
 
       <Property name="form">

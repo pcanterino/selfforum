@@ -1,155 +1,203 @@
-# Template.pm
-
-# ====================================================
-# Autor: n.d.p. / 2001-01-06
-# lm   : n.d.p. / 2001-01-25
-# ====================================================
-# Funktion:
-#      Ausfuellen von Templates
-# ====================================================
-
-use strict;
-
 package Template;
 
-use autouse 'Carp' => qw(croak confess);
-use XML::DOM;
+################################################################################
+#                                                                              #
+# File:        shared/Template.pm                                              #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-04-12                          #
+#                                                                              #
+# Description: Handle XML based HTML-Templates                                 #
+#                                                                              #
+################################################################################
 
-# ====================================================
-# Methoden
-# ====================================================
+use strict;
+use vars qw($xml_dom_used);
 
-################################
-# sub new
+use Carp qw(croak confess);
+
+BEGIN {
+  $xml_dom_used = eval q[
+    local $SIG{__DIE__};
+    use XML::DOM;
+    1;
+  ];
+}
+
+### sub new ####################################################################
 #
-# Konstruktor
-################################
-
+# constructor
+#
+# Params: ~none~
+#
+# Return: Template object
+#
 sub new {
-  my $instance=shift;
-  my $class=(ref($instance) or $instance);
+  my $instance = shift;
 
-  my $self = {};
-  $self = bless $self,$class;
+  my $self = bless {} => ref($instance) || $instance;
 
   $self -> file (+shift);
 
-  # Rueckgabe
+  # return
   $self;
 }
 
-################################
-# sub file
+### sub file ###################################################################
 #
-# Datei zuweisen und parsen
-################################
-
+# assign new template file to object
+# parse the template file
+#
+# Params: $new - (optional) new template file
+#
+# Return: scalar - old filename or if there's no old filename given
+#
 sub file {
   my $self = shift;
-  my $old = $self -> {file};
-  my $new = shift;
+  my $new  = shift;
+  my $old  = $self -> {file};
 
   $self -> {file} = $new if (defined $new);
   $self -> parse_file;
 
+  # return
   $old;
 }
 
-################################
-# sub insert
+### sub insert #################################################################
 #
-# Bezeichner in Metazeichen
-# eingeschlossen zurueckgeben
-################################
-
+# return the placeholder surrounded by meta delimiters
+#
+# Params: $name - name of placeholder
+#
+# Return: scalar - placeholder surrounded by meta delimiters
+#
 sub insert {
-  my $self=shift;
-  croak "no template file specified" unless (defined $self -> {file});
+  my $self = shift;
+  my $name = shift;
 
-  my $name=shift;
+  croak "no template file specified"
+    unless (defined $self -> {file});
 
-  # Rueckgabe
+  # return
   $self -> {metaon} . $name . $self -> {metaoff};
 }
 
-################################
-# sub list
+### sub list ###################################################################
 #
-# komplette Liste einsetzen
-################################
-
+# fill in a complete list
+#
+# Params: $name  - name of the atomic scrap
+#         $array - list of hashes (same strcuture like the hash used by 'scrap')
+#
+# Return: scalar reference - filled in list
+#
 sub list {
-  my $self=shift;
-  my $name=shift;
+  my $self = shift;
+  my $name = shift;
 
-  croak "no template file specified" unless (defined $self->{file});
+  croak "no template file specified"
+    unless (defined $self -> {file});
 
-  my $list = join '', map { ${ $self -> scrap ($name, $_) } } @{ +shift };
+#  no warnings 'uninitialized';
+  my $list = join '' => map { ${ $self -> scrap ($name, $_) } } @{ +shift };
 
-  # Rueckgabe
+  # return
   \$list;
 }
 
-################################
-# sub scrap
+### sub scrap ##################################################################
 #
-# Schnipsel ausfuellen
-################################
-
+# fill in a template scrap
+#
+# Params: $name - name of the scrap
+#
+# Return: scalar reference - filled in scrap
+#
 sub scrap {
-  my $self=shift;
-  my $name=shift;
+  my $self = shift;
+  my $name = shift;
 
-  croak "no template file specified" unless (defined $self->{file});
+  croak "no template file specified"
+    unless (defined $self -> {file});
 
+  return \'' unless (defined $name and defined ($self -> {parsed} -> {$name}));
+
+  # fetch parameters
+  # (and normalize - save only the references in %params)
+  #
   my %params;
+  %params = map {
+    my $ref = $_;
+    map {
+      ($_ => (
+        ref ($ref -> {$_})
+        ? (defined ${$ref -> {$_}} ? $ref -> {$_} : \'')
+        : \(defined $ref -> {$_} ? $ref -> {$_} : ''))
+      )
+    } keys %$ref
+  } splice @_;
 
-  # Parameter holen
-  # Als Values werden nur die Referenzen gespeichert
-  %params = map { my $ref = $_; map { ($_ => ( (ref ($ref -> {$_} ) )?$ref -> {$_}: \($ref -> {$_} ) ) ) } keys %$ref } splice @_;
+  # fill in...
+  #
+  my $scrap = $self -> {parsed} -> {$name};
+  my $qmon  = quotemeta $self -> {metaon};
+  my $qmoff = quotemeta $self -> {metaoff};
 
-  # und einsetzen
-  my $scrap=$self->{parsed}->{$name};
-  my $qmon=quotemeta $self->{metaon};
-  my $qmoff=quotemeta $self->{metaoff};
+  # ...until we've replaced all placeholders
+  #
+  1 while (
+      $scrap =~ s
+      <
+        $qmon \s*
+        ([_a-zA-Z] \S*)
+        \s* $qmoff
+      >
+      [ (exists ( $params{$1} ) )
+        ? ${$params{$1}}
+        : ( exists ( $self -> {parsed} -> {$1} )
+            ? $self -> {parsed} -> {$1}
+            : ''
+          );
+      ]gex
+    );
 
-  # und zwar solange, bis nichts mehr da ist
-  while ($scrap =~ s<$qmon\s*([_a-zA-Z]\S*)\s*$qmoff>[
-    my $x='';
-    if ( exists ( $params{$1} ) ) { $x = ${$params{$1}} }
-    elsif (exists ( $self -> {parsed} -> {$1} ) ) { $x = $self -> {parsed} -> {$1}}
-    $x;]geo ){};
+  # parse conditional blocks
+  #
+  $self -> parse_if (
+    \$scrap,
+    \%params
+  );
 
-  $self -> parse_if (\$scrap,\%params);
-
-  # Rueckgabe
+  # return
   \$scrap;
 }
 
-# ====================================================
-# Private Funktionen/Methoden
-# ====================================================
-
-################################
-# sub parse_file
+### sub parse_file #############################################################
 #
-# Template einlesen & parsen
-################################
-
+# read in and parse template file
+#
+# Params: ~none~
+#
+# Return: Status Code (Boolean)
+#
 sub parse_file {
   my $self = shift;
+  my $filename = $self -> {file};
 
-  if (-f $self -> {file}) {
-    my $filename = $self -> {file};
+  if ($xml_dom_used) {
+
+    # parse template using XML::DOM
+    #
     my $xml = eval {
       local $SIG{__DIE__};
       new XML::DOM::Parser -> parsefile ($filename);
     };
-    croak "error in template file '$filename': $@" if ($@);
+    croak "error while parsing template file '$filename': $@" if ($@);
 
     my $template = $xml -> getElementsByTagName ('Template', 0) -> item (0);
 
-    # Metas bestimmen
+    # extract meta delimiters
+    #
     $self -> {metaon}  = $template -> getAttribute ('metaon');
     $self -> {metaoff} = $template -> getAttribute ('metaoff');
 
@@ -166,18 +214,73 @@ sub parse_file {
       $self -> {parsed} -> {$name} = $_ -> getFirstChild -> getData;
       $self -> {parsed} -> {$name} =~ s/^\s+|\s+$//g;}
 
-    return 1; # alles klar
+    return 1; # looks fine
+  }
+  else {
+    # XML::DOM not available...
+    # parse the template using both hands ;)
+    #
+
+    my ($xml, $root, $template);
+    local (*FILE, $/);
+
+    open FILE, "< $filename" or croak "error while reading template file '$filename': $!";
+    $xml = <FILE>;
+    close FILE or croak "error while closing template file '$filename' after reading: $!";
+
+    ($root, $template) = ($1, $2) if ($xml =~ m|(<Template\s+[^>"]*(?:"[^"]*"[^>"]*)*>)(.*)</Template\s*>|s);
+    croak "error while parsing template file '$filename': missing root element 'Template'"
+      unless (defined $root and defined $template);
+
+    # extract meta delimiters
+    #
+    $self -> {metaon}  = $1 if ($root =~ /\smetaon\s*=\s*"([^"]+)"/);
+    $self -> {metaoff} = $1 if ($root =~ /\smetaoff\s*=\s*"([^"]+)"/);
+
+    croak "missing meta defintion(s) in template file '$filename'." unless ($self -> {metaon} and $self -> {metaoff});
+
+    # don't use any other entities than &quot; &apos; &lt; &gt; and &amp;
+    # (while using non XML::DOM - version)
+    #
+    for ('metaon', 'metaoff') {
+      $self -> {$_} =~ s/&quot;/"/g;  $self -> {$_} =~ s/&apos;/'/g;
+      $self -> {$_} =~ s/&lt;/</g;    $self -> {$_} =~ s/&gt;/>/g;
+      $self -> {$_} =~ s/&amp;/&/g;
+    }
+
+    $self -> {parsed} = {};
+    while ($template =~ m|<Scrap\s+(?:id\s*=\s*"([^"]+)")?\s*>\s*<!\[CDATA\[([^\]]*(?:\](?!\]>)[^\]]*)*)\]\]>\s*</Scrap\s*>|g) {
+
+      my ($name, $content) = ($1, $2);
+
+      croak "Element 'Scrap' requires attribute 'id' in template file '$filename'"
+        unless (defined $name and length $name);
+
+      croak "double defined id '$name' in template file '$filename'"
+        if (exists ($self -> {parsed} -> {$name}));
+
+      croak "use '/^[_a-zA-Z]\\S*\$/' for 'Scrap'-ids in template file '$filename' (wrong: '$name')"
+        unless ($name =~ /^[_a-zA-Z]\S*$/);
+
+      $content =~ s/^\s+//; $content =~ s/\s+$//;
+      $self -> {parsed} -> {$name} = $content;
+    }
+
+    return 1; # looks fine
   }
 
-  0;
+  return; # anything failed (??)
 }
 
-################################
-# sub parse_if
+### sub parse_if ###############################################################
 #
-# %IF - Anweisungen parsen
-################################
-
+# parse conditional blocks
+#
+# Params: $scrap  - scalar reference of the template scrap
+#         $params - hash reference: values from the application
+#
+# Return: ~none~, ($$scrap will be modified)
+#
 sub parse_if {
   my $self = shift;
   my ($scrap, $params) = @_;
@@ -185,29 +288,22 @@ sub parse_if {
   my $qmon  = quotemeta $self -> {metaon};
   my $qmoff = quotemeta $self -> {metaoff};
 
-  # der folgende Regex ist ein bisschen fies ...
-  # ... aber er funktioniert :-)
-  #
-  # pfff - rekursive Strukturen iterativ parsen ist nicht wirklich witzig
-  #
+  # the following regex is just not optimized,
+  # but it works ;)
 
   1 while ($$scrap =~ s {
-    ($qmon\s*%(?:IF|ELSE)\s+.+?\s*$qmoff.*?) # Wenn IF oder ELSE von
-    (?=$qmon\s*%IF\s+.+?\s*$qmoff)           # IF gefolgt werden, soll
-                                             # dieses Stueck uebersprungen
-                                             # werden und erstmal mit der
-                                             # naechsten Ebene weitergemacht
-                                             # werden.
+    ($qmon\s*%(?:IF|ELSE)\s+.+?\s*$qmoff.*?) # skip this part
+    (?=$qmon\s*%IF\s+.+?\s*$qmoff)           # if %IF or %ELSE are followed by %IF
 
-   |(                                        # hier beginnt $2
-     $qmon\s*%IF\s+(.+?)\s*$qmoff            # IF
+   |(                                        # $2 starts here
+     $qmon\s*%IF\s+(.+?)\s*$qmoff            # %IF
      (.*?)                                   # $4
      (?:
-       $qmon\s*%ENDIF\s*$qmoff               # gefolgt von ENDIF
-      |                                      # oder
-       $qmon\s*%ELSE\s*$qmoff                # von ELSE... ($4 ELSE $5)
-       (.*?)
-       $qmon\s*%ENDIF\s*$qmoff               # und ENDIF
+       $qmon\s*%ENDIF\s*$qmoff               # followed by %ENDIF
+      |                                      # or
+       $qmon\s*%ELSE\s*$qmoff                # %ELSE...
+       (.*?)                                 # $5
+       $qmon\s*%ENDIF\s*$qmoff               # ...and ENDIF
      )
     )
   }
@@ -218,6 +314,7 @@ sub parse_if {
       for (split /\s+/,$t3) {
         next unless (
           exists($params->{$_})
+          and defined ${$params->{$_}}
           and length ${$params->{$_}}
         );
 
@@ -231,12 +328,12 @@ sub parse_if {
     }
 
     $ret;
-  }gosex);
+  }gsex);
 
   return;
 }
 
-# keep require happy
+# keeping 'require' happy
 1;
 
 #
