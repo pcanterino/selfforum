@@ -114,7 +114,7 @@ Version 2.00    30.09.2000
       Das Attribut 'votingAdmin'  ja/nein Entscheidung eines Mitgliedes des SELFHTML-Redaktionsteams
       fuer die Archivierung einer Nachricht.
       0 = auf keinem Fall archivieren, 1 = auf jedem Fall archivieren.
-      Das Attribut 'invisible' bestimmt ob ein Message angezeigt wird (1, default) oder nicht (0)
+      Das Attribut 'invisible' bestimmt ob ein Message angezeigt wird (0 oder nicht vorhanden) oder nicht (1)
       Das Attribut 'archive' bestimmt ob ein Message archiviert wird (1) oder nicht (0): 1 oder 0 wird
          anhand der Werte von 'votings' bestimmt.
      Das Attribut 'ip' speichert die IP der Sender des Messages.
