@@ -4,8 +4,8 @@ package Template::Archive;
 #                                                                              #
 # File:        shared/Template/Archive.pm                                      #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-06-16                    #
-#              Frank Schoenmann <fs@tower.de>,   2001-06-08                    #
+# Authors:     André Malo <nd@o3media.de>                                      #
+#              Frank Schönmann <fs@tower.de>                                   #
 #                                                                              #
 # Description: archive display                                                 #
 #                                                                              #
@@ -14,10 +14,9 @@ package Template::Archive;
 use strict;
 use vars qw(
   @EXPORT
-  $VERSION
 );
 
-use Lock qw(:READ);
+use Lock;
 use Encode::Posting;
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Posting::_lib qw(
@@ -44,7 +43,11 @@ use Template::_thread;
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #
@@ -57,7 +60,6 @@ use base qw(Exporter);
     print_month_as_HTML
     print_thread_as_HTML
 );
-
 
 ### print_overview_as_HTML () ##################################################
 #
@@ -190,6 +192,7 @@ sub print_year_as_HTML($$$) {
 #
 sub print_month_as_HTML($$$) {
     my ($mainfile, $tempfile, $param) = @_;
+    my $main = new Lock($mainfile);
 
     my $assign = $param->{'assign'};
 
@@ -198,7 +201,7 @@ sub print_month_as_HTML($$$) {
     #
     # check if XML file exists
     #
-    unless (-e $mainfile) {
+    unless (-f $main->filename) {
         print ${$template->scrap(
             $assign->{'error'},
             {
@@ -211,8 +214,8 @@ sub print_month_as_HTML($$$) {
     #
     # try locking and read/parse threads
     #
-    my ($threads, $locked);
-    unless ($locked = lock_file($mainfile) and $threads = get_all_threads($mainfile, KILL_DELETED)) {
+    my $threads;
+    unless ($main->lock (LH_SHARED) and $threads = get_all_threads($mainfile, KILL_DELETED)) {
         print ${$template->scrap(
             $assign->{'error'},
             {
@@ -221,7 +224,7 @@ sub print_month_as_HTML($$$) {
         )};
         return;
     }
-    unlock_file($mainfile);
+    $main -> unlock;
 
     my $tmplparam = {
             $assign->{'year'}           => $param->{'year'},
@@ -285,7 +288,7 @@ sub print_thread_as_HTML($$$) {
     #
     # check if XML file exists
     #
-    unless (-e $mainfile) {
+    unless (-f $mainfile) {
         print ${$template->scrap(
             $assign->{'error'},
             {

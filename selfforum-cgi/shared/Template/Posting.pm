@@ -4,7 +4,7 @@ package Template::Posting;
 #                                                                              #
 # File:        shared/Template/Posting.pm                                      #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-06-16                    #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: show HTML formatted posting                                     #
 #                                                                              #
@@ -13,7 +13,6 @@ package Template::Posting;
 use strict;
 use vars qw(
   @EXPORT
-  $VERSION
 );
 
 use Encode::Posting;
@@ -40,7 +39,11 @@ use XML::DOM;
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #

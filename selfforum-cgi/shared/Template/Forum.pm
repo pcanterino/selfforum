@@ -4,7 +4,7 @@ package Template::Forum;
 #                                                                              #
 # File:        shared/Template/Forum.pm                                        #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-06-16                          #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: print Forum main file to STDOUT                                 #
 #                                                                              #
@@ -13,7 +13,6 @@ package Template::Forum;
 use strict;
 use vars qw(
   @EXPORT
-  $VERSION
 );
 
 use Lock;
@@ -30,7 +29,11 @@ use Template::_thread;
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #

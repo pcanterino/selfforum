@@ -4,7 +4,7 @@ package Template::_query;
 #                                                                              #
 # File:        shared/Template/_query.pm                                       #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-06-16                          #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: compose a query string                                          #
 #                                                                              #
@@ -13,14 +13,17 @@ package Template::_query;
 use strict;
 use vars qw(
   @EXPORT
-  $VERSION
 );
 
 ################################################################################
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #
@@ -40,7 +43,7 @@ use base qw(Exporter);
 #
 sub url_encode ($) {
   my $string = shift;
-  $string=~s/([^a-zA-Z\d_.-])/uc sprintf('%%%02x',ord($1))/eg;
+  $string=~s/([^a-zA-Z\d_.-])/uc sprintf('%%%02x' => ord($1))/eg;
 
   $string;
 }
