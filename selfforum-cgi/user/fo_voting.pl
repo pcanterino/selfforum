@@ -4,7 +4,7 @@
 #                                                                              #
 # File:        user/fo_voting.pl                                               #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-04-23                          #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: vote a posting, return the posting view                         #
 #                                                                              #
@@ -16,7 +16,6 @@ use vars qw(
   $Shared
   $Script
   $Config
-  $VERSION
 );
 
 BEGIN {
@@ -45,11 +44,22 @@ use Conf::Admin;
 use Posting::Cache;
 use Template::Posting;
 
-use CGI qw(param header remote_addr request_method);
+use CGI qw(
+  param
+  header
+  remote_addr
+  request_method
+);
 
+################################################################################
+#
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 my $conf = read_script_conf ($Config, $Shared, $Script);
 

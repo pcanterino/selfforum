@@ -4,7 +4,7 @@
 #                                                                              #
 # File:        user/fo_posting.pl                                              #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-04-08                          #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: Accept new postings, display "Neue Nachricht" page              #
 #                                                                              #
@@ -16,7 +16,6 @@ use vars qw(
   $Shared
   $Script
   $Config
-  $VERSION
 );
 
 # locate the script
@@ -46,9 +45,15 @@ use Conf;
 use Conf::Admin;
 use Posting::Cache;
 
+################################################################################
+#
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 # load script configuration and admin default conf.
 #
@@ -85,7 +90,7 @@ package Posting::Request;
 
 use Arc::Starter;
 use CheckRFC;
-use Encode::Plain; $Encode::Plain::utf8 = 1; # generally convert from UTF-8
+use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Encode::Posting;
 use Lock;
 use Posting::_lib qw(
@@ -1020,7 +1025,9 @@ sub decode_param {
 }
 
 sub jerk {
-  my $text = $_[1] || 'An error has occurred.';
+  my $text = shift;
+  $text = 'An error has occurred.' unless defined $text;
+
   print <<EOF;
 Content-type: text/plain
 

@@ -4,7 +4,7 @@
 #                                                                              #
 # File:        user/fo_view.pl                                                 #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-04-01                          #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: display the forum main file or a single posting                 #
 #                                                                              #
@@ -16,7 +16,6 @@ use vars qw(
   $Shared
   $Script
   $Config
-  $VERSION
 );
 
 BEGIN {
@@ -50,9 +49,15 @@ use CGI qw(
   header
 );
 
+################################################################################
+#
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 print header(
   -type    => 'text/html',

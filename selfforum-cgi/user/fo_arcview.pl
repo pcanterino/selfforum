@@ -4,7 +4,7 @@
 #                                                                              #
 # File:        user/fo_arcview.pl                                              #
 #                                                                              #
-# Authors:     Frank Schoenmann <fs@tower.de>, 2001-06-02                      #
+# Authors:     Frank Schönmann <fs@tower.de>                                   #
 #                                                                              #
 # Description: archive browser                                                 #
 #                                                                              #
@@ -16,7 +16,6 @@ use vars qw(
   $Shared
   $Script
   $Config
-  $VERSION
 );
 
 BEGIN {
@@ -51,9 +50,15 @@ use Template::Archive qw(
 
 use CGI qw(param header path_info);
 
+################################################################################
+#
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 print header(-type => 'text/html');
 
