@@ -158,8 +158,8 @@ sub answer_field ($$) {
   my $area = $$posting;
   my $qchar = $params -> {quoteChars};
 
-  $area =~ s/<br>/\n/g;            # <br> => \n
-  $area =~ s/&(?:#160|nbsp);/ /g;  # nbsp => ' '
+  $area =~ s/<br(?:\/| \/)?>/\n/g;  # <br> => \n
+  $area =~ s/&(?:#160|nbsp);/ /g;   # nbsp => ' '
 
   $area =~ s/^(.)/\177$1/gm if ($params -> {quoteArea}); # shift a quoting character
   $area =~ s/^(\177+)/$qchar x length ($1)/gem;          # decode normalized quoting characters
@@ -208,12 +208,12 @@ sub message_field ($$) {
   my $posting = ${+shift};
   my $params = shift || {};
 
-  my $break = '<br>';
+  my $break = '<br />';
 
   if ($params -> {quoting}) {       # quotes are displayed as special?
     my @array = [0 => []];
 
-    for (split /<br>/ => $posting) {
+    for (split /<br(?:\/| \/)?>/ => $posting) {
       my $l = length ((/^(\177*)/)[0]);
       if ($array[-1][0] == $l) {
         push @{$array[-1][-1]} => $_;
@@ -225,7 +225,7 @@ sub message_field ($$) {
     shift @array unless @{$array[0][-1]};
 
     my $ll=0;
-    $posting = join '<br>' => map {
+    $posting = join $break => map {
       my $string = $_->[0]
         ? (($ll and $ll != $_->[0]) ? $break : '') .
           join join ($break => @{$_->[-1]})
