@@ -68,7 +68,7 @@
       <Property name="form">
         <Property name="action">
           <Property name="post">
-            <Variable name="url">/cgi-local/user/fo_posting.pl</Variable>
+            <Variable name="url">/cgi-local/dev/env.pl</Variable>
             <Variable name="assign">_FORM_ACTION</Variable>
           </Property>
 

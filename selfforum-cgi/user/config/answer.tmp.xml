@@ -163,7 +163,7 @@
 -->
 
   <Scrap id="POST_FORM"><![CDATA[
-<form method="post" action="{&& _FORM_ACTION &&}">{&& %IF _FORM_FUP_VALUE &&}
+<form accept-charset="iso-8859-1, UTF-8" method="post" action="{&& _FORM_ACTION &&}">{&& %IF _FORM_FUP_VALUE &&}
 <input type="hidden" name="{&& _FORM_FUP_NAME &&}" value="{&& _FORM_FUP_VALUE &&}">{&& %ENDIF &&}{&& %IF _FORM_UID_VALUE &&}
 <input type="hidden" name="{&& _FORM_UID_NAME &&}" value="{&& _FORM_UID_VALUE &&}">{&& %ENDIF &&}
 <input type="hidden" name="{&& _FORM_UNID_NAME &&}" value="{&& _FORM_UNID_VALUE &&}">

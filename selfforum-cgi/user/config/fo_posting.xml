@@ -46,7 +46,7 @@
       <Property name="form">
         <Property name="action">
           <Property name="post">
-            <Variable name="url">/cgi-local/user/fo_posting.pl</Variable>
+            <Variable name="url">/cgi-local/dev/env.pl</Variable>
             <Variable name="assign">_FORM_ACTION</Variable>
           </Property>
         </Property>
@@ -69,6 +69,8 @@
             <ListItem>posterName</ListItem>
             <ListItem>posterEmail</ListItem>
             <ListItem>posterBody</ListItem>
+            <ListItem>posterCategory</ListItem>
+            <ListItem>posterSubject</ListItem>
           </List>
         </Property>
 
@@ -163,7 +165,8 @@
             <Variable name="name">category</Variable>
             <Variable name="maxlength">18</Variable>
             <Variable name="minlength">3</Variable>
-            <Variable name="errorType">repeat</Variable>
+            <Variable name="errorType">fetch</Variable>
+            <Variable name="header">category</Variable>
             <List name="values">
               <ListItem>ASP</ListItem>
               <ListItem>BROWSER</ListItem>
@@ -172,7 +175,7 @@
               <ListItem>DATENBANK</ListItem>
               <ListItem>DESIGN</ListItem>
               <ListItem>DHTML</ListItem>
-              <ListItem>E_MAIL</ListItem>
+              <ListItem>E-MAIL</ListItem>
               <ListItem>FTP</ListItem>
               <ListItem>GRAFIK</ListItem>
               <ListItem>HTML</ListItem>
@@ -209,7 +212,8 @@
             <Variable name="name">subject</Variable>
             <Variable name="maxlength">64</Variable>
             <Variable name="minlength">4</Variable>
-            <Variable name="errorType">repeat</Variable>
+            <Variable name="errorType">fetch</Variable>
+            <Variable name="header">subject</Variable>
           </Property>
 
           <Property name="posterBody">
@@ -237,7 +241,8 @@
             </Property>
             <Variable name="name">url</Variable>
             <Variable name="maxlength">1024</Variable>
-            <Variable name="errorType">repeat</Variable>
+            <Variable name="type">http-url</Variable>
+            <Variable name="errorType">kill</Variable>
           </Property>
 
           <Property name="posterImage">
@@ -248,7 +253,8 @@
             </Property>
             <Variable name="name">image</Variable>
             <Variable name="maxlength">1024</Variable>
-            <Variable name="errorType">repeat</Variable>
+            <Variable name="type">http-url</Variable>
+            <Variable name="errorType">kill</Variable>
           </Property>
 
         </Property>

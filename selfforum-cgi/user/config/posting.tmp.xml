@@ -38,7 +38,7 @@
 <dl>{&& _THREAD &&}</dl>{&& %ENDIF &&}
 <h3>Eigene Antwort schreiben</h3>
 <p>Die Nachricht, auf die Sie antworten, ist im Feld des Nachrichtentextes noch mal komplett zitiert. Entfernen Sie bei langen Nachrichten bitte alle Passagen aus dem Zitat bis auf jene, auf die Sie selbst Bezug nehmen wollen.</p>
-<form method="post" action="{&& _FORM_ACTION &&}">
+<form accept-charset="iso-8859-1, UTF-8" method="post" action="{&& _FORM_ACTION &&}">
 <input type="hidden" name="{&& _FORM_FUP_NAME &&}" value="{&& _FORM_FUP_VALUE &&}">{&& %IF _FORM_UID_VALUE &&}
 <input type="hidden" name="{&& _FORM_UID_NAME &&}" value="{&& _FORM_UID_VALUE &&}">{&& %ENDIF &&}
 <input type="hidden" name="{&& _FORM_UNID_NAME &&}" value="{&& _FORM_UNID_VALUE &&}">
