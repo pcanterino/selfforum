@@ -11,7 +11,11 @@ package Posting::Write;
 ################################################################################
 
 use strict;
-use vars qw(%error @EXPORT);
+use vars qw(
+  %error
+  @EXPORT
+  $VERSION
+);
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Encode::Posting;
@@ -38,6 +42,12 @@ use XML::DOM;
   threadFile  => '3 could not load thread file',
   noParent    => '4 could not find parent message'
 );
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 ################################################################################
 #

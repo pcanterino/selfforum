@@ -12,23 +12,33 @@ package Posting::_lib;
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT_OK
+  $VERSION
+);
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 
 use Time::German;
 use XML::DOM;
 
-# ====================================================
-# Export
-# ====================================================
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
-use constant SORT_ASCENT  => 0; # (young postings first)
+################################################################################
+#
+# Export
+#
+use constant SORT_ASCENT  => 0; # (latest postings first)
 use constant SORT_DESCENT => 1;
 use constant KEEP_DELETED => 1;
 use constant KILL_DELETED => 0;
 
 use base qw(Exporter);
-@Posting::_lib::EXPORT_OK = qw(
+@EXPORT_OK = qw(
   get_message_header
   get_message_body
   get_message_node
@@ -55,9 +65,10 @@ use base qw(Exporter);
   KILL_DELETED
 );
 
-# ====================================================
+################################################################################
+#
 # Access via XML::DOM
-# ====================================================
+#
 
 ### sub create_message ($$) ####################################################
 #
@@ -306,13 +317,16 @@ sub parse_xml_file ($) {
   $xml;
 }
 
-###########################
-# sub parse_single_thread
+### parse_single_thread () #####################################################
 #
-# einzelne Threaddatei
-# parsen
-###########################
-
+# parse a thread file
+#
+# Params: $tnode - Thread element node
+#         $deleted - keep deleted (boolean)
+#         $sorted  - sorting order
+#
+# Return: arrayref
+#
 sub parse_single_thread ($$;$) {
   my ($tnode, $deleted, $sorted) = @_;
   my ($header, @msg, %mno);
@@ -320,122 +334,74 @@ sub parse_single_thread ($$;$) {
   for ($tnode -> getElementsByTagName ('Message')) {
     $header = get_message_header ($_);
 
-    push @msg,{mid     => ($_ -> getAttribute ('id') =~ /(\d+)/)[0],
-               ip      => $_ -> getAttribute ('ip'),
-               kids    => [$_ -> getElementsByTagName ('Message', 0)],
-               answers => $_ -> getElementsByTagName ('Message') -> getLength,
-               deleted => $_ -> getAttribute ('invisible'),
-               archive => $_ -> getAttribute ('archive'),
-               name    => plain($header -> {name}),
-               cat     => plain($header -> {category} or ''),
-               subject => plain($header -> {subject}),
-               time    => plain($header -> {time})};
-    $mno{$_} = $#msg;}
+    push @msg => {
+      mid     => ($_ -> getAttribute ('id') =~ /(\d+)/)[0],
+      ip      => $_ -> getAttribute ('ip'),
+      kids    => [$_ -> getElementsByTagName ('Message', 0)],
+      answers => $_ -> getElementsByTagName ('Message') -> getLength,
+      deleted => $_ -> getAttribute ('invisible'),
+      archive => $_ -> getAttribute ('archive'),
+      name    => plain($header -> {name}),
+      cat     => plain($header -> {category} or ''),
+      subject => plain($header -> {subject}),
+      time    => plain($header -> {time})
+    };
+    $mno{$_} = $#msg;
+  }
 
-  # Eintraege ergaenzen und korrigieren
   my $level;
   $msg[0] -> {level} = 0;
   for (@msg) {
     $level = $_ -> {level} + 1;
-    @{$_ -> {kids}} = map {$msg[$mno{$_}] -> {level} = $level; $mno{$_}} @{$_ -> {kids}};}
+    @{$_ -> {kids}} = map {$msg[$mno{$_}] -> {level} = $level; $mno{$_}} @{$_ -> {kids}};
+  }
 
-  # ============
-  # Sortieren und bei Bedarf
-  # geloeschte Messages entfernen
-
+  # sort and process deleted files
+  #
   my $smsg = sort_thread (\@msg, $sorted);
   delete_messages ($smsg) unless ($deleted);
 
   $smsg;
 }
 
-###########################
-# sub create_message_xml
+################################################################################
 #
-# Message-XML-String
-# erzeugen
-###########################
-
-sub create_message_xml ($$$) {
-  my ($xml, $msges, $num) = @_;
-
-  my $msg = $msges -> [$num];
-
-  my $message = $xml -> createElement ('Message');
-  $message -> setAttribute ('id', 'm'.$msg -> {mid});
-  $message -> setAttribute ('invisible', '1') if ($msg -> {deleted});
-  $message -> setAttribute ('archive', '1') if ($msg -> {archive});
-
-  # Header erzeugen
-  my $header   = $xml -> createElement ('Header');
-
-  # alles inside of 'Header'
-  my $author   = $xml -> createElement ('Author');
-
-  my $name     = $xml -> createElement ('Name');
-  $name -> addText (toUTF8($msg -> {name}));
-
-  my $email    = $xml -> createElement ('Email');
-
-  my $category = $xml -> createElement ('Category');
-  $category -> addText (toUTF8($msg -> {cat}));
-
-  my $subject  = $xml -> createElement ('Subject');
-  $subject -> addText (toUTF8($msg -> {subject}));
-
-  my $date     = $xml -> createElement ('Date');
-  $date -> setAttribute ('longSec', $msg -> {time});
-
-    $author -> appendChild ($name);
-    $author -> appendChild ($email);
-    $header -> appendChild ($author);
-    $header -> appendChild ($category);
-    $header -> appendChild ($subject);
-    $header -> appendChild ($date);
-  $message -> appendChild ($header);
-
-  if ($msg -> {kids}) {
-    for (@{$msg -> {kids}}) {
-      $message -> appendChild (&create_message_xml ($xml, $msges, $_));
-    }
-  }
-
-  $message;
-}
-
-# ====================================================
-# XML-Parsen von Hand
-# ====================================================
-
-###########################
-# sub sort_thread
+# Access via regexps and native perl ;)
 #
-# Messages eines
-# Threads sortieren
-###########################
 
+### sort_thread () #############################################################
+#
+# sort the message array
+#
+# Params: $msg    - arrayref
+#         $sorted - sorting order
+#
+# Return: sorted arrayref
+#
 sub sort_thread ($$) {
   my ($msg, $sorted) = @_;
 
   my ($z, %mhash) = (0);
 
-  if ($sorted) {  # aelteste zuerst
+  if ($sorted) {  # oldest first
     for (@$msg) {
       @$msg[@{$_ -> {kids}}] = sort {$a -> {mid} <=> $b -> {mid}} @$msg[@{$_ -> {kids}}] if (@{$_ -> {kids}} > 1);
       $mhash{$_ -> {mid}} = [@$msg[@{$_ -> {kids}}]];}}
 
-  else {          # juengste zuerst
+  else {          # latest first
     for (@$msg) {
       @$msg[@{$_ -> {kids}}] = sort {$b -> {mid} <=> $a -> {mid}} @$msg[@{$_ -> {kids}}] if (@{$_ -> {kids}} > 1);
       $mhash{$_ -> {mid}} = [@$msg[@{$_ -> {kids}}]];}}
 
-  # Kinder wieder richtig einsortieren
+  # sort the children
+  #
   my @smsg = ($msg -> [0]);
   for (@smsg) {
     ++$z;
     splice @smsg,$z,0,@{$mhash{$_ -> {mid}}} if ($_ -> {answers});
     delete $_ -> {kids};}
 
+  # return
   \@smsg;
 }
 

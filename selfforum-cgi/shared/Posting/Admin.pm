@@ -18,16 +18,40 @@ package Posting::Admin;
 ################################################################################
 
 use strict;
-
-use base qw(Exporter);
-
-@Posting::Admin::EXPORT = qw(hide_posting recover_posting modify_posting add_user_vote level_vote);
+use vars qw(
+  @EXPORT
+  $VERSION
+);
 
 use Lock qw(:READ);
-use Posting::_lib qw(get_message_node save_file get_all_threads
-                     create_forum_xml_string);
+use Posting::_lib qw(
+  get_message_node
+  save_file
+  get_all_threads
+  create_forum_xml_string
+);
 
 use XML::DOM;
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+################################################################################
+#
+# Export
+#
+use base qw(Exporter);
+
+@EXPORT = qw(
+  hide_posting
+  recover_posting
+  modify_posting
+  add_user_vote
+  level_vote
+);
 
 ### add_user_vote () ###########################################################
 #
@@ -41,8 +65,7 @@ use XML::DOM;
 # Todo:
 #  * Lock files before modification
 #
-sub add_user_vote()
-{
+sub add_user_vote ($$$) {
     my ($forum, $tpath, $info) = @_;
     my ($tid, $mid, $percent) = ($info->{'thread'},
                                  $info->{'posting'},
@@ -73,13 +96,14 @@ sub add_user_vote()
 # Todo:
 #  * Lock files before modification
 #
-sub level_vote
-{
+sub level_vote {
     my ($forum, $tpath, $info´) = @_;
-    my ($tid, $mid, $level, $value) = ($info->{'thread'},
-                                       $info->{'posting'},
-                                       $info->{'level'},
-                                       $info->{'value'});
+    my ($tid, $mid, $level, $value) = (
+      $info->{'thread'},
+      $info->{'posting'},
+      $info->{'level'},
+      $info->{'value'}
+    );
 
     # Thread
     my $tfile = $tpath . '/t' . $tid . '.xml';
@@ -89,12 +113,10 @@ sub level_vote
 
     my $mnode = get_message_node($xml, $tid, $mid);
 
-    if ($value == undef)
-    {
+    unless (defined $value) {
         removeAttribute($level);
     }
-    else
-    {
+    else {
         $mnode->setAttribute($level, $value);
     }
 
@@ -114,8 +136,7 @@ sub level_vote
 #  * set flags recursively in forum xml
 #  * lock files before modification
 #
-sub hide_posting($$$)
-{
+sub hide_posting ($$$) {
     my ($forum, $tpath, $info) = @_;
     my ($tid, $mid, $indexFile) = ($info->{'thread'},
                                    $info->{'posting'},
@@ -158,8 +179,7 @@ sub hide_posting($$$)
 #  * set flags recursive in forum xml
 #  * lock files before modification
 #
-sub recover_posting($$$)
-{
+sub recover_posting ($$$) {
     my ($forum, $tpath, $info) = @_;
     my ($tid, $mid, $indexFile) = ($info->{'thread'},
                                    $info->{'posting'},
@@ -199,7 +219,7 @@ sub recover_posting($$$)
 #         $invisible  1 - invisible, 0 - visible
 # Return: Status code
 #
-sub change_posting_visibility($$$$)
+sub change_posting_visibility ($$$$)
 {
     my ($fname, $tid, $mid, $invisible) = @_;
 
@@ -211,8 +231,7 @@ sub change_posting_visibility($$$$)
     $mnode->setAttribute('invisible', $invisible);
 
     # Set flag in sub nodes
-    for ($mnode->getElementsByTagName('Message'))
-    {
+    for ($mnode->getElementsByTagName('Message')) {
         $_->setAttribute('invisible', $invisible);
     }
 
@@ -229,14 +248,20 @@ sub change_posting_visibility($$$$)
 #                 (data = \%hashref: 'subject', 'category', 'body')
 # Return: -none-
 #
-sub modify_posting($$$)
-{
+sub modify_posting($$$) {
     my ($forum, $tpath, $info) = @_;
-    my ($tid, $mid, $indexFile, $data) = ($info->{'thread'},
-                                          $info->{'posting'},
-                                          $info->{'indexFile'},
-                                          $info->{'data'});
-    my ($subject, $category, $body) = ($data->{'subject'}, $data->{'category'}, $data->{'body'});
+    my ($tid, $mid, $indexFile, $data) = (
+      $info->{'thread'},
+      $info->{'posting'},
+      $info->{'indexFile'},
+      $info->{'data'}
+    );
+
+    my ($subject, $category, $body) = (
+      $data->{'subject'},
+      $data->{'category'},
+      $data->{'body'}
+    );
 
     my %msgdata;
 
@@ -250,14 +275,11 @@ sub modify_posting($$$)
     $body && change_posting_body($tfile, 't'.$tid, 'm'.$mid, $body);
 
     # Forum (does not contain msg bodies)
-    if ($subject or $category)
-    {
+    if ($subject or $category) {
         my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
 
-        for (@{$f->{$tid}})
-        {
-            if ($_->{'mid'} == $mid)
-            {
+        for (@{$f->{$tid}}) {
+            if ($_->{'mid'} == $mid) {
                 $subject && $_->{'subject'} = $subject;
                 $category && $_->{'cat'} = $category;
             }
@@ -282,8 +304,7 @@ sub modify_posting($$$)
 #         \%values  New values
 # Return: Status code
 #
-sub change_posting_value($$$$)
-{
+sub change_posting_value($$$$) {
     my ($fname, $tid, $mid, $values) = @_;
 
     my $parser = new XML::DOM::Parser;
@@ -315,8 +336,7 @@ sub change_posting_value($$$$)
 # Todo:
 #  * Change body
 #
-sub change_posting_body($$$$)
-{
+sub change_posting_body ($$$$) {
     my ($fname, $tid, $mid, $body) = @_;
 
     my $parser = new XML::DOM::Parser;
@@ -332,3 +352,7 @@ sub change_posting_body($$$$)
 
 # Let it be true
 1;
+
+#
+#
+### end of Posting::Admin ######################################################

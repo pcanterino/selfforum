@@ -11,10 +11,19 @@ package Posting::Cache;
 ################################################################################
 
 use strict;
+use vars qw(
+  $VERSION
+);
 
 use Fcntl;
 use File::Path;
 use Lock qw(:ALL);
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 my $O_BINARY = eval "O_BINARY";
 $O_BINARY = 0 if ($@);
@@ -148,6 +157,8 @@ sub r_garbage_collection {
   local $/;
   local $\;
 
+  return; # no GC yet
+
   seek $handle, 0, 0                                 or return;
   read ($handle, $buf, $len)                         or return;
   for (0..$num) {
@@ -220,6 +231,8 @@ sub r_add_view {
   read ($handle, $buf, $reclen) == $reclen                            or return;
 
   my ($posting, $thread, $views, $votings) = unpack 'L4' => $buf;
+  $thread == 0xFFFFFFFF and $thread = $param->{thread};
+
   $param->{thread} == $thread                                         or return;
   $param->{posting} == $posting                                       or return;
 
@@ -262,6 +275,8 @@ sub r_pick {
   read ($handle, $buf, $reclen) == $reclen                            or return;
 
   my ($posting, $thread, $views, $votings) = unpack 'L4' => $buf;
+  $thread == 0xFFFFFFFF and $thread = $param->{thread};
+
   $param->{thread} == $thread                                         or return;
   $param->{posting} == $posting                                       or return;
 
@@ -279,7 +294,7 @@ sub r_pick {
             time => $_->[0] || 0,
             IP   => $_->[1] || 0
           }
-        } [split ' ']
+        } [split ' ' => $_,3]
       } @records
     }
   };
@@ -344,7 +359,6 @@ sub add_voting {
 
   $self -> vote_wrap (
     \&r_add_voting,
-    $self->cachefile($param),
     $param
   );
 }
@@ -359,6 +373,8 @@ sub r_add_voting {
   read ($handle, $buf, $reclen) == $reclen                      or return;
 
   my ($posting, $thread, $views, $votings) = unpack 'L4' => $buf;
+  $thread == 0xFFFFFFFF and $thread = $param->{thread};
+
   $param->{thread} == $thread                                   or return;
 
   {
@@ -420,7 +436,7 @@ sub r_add_posting {
       while (++$z < $param->{posting}) {
         seek $handle, 0, 2                           or return;
         print $handle pack(
-          'L4' => $z, 0, 0, 0
+          'L4' => $z, 0xFFFFFFFF, 0, 0
         )                                            or return;
       }
       $z = undef;
@@ -500,30 +516,53 @@ sub add_wrap {
 # Return: Status code (Bool)
 #
 sub vote_wrap {
-  my ($self, $gosub, $filename, @param) = @_;
+  my ($self, $gosub, $param) = @_;
   my $status;
 
-  unless (write_lock_file ($filename)) {
-    violent_unlock_file ($filename);
-    $self->set_error ('could not write-lock cache file '.$filename);
+  unless (write_lock_file ($self->summaryfile)) {
+    violent_unlock_file ($self->summaryfile);
+    $self->set_error ('could not write-lock summary file '.$self->summaryfile);
   }
   else {
-    local *CACHE;
-    unless (sysopen (CACHE, $filename, O_APPEND | O_CREAT | O_RDWR)) {
-      $self->set_error ('could not open to read/write/append cache file '.$filename);
+    local *S;
+    unless (sysopen (S, $self->summaryfile, O_RDWR | $O_BINARY)) {
+      $self->set_error ('could not open to read/write summary file '.$self->summaryfile);
     }
     else {
-      $status = $self -> mod_wrap (
-        $gosub,
-        \*CACHE,
-        @param
-      );
-      unless (close CACHE) {
+      unless (-d $self->threaddir($param)) {
+        mkdir $self->threaddir($param)                     or return;
+      }
+      my $filename = $self->cachefile($param);
+
+      unless (write_lock_file ($filename)) {
+        violent_unlock_file ($filename);
+        $self->set_error ('could not write-lock cache file '.$filename);
+      }
+      else {
+        local *CACHE;
+        unless (sysopen (CACHE, $filename, O_APPEND | O_CREAT | O_RDWR)) {
+          $self->set_error ('could not open to read/write/append cache file '.$filename);
+        }
+        else {
+          $status = $gosub -> (
+            $self,
+            \*S,
+            \*CACHE,
+            $param
+          );
+          unless (close CACHE) {
+            $status=0;
+            $self->set_error('could not close cache file '.$filename);
+          }
+        }
+        violent_unlock_file ($filename) unless (write_unlock_file ($filename));
+      }
+      unless (close S) {
         $status=0;
-        $self->set_error('could not close cache file '.$filename);
+        $self->set_error('could not close summary file '.$self->summaryfile);
       }
     }
-    violent_unlock_file ($filename) unless (write_unlock_file ($filename));
+    violent_unlock_file ($self->summaryfile) unless (write_unlock_file ($self->summaryfile));
   }
 
   # return
