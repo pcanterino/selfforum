@@ -142,6 +142,15 @@ sub lock {
     $self -> lock ($self->LH_EXCL, $self -> timeout('master'))   and
     $self -> _simple_lock (new Lock::Handle ($self->masterlock)) and
     return 1;
+
+    # oops..?
+    # VERY violent way to set master lock
+    #
+    $self -> release;
+
+    $self -> lock ($self->LH_EXCL, $self -> timeout('master'))   and
+    $self -> _simple_lock (new Lock::Handle ($self->masterlock)) and
+    return 1;
   }
 
   ###########################################
