@@ -16,16 +16,14 @@ use CGI::Carp qw(fatalsToBrowser);
 
 use Conf;
 use Conf::Admin;
-use Template::Forum;
-use Template::Posting;
+use autouse 'Template::Forum'   => qw(print_forum_as_HTML($$$));
+use autouse 'Template::Posting' => qw(print_posting_as_HTML($$$));
 
 use CGI qw(param header);
 
 print header(-type => 'text/html');
 
 my $conf = read_script_conf ($Bin, $Shared, $Script);
-
-#$conf -> {wwwRoot} = 'i:/i_selfhtml/htdocs' unless ($ENV{GATEWAY_INTERFACE} =~ /CGI/);
 
 my $show = $conf -> {show};
 my $show_forum = $show -> {Forum};

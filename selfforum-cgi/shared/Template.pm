@@ -12,7 +12,7 @@ use strict;
 
 package Template;
 
-use CGI::Carp qw(croak);
+use autouse 'Carp' => qw(croak);
 use XML::DOM;
 
 # ====================================================

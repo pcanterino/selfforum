@@ -20,6 +20,8 @@ package Mail;
 
 use vars qw($mailbox $mailprog @EXPORT);
 
+use autouse 'CheckRFC' => qw(is_email($));
+
 # ===================
 # Funktionsexport
 # ===================
@@ -40,7 +42,7 @@ use base qw(Exporter);
 ########################################
 
 sub is_mail_address ($) {
-  return ($_[0] =~ /$mailbox/);
+  return is_email $_[0];
 }
 
 ########################################
@@ -235,51 +237,9 @@ BEGIN {
     # ===================================================================
 
     $mailprog = '|/usr/lib/sendmail -t -oi';
-
-    # Thanx to J. Friedl for this regex:
-
-    my ($address,$route_addr,$phrase,$addr_spec,$X,$phrase_char,$quoted_str,$comment,$word,$phrase_ctrl,$NonASCII,
-        $CloseBR,$OpenBR,$esc,$route,$domain,$local_part,$Period,$sub_domain,$domain_lit,$domain_ref,$quoted_pair,
-        $dtext,$atom,$qtext,$atom_char,$ctrl,$space,$tab,$CloseParen,$ctext,$Cnested,$OpenParen,$CRlist);
-
-    $esc        = '\\\\';
-    $Period      = '\.';
-    $space      = '\040';
-    $tab         = '\t';
-    $OpenBR     = '\[';
-    $CloseBR     = '\]';
-    $OpenParen  = '\(';
-    $CloseParen  = '\)';
-    $NonASCII   = '\x80-\xff';
-    $ctrl        = '\000-\037';
-    $CRlist     = '\n\015';
-    $qtext = qq/[^$esc$NonASCII$CRlist\"]/;
-    $dtext = qq/[^$esc$NonASCII$CRlist$OpenBR$CloseBR]/;
-    $quoted_pair = qq< $esc [^$NonASCII] >;
-    $ctext   = qq< [^$esc$NonASCII$CRlist()] >;
-    $Cnested = qq< $OpenParen $ctext* (?: $quoted_pair $ctext* )* $CloseParen >;
-    $comment = qq< $OpenParen $ctext* (?: (?: $quoted_pair | $Cnested ) $ctext* )* $CloseParen >;
-    $X = qq< [$space$tab]* (?: $comment [$space$tab]* )* >;
-    $atom_char   = qq/[^($space)<>\@,;:\".$esc$OpenBR$CloseBR$ctrl$NonASCII]/;
-    $atom = qq< $atom_char+ (?!$atom_char) >;
-    $quoted_str = qq< \" $qtext * (?: $quoted_pair $qtext * )* \" >;
-    $word = qq< (?: $atom | $quoted_str ) >;
-    $domain_ref  = $atom;
-    $domain_lit  = qq< $OpenBR (?: $dtext | $quoted_pair )* $CloseBR >;
-    $sub_domain  = qq< (?: $domain_ref | $domain_lit ) $X >;
-    $domain = qq< $sub_domain (?: $Period $X $sub_domain )* >;
-    $route = qq< \@ $X $domain (?: , $X \@ $X $domain )* : $X >;
-    $local_part = qq< $word $X (?: $Period $X $word $X )* >;
-    $addr_spec  = qq< $local_part \@ $X $domain >;
-    $route_addr = qq[ < $X (?: $route )? $addr_spec > ];
-    $phrase_ctrl = '\000-\010\012-\037';
-    $phrase_char = qq/[^()<>\@,;:\".$esc$OpenBR$CloseBR$NonASCII$phrase_ctrl]/;
-    $phrase = qq< $word $phrase_char * (?: (?: $comment | $quoted_str ) $phrase_char * )* >;
-    $mailbox = qq< $X (?: $addr_spec | $phrase  $route_addr ) >;
-    $mailbox = qr ~^$mailbox$~x;
 }
 
-# making 'require' happy
+# keeping require happy
 1;
 
 #####################
