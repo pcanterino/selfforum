@@ -13,11 +13,12 @@
                 <Chars>&#187;&#187; </Chars>
          </Quoting>
   </ForumView>
-  <Severance executeArchiving="1" executeSeverance="sequential">
-         <AfterByte>400</AfterByte>
-         <AfterMessage>100</AfterMessage>
-         <AfterThread>70</AfterThread>
-         <Archiving><UserVotings/>
+  <Voting voteLock="30" Limit="10"/>
+  <Severance executeArchiving="1" executeSeverance="asymmetrical">
+         <AfterByte>250000</AfterByte>
+         <AfterMessage>2000</AfterMessage>
+         <AfterThread>150</AfterThread>
+         <Archiving><General />
          </Archiving>
   </Severance>
   <Messaging callUserAnswer="0" callAdminThread="0" callAdminNA="1" callAdminHQ="0" callAdminVoting="0" callAdminArchiving="1" callByUser="0">

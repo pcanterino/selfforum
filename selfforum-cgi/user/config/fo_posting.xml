@@ -3,8 +3,9 @@
 <Config>
   <Property name="show">
     <Property name="Posting">
-      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/answer.tmpl.xml</Variable>
-<!-- * -->
+      <Variable name="templateFile">/Server/teamone/cgi-local/user/config/answer.tmpl.xml</Variable>
+<!--      <Variable name="templateFile">/intranet/www.teamone.de/data/projekte/selfhtml/selfforum/daten/forum/config/answer.tmpl.xml</Variable> -->
+
       <Property name="assign">
         <Variable name="docNew">DOC_OPENING</Variable>
         <Variable name="docThx">DOC_THANKYOU</Variable>
@@ -52,7 +53,7 @@
         <Property name="action">
           <Property name="post">
             <Variable name="url">/cgi-local/user/fo_posting.pl</Variable>
-<!-- * -->
+<!--            <Variable name="url">/selfaktuell/forum/cgi-bin/user/fo_posting.pl</Variable> -->
             <Variable name="assign">_FORM_ACTION</Variable>
           </Property>
         </Property>
@@ -112,13 +113,12 @@
               <Variable name="name">_FORM_UNID_NAME</Variable>
               <Variable name="value">_FORM_UNID_VALUE</Variable>
               <Variable name="too_long">_MANIPULATED</Variable>
-              <Variable name="wrong_unique_id">_MANIPULATED</Variable>
             </Property>
 
             <Variable name="name">unid</Variable>
-            <Variable name="maxlength">25</Variable>
+            <Variable name="maxlength">40</Variable>
             <Variable name="errorType">fatal</Variable>
-            <Variable name="type">unique-id</Variable>
+            <Variable name="type">internal</Variable>
           </Property>
 
           <Property name="quoteChar">
@@ -180,17 +180,37 @@
             <Variable name="errorType">fetch</Variable>
             <Variable name="header">category</Variable>
             <List name="values">
-              <ListItem>DEV-ALLGEMEIN</ListItem>
-              <ListItem>DEV-INTERN</ListItem>
-              <ListItem>FEATURE-ARTIKEL</ListItem>
-              <ListItem>FINDER</ListItem>
-              <ListItem>FORUM</ListItem>
-              <ListItem>LINKVERZEICHNIS</ListItem>
-              <ListItem>SELFBROWSER</ListItem>
-              <ListItem>SELFHTML</ListItem>
+              <ListItem>ASP</ListItem>
+              <ListItem>BROWSER</ListItem>
+              <ListItem>CGI</ListItem>
+              <ListItem>CSS</ListItem>
+              <ListItem>DATENBANK</ListItem>
+              <ListItem>DESIGN</ListItem>
+              <ListItem>DHTML</ListItem>
+              <ListItem>E-MAIL</ListItem>
+              <ListItem>FTP</ListItem>
+              <ListItem>GRAFIK</ListItem>
+              <ListItem>HTML</ListItem>
+              <ListItem>HTTP</ListItem>
+              <ListItem>INTERNET-ANBINDUNG</ListItem>
+              <ListItem>JAVA</ListItem>
+              <ListItem>JAVASCRIPT</ListItem>
+              <ListItem>MEINUNG</ListItem>
+              <ListItem>MENSCHELEI</ListItem>
+              <ListItem>PERL</ListItem>
+              <ListItem>PHP</ListItem>
+              <ListItem>PROGRAMMIERTECHNIK</ListItem>
+              <ListItem>PROJEKTVERWALTUNG</ListItem>
+              <ListItem>PROVIDER</ListItem>
+              <ListItem>RECHT</ListItem>
               <ListItem>SERVER</ListItem>
-              <ListItem>SUCHE</ListItem>
+              <ListItem>SOFTWARE</ListItem>
+              <ListItem>VB-SCRIPT</ListItem>
+              <ListItem>XML</ListItem>
+              <ListItem>XML-DERIVAT</ListItem>
+              <ListItem>XSL</ListItem>
               <ListItem>ZUR INFO</ListItem>
+              <ListItem>ZU DIESEM FORUM</ListItem>
             </List>
           </Property>
 
@@ -260,4 +280,4 @@
   </Property>
 </Config>
 
-<!-- The End -->
+<!-- Ende -->

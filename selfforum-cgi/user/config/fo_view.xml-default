@@ -3,11 +3,10 @@
 <Config>
 
   <Property name="show">
-
     <Property name="Forum">
 
-      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/forum.tmpl.xml</Variable>
-<!-- * -->
+      <Variable name="templateFile">/var/www/cgi-local/user/config/forum.tmpl.xml</Variable>
+
       <Property name="assign">
         <Variable name="mainDocStart">DOC_FORUM_START</Variable>
         <Variable name="mainDocEnd">DOC_FORUM_END</Variable>
@@ -21,8 +20,8 @@
       </Property>
 
     </Property>
-
   </Property>
+
 </Config>
 
 <!-- The End -->
