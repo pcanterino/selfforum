@@ -177,22 +177,22 @@ BEGIN {
   # credits to an unknown(?) programmer ;)
   # modified by n.d.p.
 
-  my $lowalpha       =  '(?:[a-z])';
-  my $hialpha        =  '(?:[A-Z])';
-  my $alpha          =  "(?:$lowalpha|$hialpha)";
-  my $digit          =  '(?:\d)';
-  my $safe           =  '(?:[$_.+-])';
-  my $extra          =  '(?:[!*\'(),])';
-  my $national       =  '(?:[{}|\\\\^~\[\]`])';
-  my $punctuation    =  '(?:[<>#%"])';
-  my $reserved       =  '(?:[;/?:@&=])';
-  my $hex            =  '(?:[\dA-Fa-f])';
+  my $lowalpha       =  '[a-z]';
+  my $hialpha        =  '[A-Z]';
+  my $alpha          =  '[a-zA-Z]';
+  my $digit          =  '\d';
+  my $safe           =  '[$_.+-]';
+  my $extra          =  '[!*\'(),]';
+  my $national       =  '[{}|\\\\^~\[\]`]';
+  my $punctuation    =  '[<>#%"]';
+  my $reserved       =  '[;/?:@&=]';
+  my $hex            =  '[\dA-Fa-f]';
   my $escape         =  "(?:%$hex$hex)";
-  my $unreserved     =  "(?:$alpha|$digit|$safe|$extra)";
+  my $unreserved     =  '[{}|\\\\^~\[\]`a-zA-Z\d$_.+-]';    #"(?:$alpha|$digit|$safe|$extra)";
   my $uchar          =  "(?:$unreserved|$escape)";
   my $xchar          =  "(?:$unreserved|$escape|$reserved)";
   my $digits         =  '(?:\d+)';
-  my $alphadigit     =  "(?:$alpha|\\d)";
+  my $alphadigit     =  '[a-zA-Z\d]';                       #"(?:$alpha|$digit)";
 
   # URL schemeparts for ip based protocols:
   my $urlpath        =  "(?:$xchar*)";
