@@ -112,12 +112,13 @@
               <Variable name="name">_FORM_UNID_NAME</Variable>
               <Variable name="value">_FORM_UNID_VALUE</Variable>
               <Variable name="too_long">_MANIPULATED</Variable>
+              <Variable name="wrong_unique_id">_MANIPULATED</Variable>
             </Property>
 
             <Variable name="name">unid</Variable>
-            <Variable name="maxlength">40</Variable>
+            <Variable name="maxlength">25</Variable>
             <Variable name="errorType">fatal</Variable>
-            <Variable name="type">internal</Variable>
+            <Variable name="type">unique-id</Variable>
           </Property>
 
           <Property name="quoteChar">

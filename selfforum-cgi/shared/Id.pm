@@ -1,62 +1,61 @@
-# Id.pm
-
-##############################################
-#                                            #
-# Autor: n.d.p. / nd@o3media.de              #
-#                                            #
-# Letze Aenderung: n.d.p. / 2001-01-28       #
-#                                            #
-# ========================================== #
-#                                            #
-# Funktion:                                  #
-#                                            #
-# Bereitsstellen einer einmaligen ID         #
-#                                            #
-##############################################
-
-use strict;
-
 package Id;
 
-#####################
-# Funktionsexport
-#####################
+################################################################################
+#                                                                              #
+# File:        shared/Id.pm                                                    #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-05-03                          #
+#                                                                              #
+# Description: compose an unique ID (in CGI context)                           #
+#                                                                              #
+################################################################################
 
-use base qw(Exporter);
-@Id::EXPORT = qw(unique_id);
+use strict;
+use vars qw(
+  @table
+  @EXPORT
+);
 
-use vars qw(@table);
-
-##########################################
-# EXPORT                                 #
-#                                        #
-# sub &unique_id                         #
-#                                        #
-# Funktion:                              #
-#      Rueckgabe der ID                  #
-##########################################
-
-# sub unique_id ################################################
+################################################################################
 #
-# composing of an unique ID...
+# Export
+#
+use base qw(Exporter);
+@EXPORT = qw(
+  unique_id
+  may_id
+);
+
+### sub unique_id () ###########################################################
+#
+# compose an unique ID
+#
+# Params: ~none~
+#
+# Return: Scalar: unique ID
 #
 sub unique_id () {
   my $id;
 
-  my $ip=$ENV{'REMOTE_ADDR'};
-  my $time=time();
-  my $port=$ENV{'REMOTE_PORT'};
-  my $rand=int(rand(time()));
-  $ip =  hex(join ('',map {sprintf ('%02X',$_)} split (/\./,$ip)));
+  my $ip=$ENV{REMOTE_ADDR};
+  my $time=time;
+  my $port=$ENV{REMOTE_PORT};
+  my $rand=int(rand(time));
 
-  join '',map {to_base64 ($_)} ($time, $port, $ip, $rand, $$);
+  # works only with IPv4! (will be changed later...)
+  #
+  $ip = hex(join ('',map {sprintf ('%02X',$_)} split (/\./,$ip)));
+
+  join '' => map {to_base64 ($_)} ($time, $port, $ip, $rand, $$);
 }
 
-# sub to_base64 ################################################
+### sub to_base64 ($) ##########################################################
 #
-# only converts (max.) 32-bit numbers into a
-# system with base 64
-# its not the RFC base64 format!
+# only converts (max.) 32-bit numbers into a system with base 64
+#
+# Params: $x - number to convert
+#
+# Return: converted number ;-)
 #
 sub to_base64 ($) {
   my $x = shift;
@@ -68,13 +67,21 @@ sub to_base64 ($) {
 }
 
 BEGIN {
-  srand(time()^$$);
+  # 64 'digits' (for our base 64 system)
+  #
   @table = ('a'..'z','-','0'..'9','A'..'Z','_');
+
+  # define sub may_id
+  #
+  *may_id = eval join quotemeta join ('' => @table) => (
+    q[sub {local $_=shift; defined and length and not y/],
+    q[//cd;}]
+  );
 }
 
-# making 'require' happy
+# keep require happy
 1;
 
-#####################
-# end of Id
-#####################
+#
+#
+### end of Id ##################################################################

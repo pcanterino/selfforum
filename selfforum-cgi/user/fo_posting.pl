@@ -783,7 +783,7 @@ sub check_cgi {
     #
     my ($ftid, $fmid) = split /;/ => $q -> param ($formdata -> {followUp} -> {name}) => 2;
 
-    unless ($ftid =~ /\d+/ and $fmid =~ /\d+/) {
+    unless ($ftid =~ /^\d+$/ and $fmid =~ /^\d+$/) {
       $self -> {error} = {
         spec => 'unknown_followup',
         type => 'fatal'
@@ -878,6 +878,16 @@ sub check_cgi {
           desc => $name{$_},
           type => $formdata -> {$name {$_}} -> {errorType}
         };
+        $self -> kill_param or return;
+      }
+
+      elsif ($formdata -> {$name {$_}} -> {type} eq 'unique-id' and not may_id $val) {
+        $self -> {error} = {
+          spec => 'wrong_unique_id',
+          desc => $name{$_},
+          type => $formdata -> {$name {$_}} -> {errorType}
+        };
+          print STDERR "Manipuliert!";
         $self -> kill_param or return;
       }
     }

@@ -228,8 +228,8 @@ BEGIN {
   my $hsegment       =  "(?:(?:$httpuchar|[;:\@&=~])*)";
   my $search         =  "(?:(?:$httpuchar|[;:\@&=~])*)";
   my $hpath          =  "(?:$hsegment(?:/$hsegment)*)";
-  my $httpurl        =  "(?:http://$hostport(?:/$hpath(?:\\?$search)?)?(?:#$xchar*)?)";
-  my $strict_httpurl =  "(?:http://$hostport(?:/$hpath(?:\\?$search)?)?)";
+  my $httpurl        =  "(?:https?://$hostport(?:/$hpath(?:\\?$search)?)?(?:#$xchar*)?)";
+  my $strict_httpurl =  "(?:https?://$hostport(?:/$hpath(?:\\?$search)?)?)";
 
   # GOPHER (see also RFC1436)
   my $gopher_plus    =  "(?:$xchar*)";
