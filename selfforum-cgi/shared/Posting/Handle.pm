@@ -18,7 +18,7 @@ use base qw(Exporter);
 
 @EXPORT = qw(hide_posting);
 
-#use Posting::_lib;
+use Posting::_lib;
 
 use XML::DOM;
 
@@ -33,61 +33,39 @@ use XML::DOM;
 #
 sub hide_posting($$$)
 {
-    my ($forum, $tpath, $info) = shift;
-    my ($tid, $pid, $indexFile) = ('t' . $info->{'thread'},
+    my ($forum, $tpath, $info) = @_;
+    my ($tid, $mid, $indexFile) = ('t' . $info->{'thread'},
                                    'm' . $info->{'posting'},
                                    $info->{'indexFile'});
 
-    {
-        # Change flag in thread xml file
-        my $tfile = $tpath . '/' . $tid;
-
-        my $parser = new XML::DOM::Parser;
-        my $xml = $parser->parsefile($tfile);
-
-        my $msgs = $xml->getElementsByTagName('Message');
-
-        for (my $i = 0; $i < $msgs->getLength; $i++)
-        {
-            my $msg = $msgs->item($i);
-
-            if ($msg->getAttribute('id')->getValue == $pid)
-            {
-                $msg->setAttribute('invisible', '1');
-                last;
-            }
-        }
-
-        # Save thread xml file
-        $xml->printToFile($tfile . '.temp');
-        rename $tfile . '.temp', $tfile;
-    }
-
-    {
-        # Change flag in forum xml file
-        my $parser = new XML::DOM::Parser;
-        my $xml = $parser->parseFile($forum);
-
-        my $msgs = $xml->getElementsByTagName('Message');
-
-        for (my $i = 0; $i < $msgs->getLength; $i++)
-        {
-            my $msg = $msgs->item($i);
-
-            if ($msg->getAttribute('id')->getValue == $pid)
-            {
-                $msg->setAttribute('invisible', '1');
-                last;
-            }
-        }
-
-        # Save forum xml file
-        $xml->printToFile($forum . '.temp');
-        rename $forum . '.temp', $forum;
-    }
+    my $tfile = $tpath . '/' . $tid . '.xml';
+    change_posting_visibility($tfile, $tid, $mid, 1);
+    change_posting_visibility($forum, $tid, $mid, 1);
 }
 
+### change_posting_visibility () ###############################################
+#
+# -desc-
+#
+# Params: $fname      Filename
+#         $tid        Thread ID
+#         $mid        Message ID
+#         $invisible  1 - invisible, 0 - visible
+# Return: -none-
+#
+sub change_posting_visibility($$$)
+{
+    my ($fname, $tid, $mid, $invisible) = @_;
 
+    my $parser = new XML::DOM::Parser;
+    my $xml = $parser->parsefile($fname);
+
+    my $mnode = get_message_node($xml, $tid, $mid);
+    $mnode->setAttribute('invisible', $invisible);
+
+    $xml->printToFile($fname.'.temp');
+    rename $fname.'.temp', $fname;
+}
 
 
 1;
