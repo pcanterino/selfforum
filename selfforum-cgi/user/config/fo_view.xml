@@ -31,16 +31,14 @@
 
     <Property name="Forum">
 
-      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/forum.tmp.xml</Variable>
-
+      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/forum.tmpl.xml</Variable>
+<!-- * -->
       <Property name="assign">
         <Variable name="mainDocStart">DOC_FORUM_START</Variable>
         <Variable name="mainDocEnd">DOC_FORUM_END</Variable>
         <Variable name="loadingTime">_LOAD_TIME</Variable>
         <Variable name="cssFile">_CSS_FILE</Variable>
         <Variable name="errorDoc">DOC_ERROR</Variable>
-        <Variable name="startCite">CITE_START</Variable>
-        <Variable name="endCite">CITE_END</Variable>
 
         <Variable name="notAvailable">_N_A</Variable>
         <Variable name="occupied">_OCCUPIED</Variable>
@@ -50,8 +48,8 @@
     </Property>
 
     <Property name="Posting">
-      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/posting.tmp.xml</Variable>
-
+      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/posting.tmpl.xml</Variable>
+<!-- * -->
       <Property name="assign">
         <Variable name="mainDoc">DOC_POSTING</Variable>
         <Variable name="errorDoc">DOC_ERROR</Variable>
@@ -81,11 +79,13 @@
         <Property name="action">
           <Property name="post">
             <Variable name="url">/cgi-local/user/fo_posting.pl</Variable>
+<!-- * -->
             <Variable name="assign">_FORM_ACTION</Variable>
           </Property>
 
           <Property name="vote">
             <Variable name="url">/cgi-local/user/fo_voting.pl</Variable>
+<!-- * -->
             <Variable name="assign">_VOTE_ACTION</Variable>
           </Property>
         </Property>
@@ -191,4 +191,4 @@
   </Property>
 </Config>
 
-<!-- Ende -->
+<!-- The End -->

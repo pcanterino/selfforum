@@ -11,17 +11,17 @@
 ################################################################################
 
 use strict;
-use vars qw($Bin $Shared $Script);
+use vars qw($Bin $Shared $Script $Config);
 
 # locate the script
 #
 BEGIN {
   my $null = $0; $null =~ s/\\/\//g; # for win :-(
-  ($Bin)    = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-  $Shared   = "$Bin/../shared";
-  ($Script) = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+  $Shared  = "$Bin/../shared";
+  $Config  = "$Bin/config";
+  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
-
 use lib "$Shared";
 use CGI::Carp qw(fatalsToBrowser);
 
@@ -30,7 +30,7 @@ use Conf::Admin;
 
 # load script configuration and admin default conf.
 #
-my $conf         = read_script_conf ($Bin, $Shared, $Script);
+my $conf         = read_script_conf ($Config, $Shared, $Script);
 my $adminDefault = read_admin_conf ($conf -> {files} -> {adminDefault});
 
 # Initialize the request

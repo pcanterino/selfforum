@@ -28,12 +28,12 @@ use base qw(Exporter);
 ################################
 
 sub read_script_conf ($$$) {
-  my ($Bin, $Shared, $Script) = @_;
+  my ($Config, $Shared, $Script) = @_;
 
   $Script =~ s/^(.*)\..*$/$1/;             # Vornamen extrahieren
   my $common  = "$Shared/common.xml";      # gemeinsame Konf-datei
-  my $group   = "$Bin/config/common.xml";  # gemeinsame (Gruppen-)Konf-datei
-  my $special = "$Bin/config/$Script.xml"; # spezielle Konf-datei
+  my $group   = "$Config/common.xml";  # gemeinsame (Gruppen-)Konf-datei
+  my $special = "$Config/$Script.xml"; # spezielle Konf-datei
   my %conf=();                             # conf-Hash
 
   &parse_script_conf ($common , \%conf, $Script);   # und los...

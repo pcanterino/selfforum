@@ -3,8 +3,8 @@
 <Config>
   <Property name="show">
     <Property name="Posting">
-      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/answer.tmp.xml</Variable>
-
+      <Variable name="templateFile">e:/localhosts/i_selfhtml/cgi-local/user/config/answer.tmpl.xml</Variable>
+<!-- * -->
       <Property name="assign">
         <Variable name="docNew">DOC_OPENING</Variable>
         <Variable name="docThx">DOC_THANKYOU</Variable>
@@ -52,6 +52,7 @@
         <Property name="action">
           <Property name="post">
             <Variable name="url">/cgi-local/user/fo_posting.pl</Variable>
+<!-- * -->
             <Variable name="assign">_FORM_ACTION</Variable>
           </Property>
         </Property>
@@ -177,37 +178,17 @@
             <Variable name="errorType">fetch</Variable>
             <Variable name="header">category</Variable>
             <List name="values">
-              <ListItem>ASP</ListItem>
-              <ListItem>BROWSER</ListItem>
-              <ListItem>CGI</ListItem>
-              <ListItem>CSS</ListItem>
-              <ListItem>DATENBANK</ListItem>
-              <ListItem>DESIGN</ListItem>
-              <ListItem>DHTML</ListItem>
-              <ListItem>E-MAIL</ListItem>
-              <ListItem>FTP</ListItem>
-              <ListItem>GRAFIK</ListItem>
-              <ListItem>HTML</ListItem>
-              <ListItem>HTTP</ListItem>
-              <ListItem>INTERNET-ANBINDUNG</ListItem>
-              <ListItem>JAVA</ListItem>
-              <ListItem>JAVASCRIPT</ListItem>
-              <ListItem>MEINUNG</ListItem>
-              <ListItem>MENSCHELEI</ListItem>
-              <ListItem>PERL</ListItem>
-              <ListItem>PHP</ListItem>
-              <ListItem>PROGRAMMIERTECHNIK</ListItem>
-              <ListItem>PROJEKTVERWALTUNG</ListItem>
-              <ListItem>PROVIDER</ListItem>
-              <ListItem>RECHT</ListItem>
+              <ListItem>DEV-ALLGEMEIN</ListItem>
+              <ListItem>DEV-INTERN</ListItem>
+              <ListItem>FEATURE-ARTIKEL</ListItem>
+              <ListItem>FINDER</ListItem>
+              <ListItem>FORUM</ListItem>
+              <ListItem>LINKVERZEICHNIS</ListItem>
+              <ListItem>SELFBROWSER</ListItem>
+              <ListItem>SELFHTML</ListItem>
               <ListItem>SERVER</ListItem>
-              <ListItem>SOFTWARE</ListItem>
-              <ListItem>VBSCRIPT</ListItem>
-              <ListItem>XML</ListItem>
-              <ListItem>XML-DERIVAT</ListItem>
-              <ListItem>XSL</ListItem>
+              <ListItem>SUCHE</ListItem>
               <ListItem>ZUR INFO</ListItem>
-              <ListItem>ZU DIESEM FORUM</ListItem>
             </List>
           </Property>
 
@@ -277,4 +258,4 @@
   </Property>
 </Config>
 
-<!-- Ende -->
+<!-- The End -->

@@ -11,13 +11,14 @@
 ################################################################################
 
 use strict;
-use vars qw($Bin $Shared $Script);
+use vars qw($Bin $Shared $Script $Config);
 
 BEGIN {
   my $null = $0; $null =~ s/\\/\//g; # for win :-(
-  ($Bin)    = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-  $Shared   = "$Bin/../shared";
-  ($Script) = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+  $Shared  = "$Bin/../shared";
+  $Config  = "$Bin/config";
+  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
 
 use lib "$Shared";
@@ -32,7 +33,7 @@ use CGI qw(param header);
 
 print header(-type => 'text/html');
 
-my $conf = read_script_conf ($Bin, $Shared, $Script);
+my $conf = read_script_conf ($Config, $Shared, $Script);
 
 my $show = $conf -> {show};
 my $show_forum = $show -> {Forum};
