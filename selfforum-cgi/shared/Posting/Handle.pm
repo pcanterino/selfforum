@@ -43,18 +43,24 @@ sub hide_posting($$$)
     change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 1);
 
     # Forum
-    change_posting_visibility($forum, 't'.$tid, 'm'.$mid, 1);
+    #change_posting_visibility($forum, 't'.$tid, 'm'.$mid, 1);    # OBSOLETE
 
-    #my $f = get_all_threads($forum, 1, 0);
-    #for (@{f->{$tid}})
-    #{
-    #    if ($_->{'mid'} == $mid)
-    #    {
-    #        $_->{'deleted'} = 1;
-    #    }
-    #}
-    #
-    #create_forum_xml_string($f, );
+    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
+
+    for (@{$f->{$tid}})
+    {
+        if ($_->{'mid'} == $mid)
+        {
+            $_->{'deleted'} = 1;
+        }
+    }
+
+    my %cfxs = (
+        'dtd'         => $dtd,
+        'lastMessage' => $lmsg,
+        'lastThread'  => $lthread
+    );
+    create_forum_xml_string($f, \%cfxs);
 }
 
 ### recover_posting() ##########################################################
@@ -78,18 +84,24 @@ sub recover_posting($$$)
     change_posting_visibility($tfile, 't'.$tid, 'm'.$mid, 0);
 
     # Forum
-    change_posting_visibility($forum, 't'.$tid, 'm'.$mid, 0);
+    #change_posting_visibility($forum, 't'.$tid, 'm'.$mid, 0);    # OBSOLETE
 
-    #my $f = get_all_threads($forum, 1, 0);
-    #for (@{f->{$tid}})
-    #{
-    #    if ($_->{'mid'} == $mid)
-    #    {
-    #        $_->{'deleted'} = 0;
-    #    }
-    #}
-    #
-    #create_forum_xml_string($f, );
+    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
+
+    for (@{$f->{$tid}})
+    {
+        if ($_->{'mid'} == $mid)
+        {
+            $_->{'deleted'} = 0;
+        }
+    }
+
+    my %cfxs = (
+        'dtd'         => $dtd,
+        'lastMessage' => $lmsg,
+        'lastThread'  => $lthread
+    );
+    create_forum_xml_string($f, \%cfxs);
 }
 
 ### change_posting_visibility () ###############################################
