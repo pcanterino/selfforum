@@ -12,14 +12,13 @@ use strict;
 
 package Lock;
 
-use vars qw(@ISA @EXPORT_OK %EXPORT_TAGS $Timeout $violentTimeout $masterTimeout $iAmMaster);
+use vars qw(@EXPORT_OK %EXPORT_TAGS $Timeout $violentTimeout $masterTimeout $iAmMaster);
 
 # ====================================================
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA         = qw(Exporter);
+use base qw(Exporter);
 
 @EXPORT_OK   = qw(lock_file unlock_file write_lock_file write_unlock_file
                   violent_unlock_file set_master_lock release_file);

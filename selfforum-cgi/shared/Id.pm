@@ -17,14 +17,12 @@
 use strict;
 
 package Id;
-require 5.000;
 
 #####################
 # Funktionsexport
 #####################
 
-require Exporter;
-@Id::ISA = qw(Exporter);
+use base qw(Exporter);
 @Id::EXPORT = qw(unique_id);
 
 use vars qw(@table);
@@ -38,7 +36,11 @@ use vars qw(@table);
 #      Rueckgabe der ID                  #
 ##########################################
 
-sub unique_id {
+# sub unique_id ################################################
+#
+# composing of an unique ID...
+#
+sub unique_id () {
   my $id;
 
   my $ip=$ENV{'REMOTE_ADDR'};
@@ -47,16 +49,21 @@ sub unique_id {
   my $rand=int(rand(time()));
   $ip =  hex(join ('',map {sprintf ('%02X',$_)} split (/\./,$ip)));
 
-  join '',map {to_base64 ($_)} (substr ($time,-9), $port, $ip, $rand, $$);
+  join '',map {to_base64 ($_)} ($time, $port, $ip, $rand, $$);
 }
 
+# sub to_base64 ################################################
+#
+# only converts (max.) 32-bit numbers into a
+# system with base 64
+# its not the RFC base64 format!
+#
 sub to_base64 ($) {
   my $x = shift;
   my $y = $table[$x % 64];
 
-  while ($x = int ($x/64)) {$y = $table[$x % 64] . $y}
+  $y = $table[$x % 64].$y while ($x = int ($x/64));
 
-  # Rueckgabe
   $y;
 }
 

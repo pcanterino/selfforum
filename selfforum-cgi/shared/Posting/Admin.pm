@@ -1,12 +1,14 @@
-package Posting::Handle;
+package Posting::Admin;
 
 ################################################################################
 #                                                                              #
-# File:        shared/Posting/Handle.pm                                        #
+# File:        shared/Posting/Admin.pm                                         #
+#              (was: ~Handle.pm)                                               #
 #                                                                              #
 # Authors:     Frank Schoenmann <fs@tower.de>, 2001-03-13                      #
+#              Andre Malo       <nd@o3media.de>, 2001-03-29                    #
 #                                                                              #
-# Description: Allow modifications of postings                                 #
+# Description: Allow administration of postings                                #
 #                                                                              #
 # Todo:        * Lock files before modification                                #
 #              * Change body in change_posting_body()                          #
@@ -17,10 +19,9 @@ package Posting::Handle;
 
 use strict;
 
-use vars qw(@EXPORT);
 use base qw(Exporter);
 
-@EXPORT = qw(hide_posting recover_posting modify_posting add_user_vote level_vote);
+@Posting::Admin::EXPORT = qw(hide_posting recover_posting modify_posting add_user_vote level_vote);
 
 use Lock qw(:READ);
 use Posting::_lib qw(get_message_node save_file get_all_threads

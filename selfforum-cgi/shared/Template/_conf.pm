@@ -13,15 +13,12 @@ use strict;
 
 package Template::_conf;
 
-use vars qw(@ISA @EXPORT);
-
 # ====================================================
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(get_view_params);
+use base qw(Exporter);
+@Template::_conf::EXPORT = qw(get_view_params);
 
 ################################
 # sub get_view_params

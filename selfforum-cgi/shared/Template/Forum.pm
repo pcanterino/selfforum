@@ -13,8 +13,6 @@ use strict;
 
 package Template::Forum;
 
-use vars qw(@ISA @EXPORT);
-
 use Lock qw(:READ);
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Posting::_lib qw(get_all_threads long_hr_time);
@@ -26,9 +24,8 @@ use Template::_thread;
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(print_forum_as_HTML);
+use base qw(Exporter);
+@Template::Forum::EXPORT = qw(print_forum_as_HTML);
 
 ################################
 # sub print_forum_as_HTML

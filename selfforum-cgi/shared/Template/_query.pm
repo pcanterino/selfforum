@@ -12,15 +12,12 @@ use strict;
 
 package Template::_query;
 
-use vars qw(@ISA @EXPORT);
-
 # ====================================================
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(query_string);
+use base qw(Exporter);
+@Template::_query::EXPORT = qw(query_string);
 
 ################################
 # sub query_string

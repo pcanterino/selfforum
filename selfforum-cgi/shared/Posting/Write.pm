@@ -12,14 +12,13 @@ package Posting::Write;
 
 use strict;
 
-use vars qw(@EXPORT);
 use base qw(Exporter);
 
 # ====================================================
 # Funktionsexport
 # ====================================================
 
-@EXPORT = qw(write_posting);
+@Posting::Write::EXPORT = qw(write_posting);
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Encode::Posting;

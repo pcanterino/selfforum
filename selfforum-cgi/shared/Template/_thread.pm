@@ -12,8 +12,6 @@ use strict;
 
 package Template::_thread;
 
-use vars qw(@ISA @EXPORT);
-
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Posting::_lib qw(short_hr_time);
 use Template;
@@ -23,9 +21,8 @@ use Template::_query;
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(html_thread);
+use base qw(Exporter);
+@Template::_thread::EXPORT = qw(html_thread);
 
 ################################
 # sub html_thread

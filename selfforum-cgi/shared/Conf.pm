@@ -12,17 +12,14 @@ use strict;
 
 package Conf;
 
-use vars qw(@ISA @EXPORT);
-
 use XML::DOM;
 
 # ====================================================
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(read_script_conf);
+use base qw(Exporter);
+@Conf::EXPORT = qw(read_script_conf);
 
 ################################
 # sub read_script_conf

@@ -18,14 +18,13 @@ use strict;
 
 package Mail;
 
-use vars qw($mailbox $mailprog @ISA @EXPORT);
+use vars qw($mailbox $mailprog @EXPORT);
 
 # ===================
 # Funktionsexport
 # ===================
 
-require Exporter;
-@ISA = qw(Exporter);
+use base qw(Exporter);
 @EXPORT = qw(is_mail_address send_mail);
 
 ########################################

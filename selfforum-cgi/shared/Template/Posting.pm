@@ -12,8 +12,6 @@ use strict;
 
 package Template::Posting;
 
-use vars qw(@ISA @EXPORT);
-
 use Encode::Posting;
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Id;
@@ -30,9 +28,8 @@ use XML::DOM;
 # Funktionsexport
 # ====================================================
 
-require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(print_posting_as_HTML message_as_HTML);
+use base qw(Exporter);
+@Template::Posting::EXPORT = qw(print_posting_as_HTML message_as_HTML);
 
 ################################
 # sub print_posting_as_HTML
