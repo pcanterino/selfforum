@@ -485,8 +485,8 @@ sub save_file ($$) {
 ###########################
 
 sub hr_time ($) {
-  my @month = qw(Januar Februar M\303\244rz April Mail Juni Juli August September Oktober November Dezember);
-                               # ^^^^^^^^ - UTF8 #
+  my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mail Juni Juli August September Oktober November Dezember));
+                                   # ^^^^^^^^ - UTF8 #
 
   my (undef, $min, $hour, $day, $mon, $year) = localtime ($_[0]);
 
@@ -500,8 +500,8 @@ sub short_hr_time ($) {
 }
 
 sub long_hr_time ($) {
-  my @month = qw(Januar Februar M\303\244rz April Mail Juni Juli August September Oktober November Dezember);
-                               # ^^^^^^^^ - UTF8 #
+  my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mail Juni Juli August September Oktober November Dezember));
+                                   # ^^^^^^^^ - UTF8 #
 
   my @wday  = qw(Sonntag Montag Dienstag Mittwoch Donnerstag Freitag Samstag);
   my ($sek, $min, $hour, $day, $mon, $year, $wday) = localtime ($_[0]);
