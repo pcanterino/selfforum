@@ -41,18 +41,10 @@ use Template::Archive qw(
     print_month_as_HTML
     print_thread_as_HTML
 );
-#use Template::Forum;
-#use Template::Posting;
 
 use CGI qw(param header path_info);
 
 print header(-type => 'text/html');
-
-#my $show = $conf->{show};
-#my $tree = $show->{assign}->{thread};
-
-#my $forum_file = $conf->{files}->{forum};
-#my $message_path = $conf->{files}->{messagePath};
 
 my $conf = read_script_conf($Config, $Shared, $Script);
 my $show = $conf->{'show'};
@@ -78,7 +70,6 @@ if ($year) {
             } else {
                 print_thread_as_HTML(
                     $conf->{'files'}->{'archivePath'} . $year .'/'. $month .'/t'. $tid . '.xml',
-#                   '/home/users/f/fo/fox_two/sf/data/forum/archive/2001/5/t23518',
                     $show_archive->{'templateFile'},
                     {
                         'assign'        => $show_archive->{'assign'},
@@ -110,37 +101,6 @@ if ($year) {
 } else {
 #   print_overview_as_HTML();
 }
-
-
-#if (defined ($tid) and defined ($mid)) {
-#  print_posting_as_HTML (
-#    $message_path,
-#    $show_posting -> {templateFile},
-#    { assign       => $show_posting -> {assign},
-#      thread       => $tid,
-#      posting      => $mid,
-#      adminDefault => $adminDefault,
-#      messages     => $conf -> {template} -> {messages},
-#      form         => $show_posting -> {form},
-#      cgi          => $cgi,
-#      tree         => $tree,
-#      firsttime    => 1,
-#      cachepath    => $conf -> {files} -> {cachePath}
-#    }
-#  );
-#}
-#
-#else {
-#  print_forum_as_HTML (
-#    $forum_file,
-#    $show_forum -> {templateFile},
-#    { assign       => $show_forum -> {assign},
-#      adminDefault => $adminDefault,
-#      cgi          => $cgi,
-#      tree         => $tree
-#    }
-#  );
-#}
 
 #
 #
