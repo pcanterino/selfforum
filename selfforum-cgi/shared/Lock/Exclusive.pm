@@ -4,7 +4,7 @@ package Lock::Exclusive;
 #                                                                              #
 # File:        shared/Lock/Exclusive.pm                                        #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-05-25                    #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: Locking and Filehandle class                                    #
 #              using O_EXCL and lock files                                     #
@@ -12,17 +12,17 @@ package Lock::Exclusive;
 ################################################################################
 
 use strict;
-use vars qw(
-  $VERSION
-);
-
 use Fcntl;
 
 ################################################################################
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ### sub _simple_lock ###########################################################
 #

@@ -4,7 +4,7 @@ package Lock::API;
 #                                                                              #
 # File:        shared/Lock/API.pm                                              #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-05-25                    #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: system independent part of Locking and Filehandle class         #
 #              NOT FOR PUBLIC USE                                              #
@@ -12,10 +12,6 @@ package Lock::API;
 ################################################################################
 
 use strict;
-use vars qw(
-  $VERSION
-);
-
 use Carp;
 
 use base qw(
@@ -27,7 +23,11 @@ use base qw(
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ### sub lock ###################################################################
 #
