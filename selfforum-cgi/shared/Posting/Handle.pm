@@ -4,7 +4,7 @@ package Posting::Handle;
 #                                                                              #
 # File:        shared/Posting/Handle.pm                                        #
 #                                                                              #
-# Authors:     Frank Schoenmann <fs@tower.de>, 2001-02-27                      #
+# Authors:     Frank Schoenmann <fs@tower.de>, 2001-03-08                      #
 #                                                                              #
 # Description: Allow modifications of postings                                 #
 #                                                                              #
@@ -30,6 +30,9 @@ use XML::DOM;
 #         $tpath  Path to thread files
 #         \%info  Hash reference: 'thread', 'posting', 'indexFile'
 # Return: -none-
+#
+# Todo:
+#  * set flags recursive in forum xml
 #
 sub hide_posting($$$)
 {
@@ -68,10 +71,13 @@ sub hide_posting($$$)
 #
 # Recover a posting: delete 'invisible' flag
 #
-# Params: $forum     Path and filename of forum
-#         $tpath     Path to thread files
-#         \%hashref  Reference: 'thread', 'posting', 'indexFile'
+# Params: $forum  Path and filename of forum
+#         $tpath  Path to thread files
+#         \%info  Hash reference: 'thread', 'posting', 'indexFile'
 # Return: -none-
+#
+# Todo:
+#  * set flags recursive in forum xml
 #
 sub recover_posting($$$)
 {
@@ -143,14 +149,14 @@ sub change_posting_visibility($$$$)
 # Params: $forum  Path and filename of forum
 #         $tpath  Path to thread files
 #         \%info  Reference: 'thread', 'posting', 'indexFile', 'data'
-#                 (\%hashref: 'subject', 'category', 'body')
+#                 (data = \%hashref: 'subject', 'category', 'body')
 # Return: -none-
 #
 sub modify_posting($$$)
 {
     my ($forum, $tpath, $info) = @_;
-    my ($tid, $mid, $indexFile, $data) = ('t' . $info->{'thread'},
-                                          'm' . $info->{'posting'},
+    my ($tid, $mid, $indexFile, $data) = ($info->{'thread'},
+                                          $info->{'posting'},
                                           $info->{'indexFile'},
                                           $info->{'data'});
     my ($subject, $category, $body) = ($data->{'subject'}, $data->{'category'}, $data->{'body'});
@@ -161,10 +167,32 @@ sub modify_posting($$$)
     $subject && $msgdata{'Subject'} = $subject;
     $category && $msgdata{'Category'} = $category;
 
-    #
-    my $tfile = $tpath . '/' . $tid . '.xml';
-    change_posting_value($tfile, $tid, $mid, \$msgdata);
-    change_posting_value($forum, $tid, $mid, \$msgdata);
+    # Thread
+    my $tfile = $tpath . '/t' . $tid . '.xml';
+    change_posting_value($tfile, 't'.$tid, 'm'.$mid, \$msgdata);
+    $body && change_posting_body($tfile, 't'.$tid, 'm'.$mid, $body);
+
+    # Forum (does not contain msg bodies)
+    #change_posting_value($forum, 't'.$tid, 'm'.$mid, \$msgdata);
+
+    my ($f, $lthread, $lmsg, $dtd, $zlev) = get_all_threads($forum, 1, 0);
+
+    for (@{$f->{$tid}})
+    {
+        if ($_->{'mid'} == $mid)
+        {
+            $subject && $_->{'subject'} = $subject;
+            $category && $_->{'cat'} = $category;
+        }
+    }
+
+    my %cfxs = (
+        'dtd'         => $dtd,
+        'lastMessage' => $lmsg,
+        'lastThread'  => $lthread
+    );
+    my $xmlstring = create_forum_xml_string($f, \%cfxs);
+    save_file($forum, $$xmlstring);
 }
 
 ### change_posting_value () ####################################################
@@ -193,6 +221,30 @@ sub change_posting_value($$$$)
         my $node = $nodes->item(0);
         $node->setValue($values->{$_});
     }
+
+    return save_file($fname, \$xml->toString);
+}
+
+### change_posting_body () #####################################################
+#
+# Change body of a posting
+#
+# Params: $fname  Filename
+#         $tid    Thread ID (unused, for compatibility purposes)
+#         $mid    Message ID
+#         $body   New body
+# Return: Status code
+#
+sub change_posting_body($$$$)
+{
+    my ($fname, $tid, $mid, $body) = @_;
+
+    my $parser = new XML::DOM::Parser;
+    my $xml = $parser->parsefile($fname);
+
+    my $mbnody = get_message_body($xml, $mid);
+
+    # todo: change body
 
     return save_file($fname, \$xml->toString);
 }
