@@ -1,13 +1,14 @@
 #!/usr/bin/perl
 
-# ====================================================
-# Autor: n.d.p. / 2001-01-23
-# lm   : n.d.p. / 2001-01-25
-# ====================================================
-# Funktion:
-#      Entgegennahme von Postings und
-#      Darstellung der "Neue Nachricht"-Seite
-# ====================================================
+################################################################################
+#                                                                              #
+# File:        user/fo_posting.pl                                              #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-01-25                          #
+#                                                                              #
+# Description: Accept new postings, display "Neue Nachricht" page              #
+#                                                                              #
+################################################################################
 
 use strict;
 use vars qw($Bin $Shared $Script %subhash $httpurl $flocked);
@@ -77,13 +78,16 @@ else {
 # end of main / Funktionen
 # ====================================================
 
-################################
-# sub check_reply_dupe
-#
-# Reply moeglich?
-# Doppelposting?
-################################
 
+### check_reply_dupe () ########################################################
+#
+# Reply moeglich? Doppelposting?
+#
+# Params: -none-
+# Return: Dupe check result
+#         'Dupe'  - Posting is a dupe
+#         Nothing - ok.
+#
 sub check_reply_dupe () {
   my $stat;
 
@@ -91,12 +95,11 @@ sub check_reply_dupe () {
     if ($stat == 0) {
       # ueberlastet oder so
       violent_unlock_file (forum_filename);
-      return 'Occupied';}
-
-    else {
-      return 'masterLock';}}
-
-  else {
+      return 'Occupied';
+    } else {
+      return 'masterLock';
+    }
+  } else {
     my ($i, %msg, %unids);
 
     $flocked = 1;
@@ -120,13 +123,14 @@ sub check_reply_dupe () {
       if (exists($dparam{$formdata -> {followUp} -> {name}})) {
         return 'noReply' unless (exists($msg{$fmid}));}
 
-      %unids = map {$_ => 1} @{$threads -> {$ftid} -> [$msg{$fmid}] -> {unids}};}
-
-    else {
-      %unids = map {$_ => 1} @$unids;}
+      %unids = map {$_ => 1} @{$threads -> {$ftid} -> [$msg{$fmid}] -> {unids}};
+    } else {
+      %unids = map {$_ => 1} @$unids;
+    }
 
     # jetzt endlich
-    return 'Dupe' if (exists ($unids{$dparam{$formdata -> {uniqueID} -> {name}}}));}
+    return 'Dupe' if (exists ($unids{$dparam{$formdata -> {uniqueID} -> {name}}}));
+  }
 
   return;
 }
@@ -179,7 +183,8 @@ sub got_new () {
                                 $thx -> {category} => plain ($dparam {$formdata -> {posterCategory} -> {name}}),
                                 $thx -> {home}     => plain ($dparam {$formdata -> {posterURL} -> {name}}),
                                 $thx -> {image}    => plain ($dparam {$formdata -> {posterImage} -> {name}}),
-                                $thx -> {subject}  => plain ($dparam {$formdata -> {posterSubject} -> {name}})})};}
+                                $thx -> {subject}  => plain ($dparam {$formdata -> {posterSubject} -> {name}})})};
+  }
   return;
 }
 
@@ -444,13 +449,15 @@ sub check_param () {
   # ===
   $failed=1;
   foreach (@{$formmust -> {$gotKeys {$formdata -> {followUp} -> {name}}?'reply':'new'}}) {
-    return 'missingKey' unless ($gotKeys {$formdata -> {$_} -> {name}});}
+    return 'missingKey' unless ($gotKeys {$formdata -> {$_} -> {name}});
+  }
 
   # 3
   # ===
   foreach (param) {
     $failed = $name {$_};
-    return 'unexpectedKey' unless (exists ($name {$_}));}
+    return 'unexpectedKey' unless (exists ($name {$_}));
+  }
 
   # 4
   # ===
