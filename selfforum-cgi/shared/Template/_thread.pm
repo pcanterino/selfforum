@@ -89,7 +89,7 @@ sub html_thread ($$$;$) {
            $temp->{
              (length $_->{'cat'}
                ? 'start'
-               : 'startNC').$del
+               : 'startNC').($actions->{'actionDeleted'} ? $del : '')
            },
            { $temp->{'name'}    => $_->{'name'},
              $temp->{'subject'} => $_->{'subject'},
@@ -113,7 +113,7 @@ sub html_thread ($$$;$) {
            $temp->{
              (length $_->{'cat'}
               ? 'start'
-              : 'startNC').$del
+               : 'startNC').($actions->{'actionDeleted'} ? $del : '')
            },
            { $temp->{'name'}    => $_->{'name'},
              $temp->{'subject'} => $_->{'subject'},
@@ -164,7 +164,7 @@ sub html_thread ($$$;$) {
            $temp->{
              (length $_->{'cat'}
              ? 'line'
-             : 'lineNC').$del
+             : 'lineNC').($actions->{'actionDeleted'} ? $del : '')
            },
            { $temp->{'name'}    => $_->{'name'},
              $temp->{'subject'} => $_->{'subject'},
@@ -187,7 +187,7 @@ sub html_thread ($$$;$) {
            $temp->{
              (length $_->{'cat'}
              ? 'line'
-             : 'lineNC').$del
+             : 'lineNC').($actions->{'actionDeleted'} ? $del : '')
            },
            { $temp->{'name'}    => $_->{'name'},
              $temp->{'subject'} => $_->{'subject'},
