@@ -80,6 +80,7 @@
       <Script>fo_voting</Script>
       <Script>fo_admin</Script>
       <Script>fo_arcview</Script>
+      <Script>fo_delete</Script>
     </Application>
 
     <Property name="show">
