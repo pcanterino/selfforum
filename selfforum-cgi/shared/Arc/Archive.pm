@@ -4,13 +4,17 @@ package Arc::Archive;
 #                                                                              #
 # File:        shared/Arc/Archive.pm                                           #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-04-29                    #
+# Authors:     Andre Malo       <nd@o3media.de>, 2001-06-16                    #
 #                                                                              #
 # Description: Severance of Threads and archiving                              #
 #                                                                              #
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
 
 use Arc::Test;
 use Lock          qw(:ALL);
@@ -30,10 +34,16 @@ use XML::DOM;
 
 ################################################################################
 #
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+################################################################################
+#
 # Export
 #
 use base qw(Exporter);
-@Arc::Archive::EXPORT = qw(cut_tail);
+@EXPORT = qw(cut_tail);
 
 ### sub cut_tail ($) ###########################################################
 #
@@ -220,7 +230,7 @@ sub cut_tail ($) {
   \%failed;
 }
 
-# keep require happy
+# keep 'require' happy
 1;
 
 #

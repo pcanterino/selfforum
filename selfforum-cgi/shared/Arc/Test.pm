@@ -11,13 +11,23 @@ package Arc::Test;
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 ################################################################################
 #
 # Export
 #
 use base qw(Exporter);
-@Arc::Test::EXPORT = qw(get_obsolete_threads);
+@EXPORT = qw(get_obsolete_threads);
 
 ### sub get_obsolete_threads ($) ###############################################
 #
@@ -110,7 +120,7 @@ sub get_obsolete_threads ($) {
   [sort {$a <=> $b} splice @sorted => 0, $obsolete];
 }
 
-# keep require happy
+# keep 'require' happy
 1;
 
 #
