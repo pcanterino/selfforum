@@ -40,6 +40,7 @@ use base qw(Exporter);
   hr_time
   short_hr_time
   long_hr_time
+  very_short_hr_time
   month
 
   get_all_threads
@@ -727,6 +728,12 @@ sub long_hr_time ($) {
   my ($sek, $min, $hour, $day, $mon, $year, $wday) = localtime ($_[0]);
 
   sprintf ('%s, %02d. %s %04d, %02d:%02d:%02d Uhr', $wday[$wday], $day, $month[$mon], $year+1900, $hour, $min, $sek);
+}
+
+sub very_short_hr_time($) {
+  my (undef, $min, $hour, $day, $mon, $year) = localtime ($_[0]);
+
+  sprintf ('%02d. %02d. %04d', $day, $mon+1, $year+1900);
 }
 
 sub month($) {
