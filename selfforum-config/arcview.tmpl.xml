@@ -39,15 +39,15 @@
 ]]></Scrap>
 
 <!--
-  ** Month view
+  ** Year/Month view
   -->
 
-<Scrap id="ARC_MONTH_START"><![CDATA[
+<Scrap id="ARC_YM_START"><![CDATA[
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html><head>
-<title>SELFHTML Forumsarchiv / {&& _YEAR &&} / {&& _MONTH_NAME &&}</title>
+<title>SELFHTML Forumsarchiv / {&& _YEAR &&} / {&& %IF _MONTH_NAME &&}{&& _MONTH_NAME &&}{&& %ENDIF &&}</title>
 <link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}" />
 </head>
 <body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
@@ -56,18 +56,16 @@
 </table><table cellpadding="4" cellspacing="0" border="0" width="100%">
 <tr>
 <td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
-<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forumsarchiv<br />{&& _MONTH_NAME &&} {&& _YEAR &&}</h2></td>
+<td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forumsarchiv<br />{&& %IF _MONTH_NAME &&}{&& _MONTH_NAME &&} {&& %ENDIF &&}{&& _YEAR &&}</h2></td>
 </tr>
 <tr><td bgcolor="#EEEEEE" class="doc" colspan="2"><a href="#bottom">{&& IMG_XGDOWN &&}</a></td></tr>
 </table>
 <br />
-<table cellpadding="0" cellspacing="0" border="0" width="100%">
-<tr><td nowrap="nowrap" bgcolor="#EEEEE0" class="code"><b>Startdatum&nbsp;&nbsp;</b></td><td>&nbsp;</td><td><b>Themenbereich</b></td>
-<td bgcolor="#EEEEE0" class="code"><b>Thread-Titel</b></td></tr>
+{&& %IF _MONTH &&}{&& ARC_MONTH_OVERVIEW &&}{&& %ENDIF &&}
 ]]></Scrap>
 
-<Scrap id="ARC_MONTH_END"><![CDATA[
-</table>
+<Scrap id="ARC_YM_END"><![CDATA[
+{&& %IF _MONTH &&}</table>{&& %ENDIF &&}
 <br />&#160;<table cellpadding="4" cellspacing="0" border="0" width="100%">
 <tr><td bgcolor="#EEEEEE" class="doc" colspan="2">
 <a href="#top">{&& IMG_XGOUP &&}</a>
@@ -77,8 +75,18 @@
 </body></html>
 ]]></Scrap>
 
+<Scrap id="ARC_MONTH_OVERVIEW"><![CDATA[
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+<tr><td nowrap="nowrap" bgcolor="#EEEEE0" class="code"><b>Startdatum&nbsp;&nbsp;</b></td><td bgcolor="#EEEEE0" class="code">&nbsp;</td><td bgcolor="#EEEEE0" class="code"><b>Themenbereich</b></td>
+<td bgcolor="#EEEEE0" class="code"><b>Thread-Titel</b></td></tr>
+]]></Scrap>
+
 <Scrap id="ARC_MONTH_THREAD"><![CDATA[
 <tr><td>{&& _T_DATE &&}</td><td></td><td>{&& IMG_X3 &&} (<b>{&& _T_CATEGORY &&}</b>)</td><td><a href="{&& BASE &&}{&& _YEAR &&}/{&& _MONTH &&}/{&& _T_ID &&}/"><b>{&& _T_TITLE &&}</b></a></td></tr>
+]]></Scrap>
+
+<Scrap id="ARC_YEAR_ENTRY"><![CDATA[
+{&& IMG_X3 &&} {&& LOC_MONTH_YEAR &&}<br />
 ]]></Scrap>
 
 <!--
@@ -175,6 +183,7 @@
 
 <Scrap id="LOC_YEAR"><![CDATA[ <a href="{&& BASE &&}{&& _YEAR &&}/"><b>{&& _YEAR &&}</b></a> ]]></Scrap>
 <Scrap id="LOC_MONTH"><![CDATA[ <a href="{&& BASE &&}{&& _YEAR &&}/{&& _MONTH &&}/"><b>{&& _MONTH_NAME &&}</b></a> ]]></Scrap>
+<Scrap id="LOC_MONTH_YEAR"><![CDATA[ <a href="{&& BASE &&}{&& _YEAR &&}/{&& _MONTH &&}/"><b>{&& _MONTH_NAME &&} {&& _YEAR &&}</b></a> ]]></Scrap>
 
 <Scrap id="MAIL_SELF"><![CDATA[ selfhtml@teamone.de ]]></Scrap>
 
