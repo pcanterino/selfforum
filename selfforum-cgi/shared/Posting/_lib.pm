@@ -19,7 +19,7 @@ use vars qw(
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 
-use Time::German;
+use Time::German ':overwrite_internal_localtime';
 use XML::DOM;
 
 ################################################################################

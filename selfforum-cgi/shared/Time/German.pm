@@ -12,7 +12,8 @@ package Time::German;
 
 use strict;
 use vars qw(
-  @EXPORT
+  @EXPORT_OK
+  %EXPORT_TAGS
   $VERSION
 );
 
@@ -27,7 +28,8 @@ $VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r }
 # Export
 #
 use base 'Exporter';
-@EXPORT = qw(localtime);
+@EXPORT_OK   = qw(localtime);
+%EXPORT_TAGS = (overwrite_internal_localtime => 'localtime'); # ;-)) Thanks to Calocybe
 
 ################################################################################
 #
