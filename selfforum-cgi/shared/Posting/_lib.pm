@@ -4,8 +4,8 @@ package Posting::_lib;
 #                                                                              #
 # File:        shared/Posting/_lib.pm                                          #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-06-11                          #
-#              Frank Schoenmann <fs@tower.de>, 2001-06-04                      #
+# Authors:     André Malo <nd@o3media.de>                                      #
+#              Frank Schönmann <fs@tower.de>                                   #
 #                                                                              #
 # Description: Message access interface, time format routines                  #
 #                                                                              #
@@ -14,7 +14,6 @@ package Posting::_lib;
 use strict;
 use vars qw(
   @EXPORT_OK
-  $VERSION
 );
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
@@ -26,7 +25,11 @@ use XML::DOM;
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #
@@ -399,7 +402,8 @@ sub sort_thread ($$) {
   for (@smsg) {
     ++$z;
     splice @smsg,$z,0,@{$mhash{$_ -> {mid}}} if ($_ -> {answers});
-    delete $_ -> {kids};}
+    delete $_ -> {kids};
+  }
 
   # return
   \@smsg;
@@ -590,7 +594,7 @@ sub create_forum_xml_string ($$) {
   my $xml =
       '<?xml version="1.0" encoding="UTF-8"?>'."\n"
     . '<!DOCTYPE Forum SYSTEM "'.$param -> {dtd}.'">'."\n"
-    . '<Forum lastMessage="'.$param -> {lastMessage}.'" lastThread="'.$param -> {lastThread}.'">';
+    . '<Forum lastMessage="m'.$param -> {lastMessage}.'" lastThread="t'.$param -> {lastThread}.'">';
 
   for $thread (sort {$b <=> $a} keys %$threads) {
     $xml .= '<Thread id="t'.$thread.'">';

@@ -5,8 +5,8 @@ package Posting::Admin;
 # File:        shared/Posting/Admin.pm                                         #
 #              (was: ~Handle.pm)                                               #
 #                                                                              #
-# Authors:     Frank Schoenmann <fs@tower.de>, 2001-03-13                      #
-#              Andre Malo       <nd@o3media.de>, 2001-03-29                    #
+# Authors:     Frank Schönmann <fs@tower.de>                                   #
+#              André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: Allow administration of postings                                #
 #                                                                              #
@@ -20,7 +20,6 @@ package Posting::Admin;
 use strict;
 use vars qw(
   @EXPORT
-  $VERSION
 );
 
 use Lock qw(:READ);
@@ -37,7 +36,11 @@ use XML::DOM;
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #

@@ -4,17 +4,13 @@ package Posting::Cache;
 #                                                                              #
 # File:        shared/Posting/Cache.pm                                         #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-06-22                          #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: Views/Voting Cache class                                        #
 #                                                                              #
 ################################################################################
 
 use strict;
-use vars qw(
-  $VERSION
-);
-
 use Fcntl;
 use File::Path;
 use Lock;
@@ -23,7 +19,11 @@ use Lock;
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 my $O_BINARY = eval "O_BINARY";
 $O_BINARY = 0 if ($@);
