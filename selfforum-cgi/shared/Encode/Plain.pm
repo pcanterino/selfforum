@@ -255,17 +255,17 @@ sub toUTF8 ($) {
     ? $$ref
     : $ref;
 
-  if ($v56) {
-    no warnings 'utf8';
-    $string =~ tr/\x80-\xff//CU;
-  }
-  else {
+# if ($v56) {
+#   no warnings 'utf8';
+#   $string =~ tr/\x80-\xff//CU;
+# }
+# else {
     $string =~ s
       {([\x80-\xff])}
       { chr((ord ($1) >> 6) | 192)
        .chr((ord ($1) & 191))
       }eg;
-  }
+# }
 
   ref($ref)
     ? \$string

@@ -70,7 +70,9 @@ sub html_thread ($$$) {
              $temp -> {subject} => $_ -> {subject},
              $temp -> {cat}     => $_ -> {cat},
              $temp -> {time}    => plain(short_hr_time ($_ -> {time})),
-             $temp -> {link}    => query_string({$t => $tid, $p => $_ -> {mid}})
+             $temp -> {link}    => query_string({$t => $tid, $p => $_ -> {mid}}),
+             $temp -> {tid}     => $tid,
+             $temp -> {mid}     => $_ -> {mid},
            },
            $par -> {addParam}
           )} .
@@ -90,7 +92,9 @@ sub html_thread ($$$) {
              $temp -> {subject} => $_ -> {subject},
              $temp -> {cat}     => $_ -> {cat},
              $temp -> {time}    => plain(short_hr_time ($_ -> {time})),
-             $temp -> {link}    => query_string({$t => $tid, $p => $_ -> {mid}})
+             $temp -> {link}    => query_string({$t => $tid, $p => $_ -> {mid}}),
+             $temp -> {tid}     => $tid,
+             $temp -> {mid}     => $_ -> {mid},
            },
            $par -> {addParam}
           )}.
@@ -134,7 +138,9 @@ sub html_thread ($$$) {
              $temp -> {subject} => $_ -> {subject},
              $temp -> {cat}     => $_ -> {cat},
              $temp -> {time}    => plain(short_hr_time ($_ -> {time})),
-             $temp -> {link}    => query_string({$t => $tid, $p => $_ -> {mid}})
+             $temp -> {link}    => query_string({$t => $tid, $p => $_ -> {mid}}),
+             $temp -> {tid}     => $tid,
+             $temp -> {mid}     => $_ -> {mid},
            },
            $par -> {addParam}
           )}.
@@ -153,7 +159,9 @@ sub html_thread ($$$) {
              $temp -> {subject} => $_ -> {subject},
              $temp -> {cat}     => $_ -> {cat},
              $temp -> {time}    => plain(short_hr_time ($_ -> {time})),
-             $temp -> {link}    => query_string({$t => $tid, $p => $_ -> {mid}})
+             $temp -> {link}    => query_string({$t => $tid, $p => $_ -> {mid}}),
+             $temp -> {tid}     => $tid,
+             $temp -> {mid}     => $_ -> {mid},
            },
            $par -> {addParam}
           )}.
