@@ -24,6 +24,7 @@ use Posting::_lib qw(
   parse_xml_file
   hr_time
 );
+use Posting::Cache;
 use Template;
 use Template::_conf;
 use Template::_query;
@@ -169,11 +170,26 @@ sub print_posting_as_HTML ($$$) {
           $formdata->{uniqueID}  ->{assign}->{value} => plain(unique_id),
           $formdata->{followUp}  ->{assign}->{value} => plain($param -> {thread}.';'.$param -> {posting}),
           $formdata->{quoteChar} ->{assign}->{value} => "&#255;".plain(defined $view -> {quoteChars} ? $view -> {quoteChars} : ''),
-          $formdata->{userID}    ->{assign}->{value} => ''
+          $formdata->{userID}    ->{assign}->{value} => '',
+          $assign->{firsttime}                       => $param->{firsttime} ? $param->{firsttime} : '',
+          $assign->{voted}                           => $param->{voted} ? $param->{voted} : ''
         },
         $pars,
         $parent_pars
       )};
+
+      # all output done
+      #
+      close STDOUT;
+
+      if ($param->{firsttime}) {
+        my $cache = new Posting::Cache ($param->{cachefile});
+        $cache -> add_view (
+          { thread  => $param -> {thread},
+            posting => $param -> {posting}
+          }
+        );
+      }
     }
   }
 

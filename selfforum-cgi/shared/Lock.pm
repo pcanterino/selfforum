@@ -11,15 +11,18 @@ package Lock;
 ################################################################################
 
 use strict;
-use Carp;
 use vars qw(
   @EXPORT_OK
   %EXPORT_TAGS
+  %LOCKED
   $Timeout
   $violentTimeout
   $masterTimeout
   $iAmMaster
 );
+
+use Carp;
+use Fcntl;
 
 ################################################################################
 #
@@ -48,16 +51,25 @@ use base qw(Exporter);
     write_unlock_file
     violent_unlock_file
   )],
-  ALL   => [qw(
-    lock_file
-    unlock_file
-    write_lock_file
-    write_unlock_file
-    violent_unlock_file
-    set_master_lock
-    release_file
-  )]
+  ALL   => \@EXPORT_OK
 );
+
+### sub ~file ($) ##############################################################
+#
+# create lock file names
+#
+sub reffile ($) {
+  return $_[0].'.lock.ref';
+}
+sub lockfile ($) {
+  return $_[0].'.lock';
+}
+sub masterfile ($) {
+  return $_[0].'.master';
+}
+sub masterlockfile ($) {
+  return lockfile(masterfile $_[0]);
+}
 
 ################################################################################
 #
@@ -78,21 +90,23 @@ sub w_lock_file ($;$) {
   my $filename = shift;
   my $timeout  = +shift || $Timeout;
 
-  if (-f &masterlockfile($filename)) {
-    for (0..$timeout) {
+  unless ($LOCKED{$filename}) {
+    if (-f masterlockfile($filename)) {
+      for (1..$timeout) {
 
-      # try to increment the reference counter
-      #
-      &set_ref($filename,1,$timeout) and return 1;
-      sleep (1);
+        # try to increment the reference counter
+        #
+        if (set_ref($filename,1,$timeout)) {
+          $LOCKED{$filename}=1;
+          return 1;
+        }
+        sleep (1);
+      }
     }
-   }
-
-  else {
-    # master lock is set
-    # or file has not been realeased yet
-    #
-    return;
+    else {
+      # master lock is set or file has not been released yet
+      return;
+    }
   }
 
   # time out
@@ -114,17 +128,25 @@ sub w_unlock_file ($;$) {
   my $filename = shift;
   my $timeout  = shift || $Timeout;
 
-  if (-f &masterlockfile($filename)) {
+  if ($LOCKED{$filename}) {
+    if ($LOCKED{$filename} == 3) {
+      return unless write_unlock_file($filename, $timeout);
+      $LOCKED{$filename} = 1;
+    }
+    if ($LOCKED{$filename} == 1) {
+      if (-f masterlockfile($filename)) {
 
-    # try do decrement the reference counter
-    #
-    &set_ref($filename,-1,$timeout) and return 1;
+        # try do decrement the reference counter
+        #
+        if (set_ref($filename,-1,$timeout)) {
+          delete $LOCKED{$filename};
+          return 1;
+        }
+      }
+    }
   }
 
   # time out
-  # maybe the system is occupied
-  # or file has not been released yet
-  #
   return;
 }
 
@@ -141,32 +163,36 @@ sub w_unlock_file ($;$) {
 sub w_write_lock_file ($;$) {
   my $filename=shift;
   my $timeout= shift || $Timeout;
+  my $rest = ($LOCKED{$filename} and $LOCKED{$filename} == 1) ? 1 : 0;
 
-  if (-f &masterlockfile($filename) or $iAmMaster) {
+  if (-f masterlockfile($filename) or $iAmMaster) {
 
     # announce the write lock
     # and wait $timeout seconds for
     # references == 0 (no shared locks set)
     #
-    &simple_lock ($filename,$timeout) or return 0;
-    for (0..$timeout) {
+    simple_lock ($filename,$timeout) or return 0;
+    for (1..$timeout) {
       # lock reference counter
       # or fail
       #
-      unless (&simple_lock (&reffile($filename),$timeout)) {
-        &simple_unlock($filename,$timeout);
+      unless (simple_lock (reffile($filename),$timeout)) {
+        simple_unlock($filename,$timeout);
         return 0;
       }
 
       # ready if we have no shared locks
       #
-      return 1 if (&get_ref ($filename) == 0);
+      if (get_ref ($filename) == $rest) {
+        $LOCKED{$filename} = 2 | ($rest ? 1 : 0);
+        return 1;
+      };
 
       # release reference counter
       # shared locks get the chance to be removed
       #
-      unless (&simple_unlock (&reffile($filename),$timeout)) {
-        &simple_unlock($filename,$timeout);
+      unless (simple_unlock (reffile($filename),$timeout)) {
+        simple_unlock($filename,$timeout);
         return 0;
       }
       sleep(1);
@@ -175,17 +201,15 @@ sub w_write_lock_file ($;$) {
     # write lock failed
     # remove the announcement
     #
-    &simple_unlock ($filename);}
+    simple_unlock ($filename);
+  }
 
   else {
-    # master lock is set
-    # or file has not been released yet
-    #
-    return;}
+    # master lock is set or file has not been released yet
+    return;
+  }
 
   # time out
-  # maybe the system is occupied
-  #
   0;
 }
 
@@ -203,17 +227,19 @@ sub w_write_unlock_file ($;$) {
   my $filename = shift;
   my $timeout  = shift || $Timeout;
 
-  if (-f &masterlockfile($filename) or $iAmMaster) {
+  if (-f masterlockfile($filename) or $iAmMaster) {
 
     # remove reference counter lock
     #
-    &simple_unlock (&reffile($filename),$timeout) or return;
+    simple_unlock (reffile($filename),$timeout) or return;
 
     # remove the write lock announce
     #
-    &simple_unlock ($filename,$timeout) or return;}
+    simple_unlock ($filename,$timeout) or return;
+  }
 
   # done
+  delete $LOCKED{$filename};
   1;
 }
 
@@ -229,20 +255,22 @@ sub w_write_unlock_file ($;$) {
 sub w_violent_unlock_file ($) {
   my $filename = shift;
 
-  if (-f &masterlockfile($filename)) {
+  if (-f masterlockfile($filename)) {
 
     # find out last modification time
     # and do nothing unless 'violent-timout' is over
     #
     my $reffile;
-    if (-f ($reffile = $filename) or -f ($reffile = &lockfile($filename))) {
+    if (-f ($reffile = $filename) or -f ($reffile = lockfile($filename))) {
       my $time = (stat $reffile)[9];
-      return if ((time - $time) < $violentTimeout);}
+      (time - $time) >= $violentTimeout   or return;
+    }
 
     write_lock_file ($filename,1);       # last try, to set an exclusive lock on $filename
-    unlink (&reffile($filename));        # reference counter = 0
-    simple_unlock (&reffile($filename)); # release reference counter file
+    unlink (reffile($filename));         # reference counter = 0
+    simple_unlock (reffile($filename));  # release reference counter file
     simple_unlock ($filename);}          # release file
+    delete $LOCKED{$filename};
 
   return;
 }
@@ -263,11 +291,11 @@ sub w_set_master_lock ($;$) {
 
   # set exclusive lock or fail
   #
-  return unless (&write_lock_file ($filename,$timeout));
+  return unless (write_lock_file ($filename,$timeout));
 
   # set master lock
   #
-  unlink &masterlockfile($filename) and return 1;
+  unlink masterlockfile($filename)    and return 1;
 
   # no chance (occupied?, master lock set yet?)
   return;
@@ -286,11 +314,12 @@ sub w_set_master_lock ($;$) {
 sub w_release_file ($) {
   my $filename=shift;
 
-  unlink (&reffile($filename));                              # reference counter = 0
-  return if (-f &reffile($filename));                      # really?
-  return unless (simple_unlock (&reffile($filename)));     # release reference counter
-  return unless (&simple_unlock ($filename));              # remove any write lock announce
-  return unless (&simple_unlock (&masterfile($filename))); # remove master lock
+  unlink (reffile($filename));                              # reference counter = 0
+  return if (-f reffile($filename));                        # really?
+  return unless (simple_unlock (reffile($filename)));       # release reference counter
+  return unless (simple_unlock ($filename));                # remove any write lock announce
+  return unless (simple_unlock (masterfile($filename)));    # remove master lock
+  delete $LOCKED{$filename};
 
   # done
   1;
@@ -315,25 +344,27 @@ sub x_lock_file ($;$) {
   my $filename = shift;
   my $timeout  = shift || $Timeout;
 
-  unless (-l &masterlockfile($filename)) {
-    for (0..$timeout) {
+  unless ($LOCKED{$filename}) {
+    unless (-l masterlockfile($filename)) {
+      for (1..$timeout) {
 
-      # try to increment the reference counter
-      #
-      &set_ref($filename,1,$timeout) and return 1;
-      sleep (1);
+        # try to increment the reference counter
+        #
+        if (set_ref($filename,1,$timeout)) {
+          $LOCKED{$filename} = 1;
+          return 1;
+        }
+        sleep (1);
+      }
+    }
+
+    else {
+      # master lock is set or file has not been realeased yet
+      return;
     }
   }
 
-  else {
-    # master lock is set
-    # or file has not been realeased yet
-    #
-    return;
-  }
-
   # time out
-  # maybe the system is occupied
   0;
 }
 
@@ -351,16 +382,25 @@ sub x_unlock_file ($;$) {
   my $filename=shift;
   my ($timeout)=(shift (@_) or $Timeout);
 
-  unless (-l &masterlockfile($filename)) {
-    # try do decrement the reference counter
-    #
-    &set_ref($filename,-1,$timeout) and return 1;}
+  if ($LOCKED{$filename}) {
+    if ($LOCKED{$filename} == 3) {
+      return unless write_unlock_file($filename, $timeout);
+      $LOCKED{$filename} = 1;
+    }
+    if ($LOCKED{$filename} == 1) {
+      unless (-l masterlockfile($filename)) {
+        # try to decrement the reference counter
+        #
+        set_ref($filename,-1,$timeout) and do {
+          delete $LOCKED{$filename};
+          return 1;
+        }
+      }
 
-  # time out
-  # maybe the system is occupied
-  # or file has not been released yet
-  #
-  return;
+      # time out
+      return;
+    }
+  }
 }
 
 ### sub x_write_lock_file ($;$) ################################################
@@ -376,32 +416,36 @@ sub x_unlock_file ($;$) {
 sub x_write_lock_file ($;$) {
   my $filename = shift;
   my $timeout  = shift || $Timeout;
+  my $rest = ($LOCKED{$filename} and $LOCKED{$filename} == 1) ? 1 : 0;
 
-  unless (-l &masterlockfile($filename) and not $iAmMaster) {
+  unless (-l masterlockfile($filename) and not $iAmMaster) {
     # announce the write lock
     # and wait $timeout seconds for
     # references == 0 (no shared locks set)
     #
-    &simple_lock ($filename,$timeout) or return 0;
-    for (0..$timeout) {
+    simple_lock ($filename,$timeout) or return 0;
+    for (1..$timeout) {
 
       # lock reference counter
       # or fail
       #
-      unless (&simple_lock (&reffile($filename),$timeout)) {
-        &simple_unlock($filename,$timeout);
+      unless (simple_lock (&reffile($filename),$timeout)) {
+        simple_unlock($filename,$timeout);
         return 0;
       }
 
       # ready if we have no shared locks
       #
-      return 1 if (&get_ref ($filename) == 0);
+      if (get_ref ($filename) == $rest) {
+        $LOCKED{$filename} = 2 | ($rest ? 1 : 0);
+        return 1;
+      };
 
       # release reference counter
       # shared locks get the chance to be removed
       #
-      unless (&simple_unlock (&reffile($filename),$timeout)) {
-        &simple_unlock($filename,$timeout);
+      unless (simple_unlock (&reffile($filename),$timeout)) {
+        simple_unlock($filename,$timeout);
         return 0;
       }
       sleep(1);
@@ -410,7 +454,8 @@ sub x_write_lock_file ($;$) {
     # write lock failed
     # remove the announcement
     #
-    &simple_unlock ($filename);}
+    simple_unlock ($filename);
+  }
 
   else {
     # master lock is set
@@ -442,14 +487,15 @@ sub x_write_unlock_file ($;$) {
   unless (-l &masterlockfile($filename) and not $iAmMaster) {
     # remove reference counter lock
     #
-    &simple_unlock (&reffile($filename),$timeout) or return;
+    simple_unlock (reffile($filename),$timeout) or return;
 
     # remove the write lock announce
     #
-    &simple_unlock ($filename,$timeout) or return;
+    simple_unlock ($filename,$timeout) or return;
   }
 
   # done
+  delete $LOCKED{$filename};
   1;
 }
 
@@ -475,16 +521,17 @@ sub x_violent_unlock_file ($) {
     if (-f ($reffile = $filename)) {
       $time = (stat $reffile)[9];}
 
-    elsif (-l ($reffile = &lockfile($filename))) {
+    elsif (-l ($reffile = lockfile($filename))) {
       $time = (lstat $reffile)[9];}
 
     if ($reffile) {
       return if ((time - $time) < $violentTimeout);}
 
     write_lock_file ($filename,1);       # last try, to set an exclusive lock on $filename
-    unlink (&reffile($filename));        # reference counter = 0
-    simple_unlock (&reffile($filename)); # release reference counter file
+    unlink (reffile($filename));         # reference counter = 0
+    simple_unlock (reffile($filename));  # release reference counter file
     simple_unlock ($filename);}          # release file
+    delete $LOCKED{$filename};
 }
 
 ### sub x_set_master_lock ($;$) ################################################
@@ -503,11 +550,11 @@ sub x_set_master_lock ($;$) {
 
   # set exclusive lock or fail
   #
-  return unless (&write_lock_file ($filename,$timeout));
+  return unless (write_lock_file ($filename,$timeout));
 
   # set master lock
   #
-  symlink $filename, &masterlockfile($filename) and return 1;
+  symlink $filename, masterlockfile($filename) and return 1;
 
   # no chance (occupied?, master lock set yet?)
   return;
@@ -526,37 +573,15 @@ sub x_set_master_lock ($;$) {
 sub x_release_file ($) {
   my $filename=shift;
 
-  unlink (&reffile($filename));                            # reference counter = 0
-  return if (-f &reffile($filename));                      # really?
-  return unless (simple_unlock (&reffile($filename)));     # release reference counter
-  return unless (&simple_unlock ($filename));              # remove any write lock announce
-  return unless (&simple_unlock (&masterfile($filename))); # remove master lock
+  unlink (reffile($filename));                            # reference counter = 0
+  return if (-f reffile($filename));                      # really?
+  return unless (simple_unlock (reffile($filename)));     # release reference counter
+  return unless (simple_unlock ($filename));              # remove any write lock announce
+  return unless (simple_unlock (masterfile($filename)));  # remove master lock
+  delete $LOCKED{$filename};
 
   # done
   1;
-}
-
-################################################################################
-#
-# private subs
-#
-
-### sub ~file ($) ##############################################################
-#
-# create lock file names
-#
-sub reffile ($) {
-  "$_[0].lock.ref";
-}
-sub lockfile ($) {
-  "$_[0].lock";
-}
-sub masterlockfile ($) {
-  &lockfile(&masterfile($_[0]));
-}
-sub masterfile ($) {
-  confess unless defined $_[0];
-  "$_[0].master";
 }
 
 ### sub w_simple_lock ($;$) ####################################################
@@ -575,7 +600,7 @@ sub w_simple_lock ($;$) {
   my $timeout  = shift || $Timeout;
   my $lockfile = lockfile $filename;
 
-  for (0..$timeout) {
+  for (1..$timeout) {
     unlink $lockfile and return 1;
     sleep(1);
   }
@@ -590,7 +615,7 @@ sub w_simple_unlock ($) {
   my $lockfile = lockfile $filename;
   local *LF;
 
-  if (open(LF, "> $lockfile")) {
+  if (sysopen(LF, $lockfile, O_WRONLY|O_CREAT|O_TRUNC)) {
     return 1 if close (LF);
   }
 
@@ -599,8 +624,8 @@ sub w_simple_unlock ($) {
   return;
 }
 
-### sub w_simple_lock ($;$) ####################################################
-### sub w_simple_unlock ($) ####################################################
+### sub x_simple_lock ($;$) ####################################################
+### sub x_simple_unlock ($) ####################################################
 #
 # simple file lock/unlock
 # (symlinks possible: create/unlink symlink)
@@ -615,21 +640,19 @@ sub x_simple_lock ($;$) {
   my $timeout  = shift || $Timeout;
   my $lockfile = lockfile $filename;
 
-  for (0..$timeout) {
+  for (1..$timeout) {
     symlink $filename,$lockfile and return 1;
     sleep(1);
   }
 
   # time out
-  # locking failed (occupied?)
-  #
   return;
 }
 
 sub x_simple_unlock ($) {
   my $filename=shift;
 
-  unlink (&lockfile($filename)) and return 1;
+  unlink (lockfile $filename) and return 1;
 
   # not able to unlink symlink, hmmm...
   #
@@ -652,30 +675,20 @@ sub w_set_ref ($$$) {
   my $filename = shift;
   my $z        = shift;
   my $timeout  = shift || $Timeout;
-  my $old;
-  my $reffile = reffile $filename;
+  my $reffile  = reffile $filename;
   local *REF;
 
   # if write lock announced, only count down allowed
   #
-  if ($z > 0) {
-    return unless(-f lockfile($filename));
-  }
+  ($z < 0 or -f lockfile ($filename))                     or return;
 
   # lock reference counter file
   #
-  return unless(&simple_lock ($reffile,$timeout));
+  simple_lock ($reffile,$timeout)                         or return;
 
   # load reference counter
   #
-  unless (open REF,"<$reffile") {
-    $old=0;
-  }
-  else {
-    $old=<REF>;
-    chomp $old;
-    close REF or return;
-  }
+  my $old = get_ref ($filename);
 
   # compute and write new ref. counter
   #
@@ -686,17 +699,21 @@ sub w_set_ref ($$$) {
   # if ref. counter == 0
   #
   if ($old == 0) {
-    unlink $reffile or return;
+    unlink $reffile                                       or return;
   }
   else {
-    open REF,">$reffile" or return;
-    print REF $old or return;
-    close REF or return;
+    local $\="\n";
+    sysopen (REF, $reffile, O_WRONLY | O_TRUNC | O_CREAT) or return;
+    print REF $old                                        or do {
+                                                            close REF;
+                                                            return
+                                                          };
+    close REF                                             or return;
   }
 
   # release ref. counter file
   #
-  return unless(&simple_unlock($reffile));
+  simple_unlock($reffile)                                 or return;
 
   # done
   1;
@@ -718,47 +735,44 @@ sub x_set_ref ($$$) {
   my $filename = shift;
   my $z        = shift;
   my $timeout  = shift || $Timeout;
-  my $old;
-  my $reffile = reffile $filename;
+  my $reffile  = reffile $filename;
   local *REF;
 
   # if write lock announced, only count down allowed
   #
   if ($z > 0) {
-    return if(-l &lockfile($filename));
+    return if(-l lockfile($filename));
   }
 
   # lock reference counter file
   #
-  return unless(&simple_lock ($reffile,$timeout));
+  return unless(simple_lock ($reffile,$timeout));
 
   # load reference counter
   #
-  unless (open REF,"<$reffile") {
-    $old=0;
-  }
-  else {
-    $old=<REF>;
-    chomp $old;
-    close REF or return;
-  }
+  my $old = get_ref ($filename);
 
   # compute and write new ref. counter
   #
   $old += $z;
   $old = 0 if ($old < 0);
+
   if ($old == 0) {
-    unlink $reffile or return;
+    unlink $reffile                                       or return;
   }
   else {
-    open REF,">$reffile" or return;
-    print REF $old or return;
-    close REF or return;
+    local $\="\n";
+    sysopen (REF, $reffile, O_WRONLY | O_TRUNC | O_CREAT) or return;
+    print REF $old                                        or do {
+                                                            close REF;
+                                                            return
+                                                          };
+    close REF                                             or return;
   }
 
   # release ref. counter file
   #
-  return unless(&simple_unlock($reffile));
+  simple_unlock($reffile)                                 or return;
 
   # done
   1;
@@ -774,23 +788,21 @@ sub x_set_ref ($$$) {
 #
 # Return: reference counter
 #
-sub get_ref ($$) {
+sub get_ref ($) {
   my $filename = shift;
   my $reffile  = reffile $filename;
   my $old;
   local *REF;
 
-  unless (open REF,"< $reffile") {
-    $old = 0;
-  }
-  else {
-    $old=<REF>;
-    chomp $old;
+  if (sysopen (REF, $reffile, O_RDONLY)) {
+    local $/="\n";
+    read REF, $old, -s $reffile;
     close REF;
+    chomp $old;
   }
 
   # return value
-  $old;
+  $old or 0;
 }
 
 ################################################################################
@@ -805,6 +817,8 @@ BEGIN {
   $masterTimeout  =  20; # master timeout
 
   $iAmMaster = 0;        # default: I am nobody
+
+  %LOCKED = ();
 
   # assign the aliases to the needed functions
   # (perldoc -f symlink)

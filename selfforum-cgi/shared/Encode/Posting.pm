@@ -209,6 +209,7 @@ sub message_field ($$) {
   my $posting = ${+shift};
   my $params = shift || {};
 
+  my $break = '<br>';
 
   if ($params -> {quoting}) {       # quotes are displayed as special?
     my @array = [0 => []];
@@ -224,10 +225,14 @@ sub message_field ($$) {
     }
     shift @array unless @{$array[0][-1]};
 
+    my $ll=0;
     $posting = join '<br>' => map {
-      $_->[0]
-        ? join join ('<br>' => @{$_->[-1]}) => ($params->{startCite}, $params->{endCite})
-        : (join '<br>' => @{$_->[-1]});
+      my $string = $_->[0]
+        ? (($ll and $ll != $_->[0]) ? $break : '') .
+          join join ($break => @{$_->[-1]})
+            => ($params->{startCite}, $params->{endCite})
+        : (join $break => @{$_->[-1]});
+      $ll = $_->[0]; $string;
     } @array;
   }
 

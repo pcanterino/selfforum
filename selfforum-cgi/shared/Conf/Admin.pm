@@ -69,6 +69,9 @@ sub read_admin_conf ($) {
                       quoting       => $quoting -> getAttribute ('quotingON'),
                       quoteChars    => $char?$char -> getFirstChild -> getData:undef};
 
+      my $voting = $forum -> getElementsByTagName ('Voting', 0) -> item (0);
+      $conf {Voting} = {voteLock => $voting -> getAttribute ('voteLock')};
+
       # Severance
       $conf {Severance} = &get_severance ($forum -> getElementsByTagName ('Severance', 0) -> item (0));
 

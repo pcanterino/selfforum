@@ -14,7 +14,10 @@ use strict;
 
 use Lock qw(:READ);
 use Encode::Plain; $Encode::Plain::utf8 = 1;
-use Posting::_lib qw(get_all_threads long_hr_time);
+use Posting::_lib qw(
+  get_all_threads
+  long_hr_time
+);
 use Template;
 use Template::_conf;
 use Template::_thread;

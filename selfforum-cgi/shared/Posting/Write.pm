@@ -117,7 +117,7 @@ sub write_new_thread ($) {
 
   save_file ($param -> {forumFile}, $forum) or return $error{forumWrite};
   release_file ($param -> {messagePath}.$tid.'.xml');
-  return (0, $thread, $mid);
+  return (0, $thread, $mid, $tid);
 }
 
 ### sub write_reply_posting ($) ################################################
@@ -228,14 +228,14 @@ sub write_reply_posting ($) {
       $param -> {parsedThreads},
       { dtd         => $param -> {dtd},
         lastMessage => $mid,
-        lastThread  => $tid
+        lastThread  => 't'.$param -> {lastThread}
       }
     );
 
     save_file ($param -> {forumFile}, $forum) or return $error{forumWrite};
   }
 
-  return (0, $thread, $mid);
+  return (0, $thread, $mid, $tid);
 }
 
 # keep 'require' happy

@@ -11,22 +11,35 @@
 ################################################################################
 
 use strict;
-use vars qw($Bin $Shared $Script $Config);
+use vars qw(
+  $Bin
+  $Shared
+  $Script
+  $Config
+);
 
 # locate the script
 #
 BEGIN {
-  my $null = $0; $null =~ s/\\/\//g; # for win :-(
+#  my $null = $0; $null =~ s/\\/\//g; # for win :-(
+#  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+#  $Shared  = "$Bin/../shared";
+#  $Config  = "$Bin/config";
+#  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+
+  my $null = $0; #$null =~ s/\\/\//g; # for win :-(
   $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-  $Shared  = "$Bin/../shared";
-  $Config  = "$Bin/config";
+  $Config  = "$Bin/../../../cgi-config/devforum";
+  $Shared  = "$Bin/../../../cgi-shared";
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
+
 use lib "$Shared";
 use CGI::Carp qw(fatalsToBrowser);
 
 use Conf;
 use Conf::Admin;
+use Posting::Cache;
 
 # load script configuration and admin default conf.
 #
@@ -396,17 +409,17 @@ sub save {
             if (defined $q -> param ($formdata -> {$may{$_}} -> {name}));
         }
 
-        my ($stat, $xml, $mid);
+        my ($stat, $xml, $mid, $tid);
 
         # we've got a fup if it's a reply
         #
         if ($self -> {response} -> {reply}) {
           $pars -> {parentMessage} = $self -> {fup_mid};
           $pars -> {thread}        = $self -> {fup_tid};
-          ($stat, $xml, $mid) = write_reply_posting ($pars);
+          ($stat, $xml, $mid, $tid) = write_reply_posting ($pars);
         }
         else {
-          ($stat, $xml, $mid) = write_new_thread ($pars);
+          ($stat, $xml, $mid, $tid) = write_new_thread ($pars);
         }
 
         if ($stat) {
@@ -417,6 +430,13 @@ sub save {
           };
         }
         else {
+          my $cache = new Posting::Cache ($self->{conf}->{original}->{files}->{cacheFile});
+          $cache -> add_posting (
+            { thread  => ($tid =~ /(\d+)/)[0],
+              posting => ($mid =~ /(\d+)/)[0]
+            }
+          );
+
           $self -> {check_success} = 1;
           my $thx = $self -> {conf} -> {show_posting} -> {thanx};
 

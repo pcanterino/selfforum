@@ -11,13 +11,24 @@
 ################################################################################
 
 use strict;
-use vars qw($Bin $Shared $Script $Config);
+use vars qw(
+  $Bin
+  $Shared
+  $Script
+  $Config
+);
 
 BEGIN {
-  my $null = $0; $null =~ s/\\/\//g; # for win :-(
+#  my $null = $0; $null =~ s/\\/\//g; # for win :-(
+#  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+#  $Shared  = "$Bin/../shared";
+#  $Config  = "$Bin/config";
+#  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+
+  my $null = $0; #$null =~ s/\\/\//g; # for win :-(
   $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-  $Shared  = "$Bin/../shared";
-  $Config  = "$Bin/config";
+  $Config  = "$Bin/../../../cgi-config/devforum";
+  $Shared  = "$Bin/../../../cgi-shared";
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
 
@@ -58,7 +69,9 @@ if (defined ($tid) and defined ($mid)) {
       messages     => $conf -> {template} -> {messages},
       form         => $show_posting -> {form},
       cgi          => $cgi,
-      tree         => $tree
+      tree         => $tree,
+      firsttime    => 1,
+      cachefile    => $conf -> {files} -> {cacheFile}
     }
   );
 }
