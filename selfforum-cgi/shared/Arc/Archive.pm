@@ -324,7 +324,7 @@ sub append_threads ($$) {
   #
   my $saved = save_file (
     $file => create_forum_xml_string (
-      $threads,
+      $thash,
       {
         dtd         => 'forum.dtd',
         lastMessage => 0,
@@ -515,12 +515,13 @@ sub cut_tail ($) {
                 delete $obsolete{$_};
               }
               else {
-                unless (unlink ($param->{messagePath}."t$_.xml")) {
+                my $tfile = new Lock ($param->{messagePath}."t$_.xml");
+                unless (unlink ($tfile->filename)) {
                   $failed{$_} = 'warning: could not delete thread file';
                 }
                 else {
                   push @removed => $_;
-                  #file_removed ($param->{messagePath}."t$_.xml");
+                  $tfile -> purge;
                 }
               }
             }
