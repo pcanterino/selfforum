@@ -17,7 +17,7 @@ use base qw(Exporter);
 
 @EXPORT = qw(hide_posting recover_posting);
 
-use Posting::_lib;
+use Posting::_lib qw(get_message_node);
 
 use XML::DOM;
 
@@ -80,8 +80,15 @@ sub change_posting_visibility($$$)
     my $parser = new XML::DOM::Parser;
     my $xml = $parser->parsefile($fname);
 
+    # Set flag in given msg
     my $mnode = get_message_node($xml, $tid, $mid);
     $mnode->setAttribute('invisible', $invisible);
+
+    # Set flag in sub nodes
+    for ($mnode->getElementsByTagName('Message'))
+    {
+        $_->setAttribute('invisible', $invisible);
+    }
 
     $xml->printToFile($fname.'.temp');
     rename $fname.'.temp', $fname;
