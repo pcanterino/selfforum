@@ -733,7 +733,7 @@ sub month($) {
     my @month = (qw(Januar Februar), "M\303\244rz", qw(April Mai Juni Juli August September Oktober November Dezember));
                                      # ^^^^^^^^ - UTF8 #
 
-    return $month[$_[0]];
+    return $month[$_[0]-1];
 }
 
 # ====================================================
