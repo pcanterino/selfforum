@@ -151,7 +151,7 @@ sub answer_field ($$) {
 
   my $qchar = $params -> {quoteChars};
 
-  $area =~ s/(?:^|(<br>))(?!<br>)/$1\177/g if ($params -> {quoteArea}); # Antwortfeld quoten?!
+  $area =~ s/(?:^|(<br>))(?!<br>)/$1 || '' . "\177"/eg if ($params -> {quoteArea}); # Antwortfeld quoten?!
   $area =~ s/\177/$qchar/g; # normalisierte Quotes jedenfalls in Chars umsetzen
 
   # HTML-Zeug zurueckuebersetzen
@@ -198,7 +198,7 @@ sub message_field ($$) {
 
     foreach $line (split (/<br>/,$posting)) { # Zeilenweise gucken,
       ($q) = ($line =~ /^(\177+)/g);          # wieviele
-      $level = length ($q);                   # Quotingchars am Anfang stehen
+      $level = length ($q or '');             # Quotingchars am Anfang stehen
       if ($level != $last_level) {            # wenn sich was verandert...
                                               # ... dann TU ETWAS!
 

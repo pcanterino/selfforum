@@ -12,7 +12,7 @@ use strict;
 
 package Template;
 
-use autouse 'Carp' => qw(croak);
+use autouse 'Carp' => qw(croak confess);
 use XML::DOM;
 
 # ====================================================
@@ -141,7 +141,12 @@ sub parse_file {
 
   if (-f $self -> {file}) {
     my $filename = $self -> {file};
-    my $xml = new XML::DOM::Parser -> parsefile ($filename);
+    my $xml = eval {
+      local $SIG{__DIE__};
+      new XML::DOM::Parser -> parsefile ($filename);
+    };
+    croak "error in template file '$filename': $@" if ($@);
+
     my $template = $xml -> getElementsByTagName ('Template', 0) -> item (0);
 
     # Metas bestimmen
@@ -175,7 +180,7 @@ sub parse_file {
 
 sub parse_if {
   my $self = shift;
-  my ($scrap,$params) = @_;
+  my ($scrap, $params) = @_;
 
   my $qmon  = quotemeta $self -> {metaon};
   my $qmoff = quotemeta $self -> {metaoff};
@@ -184,46 +189,56 @@ sub parse_if {
   # ... aber er funktioniert :-)
   #
   # pfff - rekursive Strukturen iterativ parsen ist nicht wirklich witzig
-  while ($$scrap=~s[ ($qmon\s*%(?:IF|ELSE)\s+.+?\s*$qmoff.*?) # Wenn IF oder ELSE von
-                     (?=$qmon\s*%IF\s+.+?\s*$qmoff)           # IF gefolgt werden, soll
-                                                              # dieses Stueck uebersprungen
-                                                              # werden und erstmal mit der
-                                                              # naechsten Ebene weitergemacht
-                                                              # werden.
+  #
 
-                    |(                                        # hier beginnt $2
-                      $qmon\s*%IF\s+(.+?)\s*$qmoff            # IF
-                      (.*?)                                   # $4
-                      (?:
-                        $qmon\s*%ENDIF\s*$qmoff               # gefolgt von ENDIF
-                       |                                      # oder
-                        $qmon\s*%ELSE\s*$qmoff                # von ELSE... ($4 ELSE $5) $5 $6
-                        (.*?)
-                        $qmon\s*%ENDIF\s*$qmoff               # und ENDIF
-                      )
-                     )
-                   ]
-                   [my $ret;
-                    if ($2) {
-                      my ($t4,$t5,$t6) = ($4,$5,$6);
-                      my $flag=0;
-                      foreach (split /\s+/,$3) {
-                        if (exists($params->{$_}) and length(${$params->{$_}})) {$ret = $t4; $flag=1;last;}}
-                      $ret = $t5 unless ($flag);}
-                    else {$ret=$1;}
-                    $ret;
-                   ]gosex) {};
+  1 while ($$scrap =~ s {
+    ($qmon\s*%(?:IF|ELSE)\s+.+?\s*$qmoff.*?) # Wenn IF oder ELSE von
+    (?=$qmon\s*%IF\s+.+?\s*$qmoff)           # IF gefolgt werden, soll
+                                             # dieses Stueck uebersprungen
+                                             # werden und erstmal mit der
+                                             # naechsten Ebene weitergemacht
+                                             # werden.
+
+   |(                                        # hier beginnt $2
+     $qmon\s*%IF\s+(.+?)\s*$qmoff            # IF
+     (.*?)                                   # $4
+     (?:
+       $qmon\s*%ENDIF\s*$qmoff               # gefolgt von ENDIF
+      |                                      # oder
+       $qmon\s*%ELSE\s*$qmoff                # von ELSE... ($4 ELSE $5)
+       (.*?)
+       $qmon\s*%ENDIF\s*$qmoff               # und ENDIF
+     )
+    )
+  }
+  { my $ret;
+    if ($2) {
+      my ($t3, $t4, $t5) = ($3, $4, $5);
+
+      for (split /\s+/,$t3) {
+        next unless (
+          exists($params->{$_})
+          and length ${$params->{$_}}
+        );
+
+        $ret = $t4; last;
+      }
+
+      $ret = $t5 || '' unless (defined $ret);
+    }
+    else {
+      $ret=$1;
+    }
+
+    $ret;
+  }gosex);
 
   return;
 }
 
-# ====================================================
-# Modulinitialisierung
-# ====================================================
-
-# making require happy
+# keep require happy
 1;
 
-# ====================================================
-# end of Template
-# ====================================================
+#
+#
+### end of Template ############################################################
