@@ -4,7 +4,7 @@
 #                                                                              #
 # File:        user/fo_posting.pl                                              #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-03-30                          #
+# Authors:     André Malo <nd@o3media.de>, 2001-03-31                          #
 #                                                                              #
 # Description: Accept new postings, display "Neue Nachricht" page              #
 #                                                                              #
@@ -135,7 +135,6 @@ sub check_cgi {
     return 1;
   }
 
-  ###################################################
   # now we know, we've got a filled out form
   # we do the following steps to check it:
   #
@@ -143,8 +142,8 @@ sub check_cgi {
   # 2nd: did we get _all_ must-keys?
   #      check whether reply or new message request
   # 3rd: did we get too many keys?
-  # 4th: do _all_ requested values accord to
-  #      expectations?
+  # 4th: do _all_ submitted values accord to
+  #      our expectations?
   #      fetch the "missing" keys
   #
 
@@ -217,10 +216,11 @@ sub check_cgi {
     $self -> {fup_tid} = $ftid;
     $self -> {fup_mid} = $fmid;
 
-    # now fetching the missing keys
+    # fetch the missing keys
     # if it fails, they're too short, too... ;)
     #
     $self -> fetch;
+    $got_keys{$_}=1 for (@{$self -> {fetch}});
   }
 
   # now we can check on length, type etc.
@@ -229,7 +229,13 @@ sub check_cgi {
 
     my $val = $q -> param ($_);
 
-    $val =~ s/\302\240/ /g;    # convert nbsp to normal spaces
+    $val =~ s/\302\240/ /g;           # convert nbsp (UTF-8 encoded) into normal spaces
+    $val =~ s/\015\012|\015|\012/ /g  # convert \n into spaces unless it's a multiline field
+      unless (
+        exists ($formdata -> {$name {$_}} -> {type})
+        and $formdata -> {$name {$_}} -> {type} eq 'multiline-text'
+      );
+
     $q -> param ($_ => $val);  # write it back
 
     # too long?
@@ -260,18 +266,39 @@ sub check_cgi {
       }
     }
 
-#    return 'wrongMail' if ($formdata -> {$name{$_}} -> {type} eq 'email' and length ($dparam{$_}) and not is_mail_address ($dparam{$_}));
+    # check the values on expected kinds of content
+    # (email, http-url, url)
+    #
+    if (exists ($formdata -> {$name {$_}} -> {type}) and length $val) {
+      if ($formdata -> {$name {$_}} -> {type} eq 'email' and not is_email $val) {
+        $self -> {error} = {
+          spec => 'wrong_mail',
+          desc => $name{$_}
+        };
+        return;
+      }
+
+      elsif ($formdata -> {$name {$_}} -> {type} eq 'http-url' and not is_URL $val => 'http') {
+        $self -> {error} = {
+          spec => 'wrong_http_url',
+          desc => $name{$_}
+        };
+        return;
+      }
+
+      elsif ($formdata -> {$name {$_}} -> {type} eq 'url' and not is_URL $val => ':ALL') {
+        $self -> {error} = {
+          spec => 'wrong_url',
+          desc => $name{$_}
+        };
+        return;
+      }
+    }
   }
 
   # ok, looks good.
   1;
 }
-
-#  delete $dparam {$formdata -> {posterURL} -> {name}}
-#    unless ($dparam {$formdata -> {posterURL} -> {name}} =~ /$httpurl/);
-#
-#  delete $dparam {$formdata -> {posterImage} -> {name}}
-#    unless ($dparam {$formdata -> {posterImage} -> {name}} =~ /$httpurl/);
 
 ### sub fetch ##################################################################
 #

@@ -227,6 +227,7 @@
             <Variable name="maxlength">12288</Variable>
             <Variable name="minlength">10</Variable>
             <Variable name="errorType">repeat</Variable>
+            <Variable name="type">multiline-text</Variable>
           </Property>
 
           <Property name="posterSignature">
