@@ -207,7 +207,7 @@ BEGIN {
            "\261" => '&#177;',    # Plusminus
            "\262" => '&#178;',    # hoch 2
            "\263" => '&#179;',    # hoch 3
-           "\264" => '&#8218;',   # einf. anfuehrungszeichen unten
+           "\264" => '&acute;',   # Acute
            "\265" => '&#181;',    # my-Zeichen (griech)
            "\266" => '&#182;',    # Absatzzeichen
            "\267" => '&#183;',    # Mal-Zeichen
@@ -326,7 +326,7 @@ BEGIN {
            173 => '-',
            174 => '&reg;',
            175 => '&szlig;',
-           180 => '&#8218;',
+           180 => '&acute;',
            184 => '&cedil;',
            185 => '&sup1;',
            187 => '&raquo;',
