@@ -19,10 +19,7 @@ use vars qw(
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Encode::Posting;
-use Lock qw(
-  :WRITE
-  release_file
-);
+use Lock;
 use Posting::_lib qw(
   get_message_node
   get_message_header
@@ -126,7 +123,7 @@ sub write_new_thread ($) {
   );
 
   save_file ($param -> {forumFile}, $forum) or return $error{forumWrite};
-  release_file ($param -> {messagePath}.$tid.'.xml');
+  new Lock ($param -> {messagePath}.$tid.'.xml') -> release;
   return (0, $thread, $mid, $tid);
 }
 
@@ -145,25 +142,24 @@ sub write_reply_posting ($) {
   my $mid   = 'm'.($param -> {lastMessage} + 1);
   my $tid   = 't'.($param -> {thread});
 
-  my $tfile = $param -> {messagePath}.$tid.'.xml';
+  my $tfile = new Lock ($param -> {messagePath}.$tid.'.xml');
 
-  unless (write_lock_file ($tfile)) {
-    violent_unlock_file ($tfile);
+  unless ($tfile->lock(LH_EXCL)) {
     return $error{threadFile};
   }
 
   else {
-    my $xml = parse_xml_file ($tfile);
+    my $xml = parse_xml_file ($tfile->filename);
 
     unless ($xml) {
-      violent_unlock_file ($tfile) unless (write_unlock_file ($tfile));
+      $tfile -> unlock;
       return $error{threadFile};
     }
 
     my $mnode = get_message_node ($xml, $tid, 'm'.$param -> {parentMessage});
 
     unless (defined $mnode) {
-      violent_unlock_file ($tfile) unless (write_unlock_file ($tfile));
+      $tfile -> unlock;
       return $error{noParent};
     }
 
@@ -202,12 +198,12 @@ sub write_reply_posting ($) {
 
     # save thread file
     #
-    unless (save_file ($tfile, \($xml -> toString))) {
-      violent_unlock_file ($tfile) unless (write_unlock_file ($tfile));
+    unless (save_file ($tfile->filename, \($xml -> toString))) {
+      $tfile -> unlock;
       return $error{threadWrite};
     }
 
-    violent_unlock_file ($tfile) unless (write_unlock_file ($tfile));
+    $tfile -> unlock;
 
     $thread = $xml;
 

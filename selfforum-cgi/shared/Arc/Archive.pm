@@ -17,7 +17,7 @@ use vars qw(
 );
 
 use Arc::Test;
-use Lock          qw(:ALL);
+use Lock;
 use Posting::_lib qw(
   get_all_threads
   create_forum_xml_string
@@ -62,15 +62,17 @@ sub cut_tail ($) {
   if ( $param->{adminDefault}->{Severance}->{severance} ne 'instant'
     or $param->{adminDefault}->{Instant}->{execute}
   ) {
-    if (write_lock_file($param->{lockFile}, 1)) {
-      if (write_lock_file ($param->{forumFile})) {
+    my $sev = new Lock ($param->{lockFile});
+    if ($sev -> lock(LH_EXCL)) {
+      my $forum = new Lock ($param->{forumFile});
+      if ($forum -> lock (LH_EXCL)) {
         my (
           $threads,
           $last_thread,
           $last_message,
           $dtd,
           undef
-        ) = get_all_threads ($param->{forumFile}, KEEP_DELETED);
+        ) = get_all_threads ($forum->filename, KEEP_DELETED);
 
         my $obsolete = get_obsolete_threads ({
           parsedThreads => $threads,
@@ -91,10 +93,10 @@ sub cut_tail ($) {
         );
         if ($saved) {
           for (@$obsolete) {
-            set_master_lock ($param->{messagePath}."t$_.xml") or $failed{$_} = 'could not set master lock';
+            new Lock($param->{messagePath}."t$_.xml")->lock(LH_MASTER) or $failed{$_} = 'could not set master lock';
           }
         }
-        violent_unlock_file ($param->{forumFile}) unless (write_unlock_file ($param->{forumFile}));
+        $forum -> unlock;
 
         if ($saved) {
           # now process thread files
@@ -181,9 +183,9 @@ sub cut_tail ($) {
                       my $monthpath = $monthdir . '/';
                       my $file = $monthpath . "t$tid.xml";
 
-                      mkdir $yeardir, 0777 unless (-d $yeardir);
+                      mkdir $yeardir unless (-d $yeardir);
                       if (-d $yeardir) {
-                        mkdir $monthdir, 0777 unless (-d $monthdir);
+                        mkdir $monthdir unless (-d $monthdir);
                         if (-d $monthdir) {
                           save_file (
                             $file,
@@ -210,19 +212,13 @@ sub cut_tail ($) {
           #
           for (grep {not exists($failed{$_})} @$obsolete) {
             unlink ($param->{messagePath}."t$_.xml") or $failed{$_} = 'could not delete thread file';
-            file_removed ($param->{messagePath}."t$_.xml");
+            #file_removed ($param->{messagePath}."t$_.xml");
           }
           $cache -> delete_threads (@$obsolete);
           $cache -> garbage_collection;
         }
       }
-      else {
-        violent_unlock_file ($param->{forumFile});
-      }
-      violent_unlock_file ($param->{lockFile}) unless (write_unlock_file ($param->{lockFile}));
-    }
-    else {
-      violent_unlock_file ($param->{lockFile});
+      $sev -> unlock;
     }
   }
 

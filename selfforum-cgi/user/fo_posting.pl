@@ -87,7 +87,7 @@ use Arc::Archive;
 use CheckRFC;
 use Encode::Plain; $Encode::Plain::utf8 = 1; # generally convert from UTF-8
 use Encode::Posting;
-use Lock          qw(:ALL);
+use Lock;
 use Posting::_lib qw(
   hr_time
   parse_xml_file
@@ -509,7 +509,7 @@ sub save {
   # unlock forum main file
   #
   if ($self -> {forum} -> {flocked}) {
-    violent_unlock_file($self -> {conf} -> {forum_file_name}) unless write_unlock_file ($self -> {conf} -> {forum_file_name});
+    $self -> {forum} -> {flocked} -> unlock;
     $self -> {forum} -> {flocked} = 0;
   }
 
@@ -547,13 +547,12 @@ sub parse_cgi {
 #
 sub load_main_file {
   my $self = shift;
-  my $lock_stat;
+  my $forum = new Lock ($self -> {conf} -> {forum_file_name});
 
-  unless ($lock_stat = write_lock_file ($self -> {conf} -> {forum_file_name})) {
-    if (defined $lock_stat) {
+  unless ($forum -> lock(LH_EXCL)) {
+    unless ($forum -> masterlocked) {
       # occupied or no w-bit set for the directory..., hmmm
       #
-      violent_unlock_file ($self -> {conf} -> {forum_file_name});
       $self -> {error} = {
         spec => 'occupied',
         type => 'repeat'
@@ -571,7 +570,7 @@ sub load_main_file {
     }
   }
   else {
-    $self -> {forum} -> {flocked} = 1;
+    $self -> {forum} -> {flocked} = $forum;
     ( $self -> {forum} -> {threads},
       $self -> {forum} -> {last_thread},
       $self -> {forum} -> {last_message},
@@ -849,13 +848,14 @@ sub check_cgi {
       if (exists ($formdata -> {$name {$_}} -> {type}) and $formdata -> {$name {$_}} -> {type} eq 'name') {
         $val_ww =~ y/a-zA-Z//cd;
 
-        my @badlist = map {qr/\Q$_/i} qw (
-          # insert badmatchlist here
-        );
+        my @badlist;
+#        my @badlist = map {qr/\Q$_/i} qw (
+#          # insert badmatchlist here
+#        );
 
-        push @badlist => map {qr/\b\Q$_\E\b/i} qw(
-          # insert badwordlist here
-        );
+#        push @badlist => map {qr/\b\Q$_\E\b/i} qw(
+#          # insert badwordlist here
+#        );
 
         for (@badlist) {
           if ($val_ww =~ /$_/) {
@@ -964,11 +964,11 @@ sub fetch {
   my $formdata = $self -> {conf} -> {form_data};
 
   if (@{$self -> {fetch}}) {
-    my $filename = $self -> {conf} -> {message_path}.'t'.$self -> {fup_tid}.'.xml';
+    my $thread = new Lock ($self -> {conf} -> {message_path}.'t'.$self -> {fup_tid}.'.xml');
 
-    if (lock_file ($filename)) {
-      my $xml = parse_xml_file ($filename);
-      violent_unlock_file($filename) unless unlock_file ($filename);
+    if ($thread -> lock (LH_SHARED)) {
+      my $xml = parse_xml_file ($thread -> filename);
+      $thread -> unlock;
 
       if ($xml) {
         my $mnode = get_message_node ($xml, 't'.$self -> {fup_tid}, 'm'.$self -> {fup_mid});

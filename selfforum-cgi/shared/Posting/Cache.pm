@@ -4,7 +4,7 @@ package Posting::Cache;
 #                                                                              #
 # File:        shared/Posting/Cache.pm                                         #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-04-21                          #
+# Authors:     André Malo <nd@o3media.de>, 2001-06-22                          #
 #                                                                              #
 # Description: Views/Voting Cache class                                        #
 #                                                                              #
@@ -17,7 +17,7 @@ use vars qw(
 
 use Fcntl;
 use File::Path;
-use Lock qw(:ALL);
+use Lock;
 
 ################################################################################
 #
@@ -25,7 +25,7 @@ use Lock qw(:ALL);
 #
 $VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
-my $O_BINARY = eval 'local $SIG{__DIE__}; O_BINARY';
+my $O_BINARY = eval "O_BINARY";
 $O_BINARY = 0 if ($@);
 
 ### sub new ####################################################################
@@ -412,17 +412,14 @@ sub add_posting {
 }
 sub r_add_posting {
   my ($self, $handle, $param) = @_;
-  local *FILE;
+  my $newfile = new Lock ($self->cachefile($param));
   local $\;
 
   unless (-d $self -> threaddir($param)) {
     mkdir $self->threaddir($param), 0777             or return;
   }
-  sysopen (FILE,
-    $self->cachefile($param),
-    O_WRONLY | O_CREAT | O_TRUNC
-  )                                                  or return;
-  close FILE                                         or return;
+  $newfile -> open (O_WRONLY | O_CREAT | O_TRUNC)    or return;
+  $newfile -> close                                  or return;
 
   my $z;
   if (-s $handle) {
@@ -457,7 +454,7 @@ sub r_add_posting {
     'L4' => $param->{posting}, $param->{thread}, 0, 0
   )                                                  or return;
 
-  release_file ($self->cachefile($param));
+  $newfile -> release;
 
   1;
 }
@@ -475,29 +472,28 @@ sub r_add_posting {
 sub add_wrap {
   my ($self, $gosub, @param) = @_;
   my $status;
+  my $summary = new Lock ($self -> summaryfile);
 
-  unless (write_lock_file ($self->summaryfile)) {
-    violent_unlock_file ($self->summaryfile);
-    $self->set_error ('could not write-lock summary file '.$self->summaryfile);
+  unless ($summary -> lock (LH_EXCL)) {
+    $self->set_error ('could not write-lock summary file '.$summary -> filename);
   }
   else {
-    local *SUM;
-    unless (sysopen (SUM, $self->summaryfile, $O_BINARY | O_APPEND | O_CREAT | O_RDWR)) {
+    unless ($summary -> open($O_BINARY | O_APPEND | O_CREAT | O_RDWR)) {
       $self->set_error
-        ('could not open to read/write/append summary file '.$self->summaryfile);
+        ('could not open to read/write/append summary file '.$summary->filename);
     }
     else {
       $status = $gosub -> (
         $self,
-        \*SUM,
+        $summary,
         @param
       );
-      unless (close SUM) {
+      unless ($summary -> close) {
         $status=0;
-        $self->set_error('could not close summary file '.$self->summaryfile);
+        $self->set_error('could not close summary file '.$summary -> filename);
       }
     }
-    violent_unlock_file ($self->summaryfile) unless (write_unlock_file ($self->summaryfile));
+    $summary -> unlock;
   }
 
   # return
@@ -517,51 +513,48 @@ sub add_wrap {
 sub vote_wrap {
   my ($self, $gosub, $param) = @_;
   my $status;
+  my $summary = new Lock ($self -> summaryfile);
 
-  unless (write_lock_file ($self->summaryfile)) {
-    violent_unlock_file ($self->summaryfile);
-    $self->set_error ('could not write-lock summary file '.$self->summaryfile);
+  unless ($summary -> lock (LH_EXCL)) {
+    $self->set_error ('could not write-lock summary file '.$summary -> filename);
   }
   else {
-    local *S;
-    unless (sysopen (S, $self->summaryfile, O_RDWR | $O_BINARY)) {
-      $self->set_error ('could not open to read/write summary file '.$self->summaryfile);
+    unless ($summary -> open (O_RDWR | $O_BINARY)) {
+      $self->set_error ('could not open to read/write summary file '.$summary -> filename);
     }
     else {
       unless (-d $self->threaddir($param)) {
         mkdir $self->threaddir($param), 0777                     or return;
       }
-      my $filename = $self->cachefile($param);
+      my $cache = new Lock ($self->cachefile($param));
 
-      unless (write_lock_file ($filename)) {
-        violent_unlock_file ($filename);
-        $self->set_error ('could not write-lock cache file '.$filename);
+      unless ($cache -> lock (LH_EXCL)) {
+        $self->set_error ('could not write-lock cache file '.$cache -> filename);
       }
       else {
-        local *CACHE;
-        unless (sysopen (CACHE, $filename, O_APPEND | O_CREAT | O_RDWR)) {
-          $self->set_error ('could not open to read/write/append cache file '.$filename);
+        unless ($cache -> open (O_APPEND | O_CREAT | O_RDWR)) {
+          $self->set_error ('could not open to read/write/append cache file '.$cache -> filename);
         }
         else {
           $status = $gosub -> (
             $self,
-            \*S,
-            \*CACHE,
+            $summary,
+            $cache,
             $param
           );
-          unless (close CACHE) {
+          unless ($cache -> close) {
             $status=0;
-            $self->set_error('could not close cache file '.$filename);
+            $self->set_error('could not close cache file '.$cache -> filename);
           }
         }
-        violent_unlock_file ($filename) unless (write_unlock_file ($filename));
+        $cache -> unlock;
       }
-      unless (close S) {
+      unless ($summary -> close) {
         $status=0;
-        $self->set_error('could not close summary file '.$self->summaryfile);
+        $self->set_error('could not close summary file '.$summary -> filename);
       }
     }
-    violent_unlock_file ($self->summaryfile) unless (write_unlock_file ($self->summaryfile));
+    $summary -> unlock;
   }
 
   # return
@@ -581,46 +574,48 @@ sub vote_wrap {
 sub purge_wrap {
   my ($self, $gosub, @param) = @_;
   my $status;
-  my $filename = $self -> summaryfile . '.temp';
+  my $summary = new Lock ($self -> summaryfile);
 
-  unless (write_lock_file ($self->summaryfile)) {
-    violent_unlock_file ($self->summaryfile);
-    $self->set_error ('could not write-lock summary file '.$self->summaryfile);
+  unless ($summary -> lock (LH_EXSH)) {
+    $self->set_error ('could not write-lock summary file '.$summary -> filename);
   }
   else {
-    local *TEMP;
-    unless (sysopen (TEMP, $filename, O_CREAT | O_WRONLY | O_TRUNC | $O_BINARY)) {
-      $self->set_error ('could not open to write temp summary file '.$filename);
+    my $temp = new Lock::Handle ($summary -> filename . '.temp');
+    unless ($temp -> open (O_CREAT | O_WRONLY | O_TRUNC | $O_BINARY)) {
+      $self->set_error ('could not open to write temp summary file '.$temp -> filename);
     }
     else {
-      local *S;
-      unless (sysopen (S, $self->summaryfile, O_RDONLY | $O_BINARY)) {
-        $self->set_error ('could not open to read summary file '.$self->summaryfile);
+      unless ($summary -> open (O_RDONLY | $O_BINARY)) {
+        $self->set_error ('could not open to read summary file '.$summary -> filename);
       }
       else {
         $status = $gosub -> (
           $self,
-          \*S,
-          \*TEMP,
+          $summary,
+          $temp,
           @param
         );
-        unless (close S) {
+        unless ($summary -> close) {
           $status = 0;
-          $self->set_error('could not close summary file '.$self->summaryfile);
+          $self->set_error('could not close summary file '.$summary -> filename);
         }
       }
-      unless (close TEMP) {
+      unless ($temp -> close) {
         $status=0;
-        $self->set_error('could not close temp summary file '.$filename);
+        $self->set_error('could not close temp summary file '.$temp -> filename);
+      }
+      unless ($summary -> lock (LH_EXCL)) {
+        $status=0;
+        $self->set_error ('could not write-lock summary file '.$summary -> filename);
       }
       if ($status) {
-        unless (rename $filename => $self->summaryfile) {
+        unless (rename $temp -> filename => $summary -> filename) {
           $status=0;
-          $self->set_error('could not rename temp summary file '.$filename);
+          $self->set_error('could not rename temp summary file '.$temp -> filename);
         }
       }
     }
-    violent_unlock_file ($self->summaryfile) unless (write_unlock_file ($self->summaryfile));
+    $summary -> unlock;
   }
 
   # return
@@ -640,28 +635,27 @@ sub purge_wrap {
 sub pick_wrap {
   my ($self, $gosub, $filename, @param) = @_;
   my $status;
+  my $cache = new Lock ($filename);
 
-  unless (lock_file ($filename)) {
-    violent_unlock_file ($filename);
-    $self->set_error ('could not lock cache file '.$filename);
+  unless ($cache -> lock (LH_SHARED)) {
+    $self->set_error ('could not lock cache file '.$cache -> filename);
   }
   else {
-    local *CACHE;
-    unless (sysopen (CACHE, $filename, O_RDONLY)) {
-      $self->set_error ('could not open to read cache file '.$filename);
+    unless ($cache -> open (O_RDONLY)) {
+      $self->set_error ('could not open to read cache file '.$cache -> filename);
     }
     else {
       $status = $self -> read_wrap (
         $gosub,
-        \*CACHE,
+        $cache,
         @param
       );
-      unless (close CACHE) {
+      unless ($cache -> close) {
         $status=0;
-        $self->set_error('could not close cache file '.$filename);
+        $self->set_error('could not close cache file '.$cache -> filename);
       }
     }
-    violent_unlock_file ($filename) unless (unlock_file ($filename));
+    $cache -> unlock;
   }
 
   # return
@@ -681,28 +675,27 @@ sub pick_wrap {
 sub read_wrap {
   my ($self, $gosub, @param) = @_;
   my $status;
+  my $summary = new Lock ($self -> summaryfile);
 
-  unless (lock_file ($self->summaryfile)) {
-    violent_unlock_file ($self->summaryfile);
-    $self->set_error ('could not read-lock summary file '.$self->summaryfile);
+  unless ($summary -> lock (LH_SHARED)) {
+    $self->set_error ('could not read-lock summary file '.$summary -> filename);
   }
   else {
-    local *S;
-    unless (sysopen (S, $self->summaryfile, O_RDONLY | $O_BINARY)) {
-      $self->set_error ('could not open to read summary file '.$self->summaryfile);
+    unless ($summary -> open (O_RDONLY | $O_BINARY)) {
+      $self->set_error ('could not open to read summary file '.$summary -> filename);
     }
     else {
       $status = $gosub -> (
         $self,
-        \*S,
+        $summary,
         @param
       );
-      unless (close S) {
+      unless ($summary -> close) {
         $status=0;
-        $self->set_error('could not close summary file '.$self->summaryfile);
+        $self->set_error('could not close summary file '.$summary -> filename);
       }
     }
-    violent_unlock_file ($self->summaryfile) unless (unlock_file ($self->summaryfile));
+    $summary -> unlock;
   }
 
   # return
@@ -722,28 +715,27 @@ sub read_wrap {
 sub mod_wrap {
   my ($self, $gosub, @param) = @_;
   my $status;
+  my $summary = new Lock ($self -> summaryfile);
 
-  unless (write_lock_file ($self->summaryfile)) {
-    violent_unlock_file ($self->summaryfile);
-    $self->set_error ('could not write-lock summary file '.$self->summaryfile);
+  unless ($summary -> lock (LH_EXCL)) {
+    $self->set_error ('could not write-lock summary file '.$summary -> filename);
   }
   else {
-    local *S;
-    unless (sysopen (S, $self->summaryfile, O_RDWR | $O_BINARY)) {
-      $self->set_error ('could not open to read/write summary file '.$self->summaryfile);
+    unless ($summary -> open (O_RDWR | $O_BINARY)) {
+      $self->set_error ('could not open to read/write summary file '.$summary -> filename);
     }
     else {
       $status = $gosub -> (
         $self,
-        \*S,
+        $summary,
         @param
       );
-      unless (close S) {
+      unless ($summary -> close) {
         $status=0;
-        $self->set_error('could not close summary file '.$self->summaryfile);
+        $self->set_error('could not close summary file '.$summary -> filename);
       }
     }
-    violent_unlock_file ($self->summaryfile) unless (write_unlock_file ($self->summaryfile));
+    $summary -> unlock;
   }
 
   # return

@@ -44,6 +44,36 @@ sub new {
   $self;
 }
 
+### open () ####################################################################
+#
+# open a file
+#
+# Params: $mode - open mode
+#
+# Return: success code (boolean)
+#
+sub open {
+  my ($self, $mode) = @_;
+
+  return unless defined ($mode);
+
+  sysopen ($self, $self->filename, $mode);
+}
+
+### close () ###################################################################
+#
+# close a file
+#
+# Params: ~none~
+#
+# Return: success code (boolean)
+#
+sub close {
+  my $self = shift;
+
+  CORE::close $self;
+}
+
 ### sub _create_handle #########################################################
 #
 # create a globref
