@@ -60,7 +60,8 @@ sub hide_posting($$$)
         'lastMessage' => $lmsg,
         'lastThread'  => $lthread
     );
-    create_forum_xml_string($f, \%cfxs);
+    my $xmlstring = create_forum_xml_string($f, \%cfxs);
+    save_file($forum, $$xmlstring);
 }
 
 ### recover_posting() ##########################################################
@@ -101,7 +102,8 @@ sub recover_posting($$$)
         'lastMessage' => $lmsg,
         'lastThread'  => $lthread
     );
-    create_forum_xml_string($f, \%cfxs);
+    my $xmlstring = create_forum_xml_string($f, \%cfxs);
+    save_file($forum, $$xmlstring);
 }
 
 ### change_posting_visibility () ###############################################
