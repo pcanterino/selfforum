@@ -24,7 +24,7 @@ use XML::DOM;
 # Export
 # ====================================================
 
-@EXPORT_OK = qw(get_message_header get_message_body get_message_node get_body_node parse_single_thread
+@EXPORT_OK = qw(get_message_header get_message_body get_message_node get_body_node parse_single_thread parse_xml_file
                 hr_time short_hr_time long_hr_time
                 get_all_threads create_forum_xml_string
                 save_file);
@@ -138,6 +138,26 @@ sub get_message_node ($$$)
   }
 
   wantarray ? ($mnode, $tnode) : $mnode;
+}
+
+### sub parse_xml_file ($) #####################################################
+#
+# load the specified XML-File and create the DOM tree
+# this sub is only to avoid errors and to centralize the parse process
+#
+# Params: $file filename
+# Return: XML::DOM::Document Object (Document Node) or false
+#
+sub parse_xml_file ($) {
+  my $file = shift;
+  my $xml = eval {
+              local $SIG{__DIE__};
+              new XML::DOM::Parser (KeepCDATA => 1) -> parsefile ($file);
+            };
+
+  return if ($@);
+
+  $xml;
 }
 
 ###########################
