@@ -11,13 +11,23 @@ package Time::German;
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 ################################################################################
 #
 # Export
 #
 use base 'Exporter';
-@Time::German::EXPORT = qw(germantime);
+@EXPORT = qw(localtime);
 
 ################################################################################
 #
@@ -42,7 +52,7 @@ my %summertime = (
   95 => [84, 266]
 );
 
-### germantime () ##############################################################
+### localtime () ###############################################################
 #
 # like 'localtime', but system independent
 #
@@ -50,7 +60,7 @@ my %summertime = (
 #
 # Return: same as localtime, but german time ;-)
 #
-sub germantime (;$) {
+sub localtime (;$) {
   my $time = shift;
   $time = time unless defined $time;
 

@@ -683,26 +683,26 @@ sub month($) {
 }
 
 sub hr_time ($) {
-  my (undef, $min, $hour, $day, $mon, $year) = germantime (shift);
+  my (undef, $min, $hour, $day, $mon, $year) = localtime (shift);
 
   sprintf ('%02d. %s %04d, %02d:%02d Uhr', $day, month($mon+1), $year+1900, $hour, $min);
 }
 
 sub short_hr_time ($) {
-  my (undef, $min, $hour, $day, $mon, $year) = germantime (shift);
+  my (undef, $min, $hour, $day, $mon, $year) = localtime (shift);
 
   sprintf ('%02d. %02d. %04d, %02d:%02d Uhr', $day, $mon+1, $year+1900, $hour, $min);
 }
 
 sub long_hr_time ($) {
   my @wday  = qw(Sonntag Montag Dienstag Mittwoch Donnerstag Freitag Samstag);
-  my ($sek, $min, $hour, $day, $mon, $year, $wday) = germantime (shift);
+  my ($sek, $min, $hour, $day, $mon, $year, $wday) = localtime (shift);
 
   sprintf ('%s, %02d. %s %04d, %02d:%02d:%02d Uhr', $wday[$wday], $day, month($mon+1), $year+1900, $hour, $min, $sek);
 }
 
 sub very_short_hr_time($) {
-  my (undef, $min, $hour, $day, $mon, $year) = germantime (shift);
+  my (undef, $min, $hour, $day, $mon, $year) = localtime (shift);
 
   sprintf ('%02d. %02d. %04d', $day, $mon+1, $year+1900);
 }
