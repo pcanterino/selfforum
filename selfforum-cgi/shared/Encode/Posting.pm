@@ -11,16 +11,26 @@ package Encode::Posting;
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use CheckRFC;
 
 ################################################################################
 #
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+################################################################################
+#
 # Export
 #
 use base qw(Exporter);
-@Encode::Posting::EXPORT = qw(
+@EXPORT = qw(
   encoded_body
   answer_field
   message_field
@@ -71,7 +81,7 @@ sub encoded_body ($;$) {
   my @rawlinks;
   push @rawlinks => [$1 => $2] while ($posting =~ /\[([Ll][Ii][Nn][Kk]):\s*([^\]\s]+)\s*\]/g);
   my @links = grep {
-       is_URL ( $_ -> [1] => ':ALL')
+       is_URL ( $_ -> [1] => qw(http ftp news nntp telnet gopher mailto))
     or is_URL (($_ -> [1] =~ /^[Vv][Ii][Ee][Ww]-[Ss][Oo][Uu][Rr][Cc][Ee]:(.+)/)[0] || '' => 'http')
     or (  $_ -> [1] =~ m<^(?:\.?\.?/(?!/)|\?)>
       and is_URL (rel_uri ($_ -> [1], $base) => 'http'))
@@ -158,7 +168,7 @@ sub answer_field ($$) {
   my $area = $$posting;
   my $qchar = $params -> {quoteChars};
 
-  $area =~ s/<br(?:\/| \/)?>/\n/g;  # <br> => \n
+  $area =~ s/<br(?:\s*\/)?>/\n/g;  # <br> => \n
   $area =~ s/&(?:#160|nbsp);/ /g;   # nbsp => ' '
 
   $area =~ s/^(.)/\177$1/gm if ($params -> {quoteArea}); # shift a quoting character
@@ -213,7 +223,7 @@ sub message_field ($$) {
   if ($params -> {quoting}) {       # quotes are displayed as special?
     my @array = [0 => []];
 
-    for (split /<br(?:\/| \/)?>/ => $posting) {
+    for (split /<br(?:\s*\/)?>/ => $posting) {
       my $l = length ((/^(\177*)/)[0]);
       if ($array[-1][0] == $l) {
         push @{$array[-1][-1]} => $_;

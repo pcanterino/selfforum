@@ -17,7 +17,14 @@ use vars qw(
   %unimap
   $utf8
   $v56
+  $VERSION
 );
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 $v56 = eval {local $SIG{__DIE__}; require 5.6.0;};
 
@@ -129,7 +136,6 @@ sub plain ($;$) {
   if ($except) {
     $new =~ s/($exreg)|</defined($1)?$1:'&lt;'/eg;
     $new =~ s/($exreg)|>/defined($1)?$1:'&gt;'/eg;
-    $new =~ s/($exreg)|\|/defined($1)?$1:'&#124;'/eg;
     $new =~ s/($exreg)|"/defined($1)?$1:'&quot;'/eg;
 
     # the big hash
@@ -164,7 +170,6 @@ sub plain ($;$) {
     #
     $new =~ s/</&lt;/g;
     $new =~ s/>/&gt;/g;
-    $new =~ s/\|/&#124;/g;
     $new =~ s/"/&quot;/g;
 
     # the big hash
@@ -225,7 +230,7 @@ sub multiline ($) {
 
   # turn \n into <br>
   #
-  $string=~s/\n/<br>/g;
+  $string=~s!\n!<br />!g;
 
   # more than 1 space => &nbsp;
   #
@@ -234,7 +239,7 @@ sub multiline ($) {
   # Single Spaces after <br> => &nbsp;
   # (save ascii arts ;)
   #
-  $string=~s/(?:^|(<br>))\s/($1?$1:'').'&nbsp;'/eg;
+  $string=~s!(?:^|(<br(?:\s*/)?>))\s!($1?$1:'').'&nbsp;'!eg;
 
   # return
   #
@@ -255,17 +260,11 @@ sub toUTF8 ($) {
     ? $$ref
     : $ref;
 
-# if ($v56) {
-#   no warnings 'utf8';
-#   $string =~ tr/\x80-\xff//CU;
-# }
-# else {
-    $string =~ s
-      {([\x80-\xff])}
-      { chr((ord ($1) >> 6) | 192)
-       .chr((ord ($1) & 191))
-      }eg;
-# }
+  $string =~ s
+    {([\x80-\xff])}
+    { chr((ord ($1) >> 6) | 192)
+     .chr((ord ($1) & 191))
+    }eg;
 
   ref($ref)
     ? \$string
