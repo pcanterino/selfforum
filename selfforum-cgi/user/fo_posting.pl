@@ -16,6 +16,7 @@ use vars qw(
   $Shared
   $Script
   $Config
+  $VERSION
 );
 
 # locate the script
@@ -27,12 +28,16 @@ BEGIN {
   $Config  = "$Bin/config";
   $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 
-#  my $null = $0; #$null =~ s/\\/\//g; # for win :-(
+#  my $null = $0;
 #  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-#  $Config  = "$Bin/../../../cgi-config/devforum";
-#  $Shared  = "$Bin/../../../cgi-shared";
+#  $Config  = "$Bin/../../daten/forum/config";
+#  $Shared  = "$Bin/../../cgi-shared";
 #  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
+
+# setting umask, remove or comment it, if you don't need
+#
+umask 006;
 
 use lib "$Shared";
 use CGI::Carp qw(fatalsToBrowser);
@@ -40,6 +45,10 @@ use CGI::Carp qw(fatalsToBrowser);
 use Conf;
 use Conf::Admin;
 use Posting::Cache;
+
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 # load script configuration and admin default conf.
 #
@@ -837,8 +846,28 @@ sub check_cgi {
       #
       (my $val_ww = $val) =~ s/\s+//g;
 
-      $val_ww =~ y/a-zA-Z//cd
-        if (exists ($formdata -> {$name {$_}} -> {type}) and $formdata -> {$name {$_}} -> {type} eq 'name');
+      if (exists ($formdata -> {$name {$_}} -> {type}) and $formdata -> {$name {$_}} -> {type} eq 'name') {
+        $val_ww =~ y/a-zA-Z//cd;
+
+        my @badlist = map {qr/\Q$_/i} qw (
+          # insert badmatchlist here
+        );
+
+        push @badlist => map {qr/\b\Q$_\E\b/i} qw(
+          # insert badwordlist here
+        );
+
+        for (@badlist) {
+          if ($val_ww =~ /$_/) {
+            $self -> {error} = {
+              spec => 'undesired',
+              desc => $name{$_},
+              type => 'fatal'
+            };
+            return;
+          }
+        }
+      }
 
       if (length $val_ww < $formdata -> {$name {$_}} -> {minlength}) {
         $self -> {error} = {
