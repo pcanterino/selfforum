@@ -5,7 +5,7 @@ package Posting::_lib;
 # File:        shared/Posting/_lib.pm                                          #
 #                                                                              #
 # Authors:     André Malo <nd@o3media.de>, 2001-03-03                          #
-#              Frank Schoenmann <fs@tower.de>, 2001-06-02                      #
+#              Frank Schoenmann <fs@tower.de>, 2001-06-04                      #
 #                                                                              #
 # Description: Message access interface, time format routines                  #
 #                                                                              #
