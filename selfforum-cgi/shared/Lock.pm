@@ -11,8 +11,6 @@ package Lock;
 ################################################################################
 
 use strict;
-use Carp;
-
 use vars qw(
   @EXPORT_OK
   %EXPORT_TAGS
