@@ -1,0 +1,56 @@
+<!--
+Document Type Declaration fuer die Konfiguration der Scripte des SELFHTML-Forums
+Autor:   Andre Malo           ndparker@gmx.net
+         Thomas J. Sebestyen    thomasj.sebestyen@meta-text.net
+
+Version 1.00    02.01.2001
+
+Version 2.00   12.01.2001
+
+Modified: 16.01.2001
+
+-->
+
+<!ENTITY % a.name "name CDATA #REQUIRED">
+
+<!-- .............................................................................. -->
+
+<!ELEMENT      Config         ((Constant | Property)+, Limit*)     >
+
+<!ELEMENT      Constant       (#PCDATA)  >
+<!ATTLIST      Constant
+         %a.name;
+>
+
+<!ELEMENT      Property       (Property*, Variable*, List*)  >
+<!ATTLIST      Property
+         %a.name;
+>
+
+<!ELEMENT      Variable       (#PCDATA)   >
+<!ATTLIST      Variable
+         %a.name;
+>
+
+<!ELEMENT      List           (ListItem)+ >
+<!ATTLIST      List
+         %a.name;
+>
+
+<!ELEMENT      ListItem       (#PCDATA)   >
+
+
+<!ELEMENT      Limit          (Application, (Constant | Property)*)  >
+<!-- *****************************************************************************************************
+      'Limit' beinhaltet eine Reihe Anwesungen, die auf bestimmente Scripte begrenzt sind.
+***************************************************************************************************** -->
+
+<!ELEMENT      Application    (Script)+   >
+<!-- *****************************************************************************************************
+      'Application' beinhaltet die Scripte, fuer die die Angaben gelten werden.
+***************************************************************************************************** -->
+
+<!ELEMENT      Script         (#PCDATA)   >
+<!-- *****************************************************************************************************
+      'Script' beinhaltet den Namen des betroffenen Scripts
+***************************************************************************************************** -->
