@@ -1,54 +1,43 @@
-# Template/_query.pm
-
-# ====================================================
-# Autor: n.d.p. / 2000-12-30
-# lm   : n.d.p. / 2001-02-04
-# ====================================================
-# Funktion:
-#      Erzeugen eines Querystrings
-# ====================================================
-
-use strict;
-
 package Template::_query;
 
-# ====================================================
-# Funktionsexport
-# ====================================================
+################################################################################
+#                                                                              #
+# File:        shared/Template/_query.pm                                       #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-06-16                          #
+#                                                                              #
+# Description: compose a query string                                          #
+#                                                                              #
+################################################################################
 
+use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+################################################################################
+#
+# Export
+#
 use base qw(Exporter);
-@Template::_query::EXPORT = qw(query_string);
+@EXPORT = qw(query_string);
 
-################################
-# sub query_string
+### url_encode () ##############################################################
 #
-# Querystring erzeugen
-################################
-
-sub query_string ($) {
-  my $parlist=shift;
-
-  my $string = '?'.join ('&amp;',
-                         map {(ref)?map{&url_encode ($_).'='.&url_encode ($parlist -> {$_})} @{$parlist -> {$_}}:
-                                    &url_encode ($_).'='.&url_encode ($parlist -> {$_})}
-                           keys %$parlist);
-
-  # return
-  $string;
-}
-
-# ====================================================
-# Private Funktionen
-# ====================================================
-
-################################
-# sub url_encode
+# urlsafe encoding
+# (more or less from CGI.pm)
 #
-# URL-Codierung
-# (mehr oder weniger aus
-#  CGI.pm geklaut...)
-################################
-
+# Params: $string - string to encode
+#
+# Return: encoded string
+#
 sub url_encode ($) {
   my $string = shift;
   $string=~s/([^a-zA-Z\d_.-])/uc sprintf('%%%02x',ord($1))/eg;
@@ -56,13 +45,32 @@ sub url_encode ($) {
   $string;
 }
 
-# ====================================================
-# Modulinitialisierung
-# ====================================================
+### query_string () ############################################################
+#
+# compose a query string
+#
+# Params: $parlist - hashref
+#
+# Return: scalar: query string
+#
+sub query_string ($) {
+  my $parlist=shift;
 
-# making require happy
+  my $string = '?'.join ('&amp;' =>
+    map {
+      (ref)
+      ? map{url_encode ($_).'='.url_encode ($parlist -> {$_})} @{$parlist -> {$_}}
+      : url_encode ($_).'='.url_encode ($parlist -> {$_})
+    } keys %$parlist
+  );
+
+  # return
+  $string;
+}
+
+# keep 'require' happy
 1;
 
-# ====================================================
-# end of Template::_query
-# ====================================================
+#
+#
+### end of Template::_query ####################################################

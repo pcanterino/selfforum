@@ -4,13 +4,17 @@ package Template::Posting;
 #                                                                              #
 # File:        shared/Template/Posting.pm                                      #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-04-01                    #
+# Authors:     Andre Malo       <nd@o3media.de>, 2001-06-16                    #
 #                                                                              #
 # Description: show HTML formatted posting                                     #
 #                                                                              #
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
 
 use Encode::Posting;
 use Encode::Plain; $Encode::Plain::utf8 = 1;
@@ -34,15 +38,21 @@ use XML::DOM;
 
 ################################################################################
 #
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+################################################################################
+#
 # Export
 #
 use base qw(Exporter);
-@Template::Posting::EXPORT = qw(
+@EXPORT = qw(
   print_posting_as_HTML
   message_as_HTML
 );
 
-### sub print_posting_as_HTML ($$$) ############################################
+### print_posting_as_HTML () ###################################################
 #
 # print HTML formatted Posting to STDOUT
 #
@@ -196,7 +206,7 @@ sub print_posting_as_HTML ($$$) {
   return;
 }
 
-### sub message_as_HTML ($$$) ##################################################
+### message_as_HTML () #########################################################
 #
 # create HTML String for the Messagetext
 #
@@ -226,7 +236,7 @@ sub message_as_HTML ($$$) {
   $text;
 }
 
-# keep require happy
+# keep 'require' happy
 1;
 
 #

@@ -4,13 +4,18 @@ package Template::Archive;
 #                                                                              #
 # File:        shared/Template/Archive.pm                                      #
 #                                                                              #
-# Authors:     Frank Schoenmann <fs@tower.de>, 2001-06-08                      #
+# Authors:     Andre Malo       <nd@o3media.de>, 2001-06-16                    #
+#              Frank Schoenmann <fs@tower.de>,   2001-06-08                    #
 #                                                                              #
 # Description: archive display                                                 #
 #                                                                              #
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
 
 use Lock qw(:READ);
 use Encode::Posting;
@@ -37,10 +42,16 @@ use Template::_thread;
 
 ################################################################################
 #
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+################################################################################
+#
 # Export
 #
 use base qw(Exporter);
-@Template::Archive::EXPORT = qw(
+@EXPORT = qw(
     print_overview_as_HTML
     print_year_as_HTML
     print_month_as_HTML
@@ -371,7 +382,7 @@ sub print_thread_as_HTML($$$) {
 }
 
 
-# keep require happy
+# keep 'require' happy
 1;
 
 #

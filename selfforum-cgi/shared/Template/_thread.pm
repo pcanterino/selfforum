@@ -4,13 +4,17 @@ package Template::_thread;
 #                                                                              #
 # File:        shared/Template/_thread.pm                                      #
 #                                                                              #
-# Authors:     Andre Malo <nd@o3media.de>, 2001-04-02                          #
+# Authors:     Andre Malo <nd@o3media.de>, 2001-06-16                          #
 #                                                                              #
 # Description: convert parsed thread to HTML                                   #
 #                                                                              #
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
 
 use Encode::Plain; $Encode::Plain::utf8 = 1;
 use Posting::_lib qw(short_hr_time);
@@ -19,12 +23,18 @@ use Template::_query;
 
 ################################################################################
 #
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+################################################################################
+#
 # Export
 #
 use base qw(Exporter);
-@Template::_thread::EXPORT = qw(html_thread);
+@EXPORT = qw(html_thread);
 
-### sub html_thread ($$$) ######################################################
+### html_thread () #############################################################
 #
 # create HTML string
 #
@@ -173,7 +183,7 @@ sub html_thread ($$$) {
   \$html;
 }
 
-# keep require happy
+# keep 'require' happy
 1;
 
 #

@@ -4,13 +4,17 @@ package Template::Forum;
 #                                                                              #
 # File:        shared/Template/Forum.pm                                        #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-04-19                          #
+# Authors:     André Malo <nd@o3media.de>, 2001-06-16                          #
 #                                                                              #
 # Description: print Forum main file to STDOUT                                 #
 #                                                                              #
 ################################################################################
 
 use strict;
+use vars qw(
+  @EXPORT
+  $VERSION
+);
 
 use Lock qw(:READ);
 use Encode::Plain; $Encode::Plain::utf8 = 1;
@@ -24,12 +28,18 @@ use Template::_thread;
 
 ################################################################################
 #
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
+################################################################################
+#
 # Export
 #
 use base qw(Exporter);
-@Template::Forum::EXPORT = qw(print_forum_as_HTML);
+@EXPORT = qw(print_forum_as_HTML);
 
-### sub print_forum_as_HTML ($$$) ##############################################
+### print_forum_as_HTML () #####################################################
 #
 # print Forum main file to STDOUT
 #
@@ -67,6 +77,10 @@ sub print_forum_as_HTML ($$$) {
       { adminDefault => $param -> {adminDefault} }
     );
 
+    # set process priority, remove if you don't need...
+    #
+    eval {setpriority 0,0,1};
+
     $threads = get_all_threads ($mainfile, $param -> {showDeleted}, $view -> {sortedMsg});
     violent_unlock_file ($mainfile) unless (unlock_file ($mainfile));
 
@@ -98,7 +112,7 @@ sub print_forum_as_HTML ($$$) {
   return;
 }
 
-# keep require happy
+# keep 'require' happy
 1;
 
 #
