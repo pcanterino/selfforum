@@ -19,22 +19,22 @@ use vars qw(
 );
 
 BEGIN {
-  my $null = $0; $null =~ s/\\/\//g; # for win :-(
-  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-  $Shared  = "$Bin/../../cgi-shared";
-  $Config  = "$Bin/../../cgi-config/forum";
-  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
-
-#  my $null = $0;
+#  my $null = $0; $null =~ s/\\/\//g; # for win :-(
 #  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
-#  $Config  = "$Bin/../../daten/forum/config";
 #  $Shared  = "$Bin/../../cgi-shared";
+#  $Config  = "$Bin/../../cgi-config/forum";
 #  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+
+  my $null = $0;
+  $Bin     = ($null =~ /^(.*)\/.*$/)? $1 : '.';
+  $Config  = "$Bin/../../cgi-config/forum";
+  $Shared  = "$Bin/../../cgi-shared";
+  $Script  = ($null =~ /^.*\/(.*)$/)? $1 : $null;
 }
 
 # setting umask, remove or comment it, if you don't need
 #
-umask 006;
+umask 000;
 
 use lib "$Shared";
 use CGI::Carp qw(fatalsToBrowser);
