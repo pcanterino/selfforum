@@ -25,7 +25,10 @@ use Lock;
 #
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
-my $O_BINARY = eval "local $SIG{__DIE__}; O_BINARY";
+my $O_BINARY = eval q{
+  local $SIG{__DIE__};
+  O_BINARY;
+};
 $O_BINARY = 0 if ($@);
 
 ### sub new ####################################################################
