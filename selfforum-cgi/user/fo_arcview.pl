@@ -38,6 +38,7 @@ use CGI::Carp qw(fatalsToBrowser);
 use Conf;
 use Conf::Admin;
 use Template::Archive qw(
+    print_overview_as_HTML
     print_year_as_HTML
     print_month_as_HTML
     print_thread_as_HTML
@@ -107,7 +108,13 @@ if ($year) {
         );
     }
 } else {
-#   print_overview_as_HTML();
+    print_overview_as_HTML(
+        $conf->{'files'}->{'archivePath'},
+        $show_archive->{'templateFile'},
+        {
+            'assign'        => $show_archive->{'assign'}
+        }
+    );
 }
 
 #

@@ -41,17 +41,76 @@ use Template::_thread;
 #
 use base qw(Exporter);
 @Template::Archive::EXPORT = qw(
+    print_overview_as_HTML
     print_year_as_HTML
     print_month_as_HTML
     print_thread_as_HTML
 );
 
 
+### print_overview_as_HTML () ##################################################
+#
+# archive entry
+#
+# Params: $arcdir     main archive directory
+#         $tempfile   template filename
+#         $param      hash reference
+# Return: -none-
+#
+sub print_overview_as_HTML($$$) {
+    my ($arcdir, $tempfile, $param) = @_;
+
+    my $assign = $param->{'assign'};
+
+    my $template = new Template $tempfile;
+
+    #
+    # archiveDocStart
+    #
+    print ${$template->scrap(
+        $assign->{'archiveDocStart'}
+    )};
+
+    #
+    # globbing to find year directories
+    #
+    for (<$arcdir????>) {
+        s/$arcdir//;
+        print ${$template->scrap(
+            $assign->{'archiveDocEntry'},
+            {
+                $assign->{'year'}   => $_
+            }
+
+        )};
+    }
+
+#   for (my $month = 1; $month <= 12; $month++) {
+#       if (-e $yeardir.$month.'/') {
+#           print ${$template->scrap(
+#               $assign->{'yearDocEntry'},
+#               {
+#                   $assign->{'year'}       => $param->{'year'},
+#                   $assign->{'month'}      => $month,
+#                   $assign->{'monthName'}  => month($month)
+#               }
+#           )};
+#       }
+#   }
+
+    #
+    # archiveDocEnd
+    #
+    print ${$template->scrap(
+        $assign->{'archiveDocEnd'}
+    )};
+}
+
 ### print_year_as_HTML () ######################################################
 #
 # yearly overview over months
 #
-# Params:
+# Params: $yeardir    directory, which contains month directories
 #         $tempfile   template filename
 #         $param      hash reference
 # Return: -none-
@@ -77,8 +136,6 @@ sub print_year_as_HTML($$$) {
 
     my $tmplparam = {
             $assign->{'year'}           => $param->{'year'},
-#           $assign->{'month'}          => $param->{'month'},
-#           $assign->{'monthName'}      => month($param->{'month'})
     };
 
     #
@@ -194,8 +251,6 @@ sub print_month_as_HTML($$$) {
         $assign->{'monthDocEnd'},
         $tmplparam
     )};
-
-
 }
 
 ### print_thread_as_HTML () ####################################################
