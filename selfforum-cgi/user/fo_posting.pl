@@ -83,7 +83,7 @@ $request -> severance;
 ### Posting::Request ###########################################################
 package Posting::Request;
 
-use Arc::Archive;
+use Arc::Starter;
 use CheckRFC;
 use Encode::Plain; $Encode::Plain::utf8 = 1; # generally convert from UTF-8
 use Encode::Posting;
@@ -141,16 +141,7 @@ sub new {
 sub severance {
   my $self = shift;
 
-  my $stat = cut_tail ({
-    forumFile    => $self -> {conf} -> {forum_file_name},
-    messagePath  => $self -> {conf} -> {message_path},
-    archivePath  => $self -> {conf} -> {original} -> {files} -> {archivePath},
-    lockFile     => $self -> {conf} -> {original} -> {files} -> {sev_lock},
-    adminDefault => $self -> {conf} -> {admin},
-    cachePath    => $self -> {conf} -> {original} -> {files} -> {cachePath}
-  });
-#  die $stat->{(keys %$stat)[0]} if (%$stat);
-
+  start_severance ($self -> {conf} -> {original} -> {files} -> {sev_app});
 }
 
 ### sub response ###############################################################
