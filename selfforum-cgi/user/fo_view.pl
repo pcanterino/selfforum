@@ -10,7 +10,7 @@ BEGIN {
   ($Script) = ($0 =~ /^.*\/(.*)$/)? $1 : $0;}
 
 use lib "$Shared";
-#use CGI::Carp qw(fatalsToBrowser);
+use CGI::Carp qw(fatalsToBrowser);
 
 use Conf;
 use Conf::Admin;
@@ -61,4 +61,5 @@ else {
                        tree         => $tree
                       });}
 
+print "t1 ";
 # eos

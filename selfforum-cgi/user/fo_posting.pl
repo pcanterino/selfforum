@@ -114,7 +114,7 @@ sub check_reply_dupe () {
       # nur nicht geloeschte Messages beachten
       for ($i=0; $i < @{$threads -> {$ftid}}; $i++) {
         if ($threads -> {$ftid} -> [$i] -> {deleted}) {
-          $+=$threads -> {$ftid} -> [$i] -> {answers};}
+          $i+=$threads -> {$ftid} -> [$i] -> {answers};}
 
         else {
           $msg{$threads -> {$ftid} -> [$i] -> {mid}}=$i;}}
