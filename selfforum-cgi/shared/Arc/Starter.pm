@@ -48,14 +48,16 @@ sub win32_start ($) {
   require Win32::Process; Win32::Process -> import ('NORMAL_PRIORITY_CLASS', 'DETACHED_PROCESS');
   require Win32;
 
-  Win32::Process::Create(
-    $p,
-    $x,
-    "perl $sev",
-    0,
-    NORMAL_PRIORITY_CLASS | DETACHED_PROCESS,
-    "."
-  ) or warn 'could not execute severancer: '.Win32::FormatMessage(Win32::GetLastError());
+  eval q{
+    Win32::Process::Create(
+      $p,
+      $x,
+      "perl $sev",
+      0,
+      NORMAL_PRIORITY_CLASS | DETACHED_PROCESS,
+      "."
+    ) or warn 'could not execute severancer: '.Win32::FormatMessage(Win32::GetLastError());
+  }
 }
 
 ### posix_start () #############################################################
