@@ -1,7 +1,16 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -wT
+
+################################################################################
+#                                                                              #
+# File:        user/fo_view.pl                                                 #
+#                                                                              #
+# Authors:     André Malo <nd@o3media.de>, 2001-03-31                          #
+#                                                                              #
+# Description: display the forum main file or a single posting                 #
+#                                                                              #
+################################################################################
 
 use strict;
-
 use vars qw($Bin $Shared $Script);
 
 BEGIN {
@@ -35,29 +44,36 @@ my $adminDefault = read_admin_conf ($conf -> {files} -> {adminDefault});
 my $forum_file = $conf -> {files} -> {forum};
 my $message_path = $conf -> {files} -> {messagePath};
 
-#use Lock qw(:ALL);release_file($forum_file);die;
-
 my ($tid, $mid) = (param ($cgi -> {thread}), param ($cgi -> {posting}));
 
 if (defined ($tid) and defined ($mid)) {
-  print_posting_as_HTML ($message_path,
-                         $show_posting -> {templateFile},
-                        {assign       => $show_posting -> {assign},
-                         thread       => $tid,
-                         posting      => $mid,
-                         adminDefault => $adminDefault,
-                         messages     => $show_posting -> {messages},
-                         form         => $show_posting -> {form},
-                         cgi          => $cgi,
-                         tree         => $tree
-                        });}
+  print_posting_as_HTML (
+    $message_path,
+    $show_posting -> {templateFile},
+    { assign       => $show_posting -> {assign},
+      thread       => $tid,
+      posting      => $mid,
+      adminDefault => $adminDefault,
+      messages     => $show_posting -> {messages},
+      form         => $show_posting -> {form},
+      cgi          => $cgi,
+      tree         => $tree
+    }
+  );
+}
 
 else {
-  print_forum_as_HTML ($forum_file,
-                       $show_forum -> {templateFile},
-                      {assign       => $show_forum -> {assign},
-                       adminDefault => $adminDefault,
-                       cgi          => $cgi,
-                       tree         => $tree
-                      });}
-# eos
+  print_forum_as_HTML (
+    $forum_file,
+    $show_forum -> {templateFile},
+    { assign       => $show_forum -> {assign},
+      adminDefault => $adminDefault,
+      cgi          => $cgi,
+      tree         => $tree
+    }
+  );
+}
+
+#
+#
+### end of fo_view.pl ##########################################################

@@ -24,21 +24,16 @@ BEGIN {
 }
 
 use lib "$Shared";
-#use CGI::Carp qw(fatalsToBrowser);
+use CGI::Carp qw(fatalsToBrowser);
 
-use Conf;
-use Encode::Plain; $Encode::Plain::utf8 = 1;
-use Encode::Posting;
-use Id;
-use Lock qw(:ALL);
-use CheckRFC;
-use Posting::_lib qw(get_all_threads get_message_node get_message_header hr_time parse_xml_file);
-use Posting::Write;
-use Template;
-use Template::Posting;
+#use Conf;
+#use Encode::Plain; $Encode::Plain::utf8 = 1; # generally convert from UTF-8
+#use Id;
+#use Posting::Write;
+#use Template;
+#use Template::Posting;
 
-use CGI;
-use XML::DOM;
+#use autouse 'Encode::Posting' => qw();
 
 # load script configuration and admin default conf.
 my $conf         = read_script_conf ($Bin, $Shared, $Script);
@@ -48,12 +43,49 @@ my $adminDefault = read_admin_conf ($conf -> {files} -> {adminDefault});
 my $response = new Posting::Response ($conf, $adminDefault);
 
 # fetch and parse the cgi-params
+#
 $response -> parse_cgi;
 
+# no further checks after fatal errors
+#
+if ($response -> success or $response -> error_type ne 'fatal') {
+  $response -> success (
+       $response -> check_reply
+    && $response -> check_dupe
+    && $response -> success
+  );
+}
+
+
+# handle errors or save the posting
+#
+$response -> handle_error or $response -> save;
+
+# show response
+#
+$response -> response;
+
+#
+#
+### main end ###################################################################
 
 ################################################################################
 ### Posting::Response ##########################################################
 package Posting::Response;
+
+use Lock          qw(:ALL);
+use Posting::_lib qw(
+      hr_time
+      parse_xml_file
+      get_all_threads get_message_node get_message_header
+      KEEP_DELETED
+    );
+
+use autouse 'CheckRFC' => qw(is_email is_URL);
+use CGI;
+
+sub success {$_[0] -> {check_success} = defined $_[1]?$_[1]:$_[0] -> {check_success}}
+sub error_type {$_[0] -> {error} -> {type}}
 
 ### sub new ####################################################################
 #
@@ -80,10 +112,72 @@ sub new {
          form_action     => $sp -> {form} -> {action},
        },
 
-       template => new Template $sp -> {templateFile}
+       template => new Template $sp -> {templateFile},
+       response => {},
+       forum    => {},
+       error    => {}
      };
 
   bless $self, $class;
+}
+
+### sub save ###################################################################
+#
+# save posting
+# check on legal reply or dupe is released here
+#
+# Return: -none-
+#
+sub save {
+  my $self = shift;
+
+  # if an empty 'new message' document, there's nothing to save
+  #
+  return if ($self -> {response} -> {new_thread});
+
+  # lock and load the forum main file
+  #
+  if ($self -> load_main_file) {
+
+    # if a reply - is it legal?
+    # is it a dupe?
+    #
+    if ($self -> check_reply and $self -> check_dupe) {
+
+      # we've got an opening
+      #
+      if ($self -> {response} -> {new}) {
+        $self -> save_new;
+      }
+
+      # we've got a reply
+      #
+      elsif ($self -> {response} -> {reply}) {
+        $self -> save_reply;
+      }
+
+      # don't know, if we any time come to this branch
+      # the script is probably broken
+      #
+      else {
+        $self -> {error} = {
+          spec => 'unknown_error',
+          type => 'fatal'
+        };
+      }
+    }
+  }
+
+  # unlock forum main file
+  #
+  if ($self -> {forum} -> {flocked}) {
+    violent_unlock_file($self -> {forum_file_name}) unless unlock_file ($self -> {forum_file_name});
+    $self -> {forum} -> {flocked} = 0;
+  }
+
+  $self -> handle_error unless $self -> {check_success};
+
+  return;
 }
 
 ### sub parse_cgi ##############################################################
@@ -91,18 +185,96 @@ sub new {
 # fetch and decode cgi-parameters,
 # find out the kind of response requested by the user (new message, reply)
 #
-# Return: Status Code (Bool)
-#         try out the error method, if false
+# Return: -none-
 #
 sub parse_cgi {
   my $self = shift;
 
   # create the CGI object
+  #
   my $q = new CGI;
   $self -> {cgi_object} = $q;
 
   # check the params
-  return unless $self -> check_cgi;
+  #
+  $self -> {check_success} = $self -> check_cgi;
+
+  return;
+}
+
+### sub load_main_file #########################################################
+#
+# load and parse the forum main file
+#
+# Return: Success (true/false)
+#
+sub load_main_file {
+  my $self = shift;
+  my $lock_stat;
+
+  unless ($lock_stat = write_lock_file ($self ->{forum_file_name})) {
+    if ($lock_stat == 0) {
+      # occupied or no w-bit set for the directory..., hmmm
+      #
+      violent_unlock_file ($self -> {forum_file_name});
+      $self -> {error} = {
+        spec => 'occupied',
+        type => 'fatal'
+      };
+      return;
+    }
+    else {
+      # master lock is set
+      #
+      $self -> {error} = {
+        spec => 'master_lock',
+        type => 'fatal'
+      };
+      return;
+    }
+  }
+  else {
+    $self -> {forum} -> {flocked} = 1;
+    ( $self -> {forum} -> {threads},
+      $self -> {forum} -> {last_thread},
+      $self -> {forum} -> {last_message},
+      undef,
+      $self -> {forum} -> {unids}
+    ) = get_all_threads ($self -> {forum_file_name}, KEEP_DELETED);
+  }
+
+  # ok, looks good
+  1;
+}
+
+### sub check_reply ############################################################
+#
+# check whether a reply is legal
+# (followup posting must exists)
+#
+# Return: Status Code (Bool)
+#
+sub check_reply {
+  my $self = shift;
+
+  # return true unless it's not a reply
+  #
+  return 1 unless $self -> {response} -> {reply};
+
+
+}
+
+### sub check_dupe #############################################################
+#
+# check whether this form request is a dupe
+# (unique id already exists)
+#
+# Return: Status Code (Bool)
+#
+sub check_dupe {
+  my $self = shift;
+
+  return 1 if ($self -> {response} -> {new_thread});
 }
 
 ### sub check_cgi ##############################################################
@@ -110,12 +282,12 @@ sub parse_cgi {
 # cgi params are like raw eggs...
 #
 # Return: Status Code (Bool)
-#         creates content for the error method if anything fails
+#         creates content for the handle_error method if anything fails
 #
 sub check_cgi {
   my $self = shift;
 
-  # find out the count of the submitted keys and the keys themselves
+  # count the submitted keys and get the keys themselves
   #
   my %got_keys     = map {($_ => 1)} $self -> {cgi_object} -> param;
   my $cnt_got_keys = keys %got_keys;
@@ -131,7 +303,7 @@ sub check_cgi {
         and $got_keys{$formdata -> {userID} -> {name}}
         )
      ) {
-    $self -> {response} = {new_thread => 1};
+    $self -> {response} -> {new_thread} = 1;
     return 1;
   }
 
@@ -170,7 +342,10 @@ sub check_cgi {
            $self -> {response} -> {new}
         or $formdata -> {$name {$_}} -> {errorType} eq 'fetch') {
 
-        $self -> {error} = {spec => 'missing_key'};
+        $self -> {error} = {
+          spec => 'missing_key',
+          type => 'fatal'
+        };
         return;
       }
       else {
@@ -187,7 +362,8 @@ sub check_cgi {
     unless (exists ($name {$_})) {
       $self -> {error} = {
         spec => 'unexpected_key',
-        desc => $name{$_}
+        desc => $name{$_},
+        type => 'fatal'
       };
       return;
     }
@@ -196,7 +372,10 @@ sub check_cgi {
   # 4
   #
   unless ($self -> decode_param) {
-    $self -> {error} = {spec => 'unknown_encoding'};
+    $self -> {error} = {
+      spec => 'unknown_encoding',
+      type => 'fatal'
+    };
     return;
   };
 
@@ -205,12 +384,15 @@ sub check_cgi {
 
   if ($self -> {response} -> {reply}) {
 
-    # get the parent-identifiers if we got a reply
+    # get the parent-identifiers if we got a reply request
     #
     my ($ftid, $fmid) = split /;/ => $q -> param ($formdata -> {followUp} -> {name}) => 2;
 
     unless ($ftid =~ /\d+/ and $fmid =~ /\d+/) {
-      $self -> {error} = {spec => 'unknown_followup'};
+      $self -> {error} = {
+        spec => 'unknown_followup',
+        type => 'fatal'
+      };
       return;
     }
     $self -> {fup_tid} = $ftid;
@@ -227,6 +409,8 @@ sub check_cgi {
   #
   for (keys %got_keys) {
 
+    # we are sure, we've got only one value for one key
+    #
     my $val = $q -> param ($_);
 
     $val =~ s/\302\240/ /g;           # convert nbsp (UTF-8 encoded) into normal spaces
@@ -243,7 +427,8 @@ sub check_cgi {
     if (length $val > $formdata -> {$name {$_}} -> {maxlength}) {
       $self -> {error} = {
         spec => 'too_long',
-        desc => $name{$_}
+        desc => $name{$_},
+        type => $formdata -> {$name {$_}} -> {errorType}
       };
       return;
     }
@@ -260,7 +445,8 @@ sub check_cgi {
       if (length $val_ww < $formdata -> {$name {$_}} -> {minlength}) {
         $self -> {error} = {
           spec => 'too_short',
-          desc => $name{$_}
+          desc => $name{$_},
+          type => $formdata -> {$name {$_}} -> {errorType}
         };
         return;
       }
@@ -273,7 +459,8 @@ sub check_cgi {
       if ($formdata -> {$name {$_}} -> {type} eq 'email' and not is_email $val) {
         $self -> {error} = {
           spec => 'wrong_mail',
-          desc => $name{$_}
+          desc => $name{$_},
+          type => $formdata -> {$name {$_}} -> {errorType}
         };
         return;
       }
@@ -281,7 +468,8 @@ sub check_cgi {
       elsif ($formdata -> {$name {$_}} -> {type} eq 'http-url' and not is_URL $val => 'http') {
         $self -> {error} = {
           spec => 'wrong_http_url',
-          desc => $name{$_}
+          desc => $name{$_},
+          type => $formdata -> {$name {$_}} -> {errorType}
         };
         return;
       }
@@ -289,7 +477,8 @@ sub check_cgi {
       elsif ($formdata -> {$name {$_}} -> {type} eq 'url' and not is_URL $val => ':ALL') {
         $self -> {error} = {
           spec => 'wrong_url',
-          desc => $name{$_}
+          desc => $name{$_},
+          type => $formdata -> {$name {$_}} -> {errorType}
         };
         return;
       }
@@ -323,6 +512,8 @@ sub fetch {
 
           $q -> param ($formdata -> {$_} -> {name} => $header -> {$formdata -> {$_} -> {header}})
             for (@{$self -> {fetch}});
+
+          return;
         }
       }
     }
@@ -333,6 +524,8 @@ sub fetch {
   #
   $q -> param ($formdata -> {$_} -> {name} => '')
     for (@{$self -> {fetch}});
+
+  return;
 }
 
 ### sub decode_param ###########################################################
