@@ -243,7 +243,7 @@ sub print_month_as_HTML($$$) {
     #
     # thread overview
     #
-    for (sort keys %$threads) {
+    for (sort {$a <=> $b} keys %$threads) {
         print ${$template->scrap(
             $assign->{'monthThreadEntry'},
             {
