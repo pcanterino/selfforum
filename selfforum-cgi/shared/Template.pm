@@ -4,7 +4,7 @@ package Template;
 #                                                                              #
 # File:        shared/Template.pm                                              #
 #                                                                              #
-# Authors:     André Malo       <nd@o3media.de>, 2001-06-16                    #
+# Authors:     André Malo       <nd@o3media.de>, 2001-07-01                    #
 #              Frank Schoenmann <fs@tower.de>,   2001-06-04                    #
 #                                                                              #
 # Description: Handle XML based HTML-Templates                                 #
@@ -107,13 +107,30 @@ sub insert {
 #
 sub list {
   my $self = shift;
-  my $name = shift;
 
   croak "no template file specified"
     unless (defined $self -> {file});
 
-#  no warnings 'uninitialized';
-  my $list = join '' => map { ${ $self -> scrap ($name, $_) } } @{ +shift };
+  $self -> joinlist ('' => @_);
+}
+
+### sub joinlist ###############################################################
+#
+# fill in a complete list, using a scrap between the list elements
+#
+# Params: $join  - joining string (or stringref)
+#         $name  - name of the atomic list scrap
+#         $array - list of hashes (same strcuture like the hash used by 'scrap')
+#
+# Return: scalar reference - filled in list
+#
+sub joinlist {
+  my $self = shift;
+  my $join = shift;
+  $join = $$join if ref($join);
+  my $name = shift;
+
+  my $list = join $join => map { ${ $self -> scrap ($name, $_) } } @{ +shift };
 
   # return
   \$list;
@@ -196,6 +213,42 @@ sub scrap {
 
   # return
   \$scrap;
+}
+
+### printscrap () ##############################################################
+#
+# fill in a template scrap and print to STDOUT
+#
+# Params: $name    name of the scrap
+#         ...
+#         $no_nl   1 - remove newlines (\n)
+#                  0 - do no such thing
+#
+# Return: success code (boolean)
+#
+sub printscrap {
+  my $self = shift;
+
+  $self -> scrap2file (\*STDOUT, @_);
+}
+
+### scrap2file () ##############################################################
+#
+# fill in a template scrap and print to a file handle
+#
+# Params: $handle  filehandle
+#         $name    name of the scrap
+#         ...
+#         $no_nl   1 - remove newlines (\n)
+#                  0 - do no such thing
+#
+# Return: success code (boolean)
+#
+sub scrap2file {
+  my $self = shift;
+  my $handle = shift;
+
+  print $handle ${$self->scrap(@_)};
 }
 
 ### sub parse_file #############################################################
