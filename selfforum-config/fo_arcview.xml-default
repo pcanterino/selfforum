@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!DOCTYPE Forum SYSTEM "config.dtd">
+
+<Config>
+    <Property name="show">
+        <Property name="Archive">
+            <Variable name="templateFile">/var/www/cgi-local/user/config/arcview.tmpl.xml</Variable>
+
+            <Property name="assign">
+                <Variable name="threadDocStart">ARC_THREAD_START</Variable>
+                <Variable name="threadDocEnd">ARC_THREAD_END</Variable>
+                <Variable name="posting">XPOSTING</Variable>
+
+                <Variable name="monthDocStart">ARC_MONTH_START</Variable>
+                <Variable name="monthDocEnd">ARC_MONTH_END</Variable>
+                <Variable name="monthThreadEntry">ARC_MONTH_THREAD</Variable>
+
+                <Variable name="threadID">_T_ID</Variable>
+                <Variable name="threadCategory">_T_CATEGORY</Variable>
+                <Variable name="threadTitle">_T_TITLE</Variable>
+                <Variable name="threadAuthor">_T_AUTHOR</Variable>
+                <Variable name="threadTime">_T_TIME</Variable>
+                <Variable name="threadDate">_T_DATE</Variable>
+
+                <Variable name="year">_YEAR</Variable>
+                <Variable name="month">_MONTH</Variable>
+                <Variable name="monthName">_MONTH_NAME</Variable>
+
+                <Variable name="msgID">_MSG_ID</Variable>
+                <Variable name="msgAuthor">_MSG_AUTHOR</Variable>
+                <Variable name="msgMail">_MSG_MAIL</Variable>
+                <Variable name="msgHomepage">_MSG_HOMEPAGE</Variable>
+                <Variable name="msgTime">_MSG_TIME</Variable>
+                <Variable name="msgCategory">_MSG_CATEGORY</Variable>
+                <Variable name="msgSubject">_MSG_TITLE</Variable>
+                <Variable name="msgBody">_MSG_TEXT</Variable>
+
+                <Variable name="startCite">CITE_START</Variable>
+                <Variable name="endCite">CITE_END</Variable>
+
+                <Variable name="error">DOC_ERROR</Variable>
+                <Variable name="errorText">_ERROR_TEXT</Variable>
+
+                <Variable name="cssFile">_CSS_FILE</Variable>
+            </Property> <!-- assign -->
+        </Property> <!-- Archive -->
+    </Property> <!-- show -->
+</Config>
+
+<!-- The End -->

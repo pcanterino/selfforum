@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+
+<Config>
+  <Property name="files">
+    <Variable name="messagePath">e:/localhosts/i_selfhtml/htdocs/selfaktuell/forum/messages/</Variable>
+    <Variable name="forum">e:/localhosts/i_selfhtml/htdocs/selfaktuell/forum/messages/selfforum.xml</Variable>
+    <Variable name="adminDefault">e:/localhosts/i_selfhtml/cgi-local/user/config/fo_admin_default.xml</Variable>
+  </Property>
+
+  <Property name="template">
+
+    <Property name="messages">
+      <Property name="selbermachen">
+        <Variable name="src">/selfaktuell/forum/images/01.gif</Variable>
+        <Variable name="width">419</Variable>
+        <Variable name="height">119</Variable>
+        <Variable name="alt">F&#252;r dein Problem gibt es nur eine L&#246;sung: SELFmade von Selbermachen.</Variable></Property>
+
+      <Property name="archiv">
+        <Variable name="src">/selfaktuell/forum/images/02.gif</Variable>
+        <Variable name="width">302</Variable>
+        <Variable name="height">119</Variable>
+        <Variable name="alt">Die Antwort auf deine Frage findest du im Archiv.</Variable></Property>
+
+      <Property name="formulierung">
+        <Variable name="src">/selfaktuell/forum/images/03.gif</Variable>
+        <Variable name="width">248</Variable>
+        <Variable name="height">119</Variable>
+        <Variable name="alt">Was willst du jetzt eigentlich wissen?</Variable></Property>
+
+      <Property name="selfhtml">
+        <Variable name="src">/selfaktuell/forum/images/04.gif</Variable>
+        <Variable name="width">428</Variable>
+        <Variable name="height">119</Variable>
+        <Variable name="alt">Schau mal in SELFHTML nach, um eine Antwort auf deine Frage zu finden!</Variable></Property>
+
+      <Property name="ende">
+        <Variable name="src">/selfaktuell/forum/images/05.gif</Variable>
+        <Variable name="width">158</Variable>
+        <Variable name="height">119</Variable>
+        <Variable name="alt">Jetzt reicht's aber!</Variable></Property>
+
+      <Property name="reihenfolge">
+        <Variable name="src">/selfaktuell/forum/images/06.gif</Variable>
+        <Variable name="width">462</Variable>
+        <Variable name="height">119</Variable>
+        <Variable name="alt">Erstmal selber probieren, dann bei Problemen: SELFHTML, danach: dieses Forum.</Variable></Property>
+
+      <Property name="fehlamplatz">
+        <Variable name="src">/selfaktuell/forum/images/07.gif</Variable>
+        <Variable name="width">275</Variable>
+        <Variable name="height">119</Variable>
+        <Variable name="alt">Stopp! So etwas hat hier nichts zu suchen.</Variable></Property>
+
+      <Property name="links">
+        <Variable name="src">/selfaktuell/forum/images/08.gif</Variable>
+        <Variable name="width">213</Variable>
+        <Variable name="height">100</Variable>
+        <Variable name="alt">Schau mal unter folgenden Links nach:</Variable></Property>
+
+      <Property name="panik">
+        <Variable name="src">/selfaktuell/forum/images/10.gif</Variable>
+        <Variable name="width">224</Variable>
+        <Variable name="height">119</Variable>
+        <Variable name="alt">??!%${</Variable></Property>
+
+    </Property>
+  </Property>
+
+</Config>
+
+<!-- Ende -->
