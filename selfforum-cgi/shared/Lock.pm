@@ -476,9 +476,16 @@ sub w_set_ref ($$$) {
   # Neuen Referenzwert schreiben
   $old+=$z;
   $old=0 if ($old < 0);
-  open REF,">$reffile" or return 0;
-  print REF $old;
-  close REF or return 0;
+  if ($old == 0)
+  {
+    unlink $reffile or return 0;
+  }
+  else
+  {
+    open REF,">$reffile" or return 0;
+    print REF $old or return 0;
+    close REF or return 0;
+  }
 
   # wieder entsperren
   return 0 unless(&simple_unlock($reffile));
@@ -521,9 +528,16 @@ sub x_set_ref ($$$) {
   # Neuen Referenzwert schreiben
   $old += $z;
   $old = 0 if ($old < 0);
-  open REF,">$reffile" or return 0;
-  print REF $old;
-  close REF or return 0;
+  if ($old == 0)
+  {
+    unlink $reffile or return 0;
+  }
+  else
+  {
+    open REF,">$reffile" or return 0;
+    print REF $old or return 0;
+    close REF or return 0;
+  }
 
   # wieder entsperren
   return 0 unless(&simple_unlock($reffile));
