@@ -12,6 +12,7 @@ use strict;
 
 package Template;
 
+use CGI::Carp qw(croak);
 use XML::DOM;
 
 # ====================================================
@@ -63,7 +64,7 @@ sub file {
 
 sub insert {
   my $self=shift;
-  die "no template file specified" unless (defined $self -> {file});
+  croak "no template file specified" unless (defined $self -> {file});
 
   my $name=shift;
 
@@ -81,7 +82,7 @@ sub list {
   my $self=shift;
   my $name=shift;
 
-  die "no template file specified" unless (defined $self->{file});
+  croak "no template file specified" unless (defined $self->{file});
 
   my $list = join '', map { ${ $self -> scrap ($name, $_) } } @{ +shift };
 
@@ -99,7 +100,7 @@ sub scrap {
   my $self=shift;
   my $name=shift;
 
-  die "no template file specified" unless (defined $self->{file});
+  croak "no template file specified" unless (defined $self->{file});
 
   my %params;
 
@@ -147,15 +148,15 @@ sub parse_file {
     $self -> {metaon}  = $template -> getAttribute ('metaon');
     $self -> {metaoff} = $template -> getAttribute ('metaoff');
 
-    die "missing meta defintion(s) in template file '$filename'." unless ($self -> {metaon} and $self -> {metaoff});
+    croak "missing meta defintion(s) in template file '$filename'." unless ($self -> {metaon} and $self -> {metaoff});
 
     $self -> {parsed} = {};
     foreach ($template -> getElementsByTagName ('Scrap', 0)) {
       my $name = $_ -> getAttribute ('id');
 
-      die "Element 'Scrap' requires attribute 'id' in template file '$filename'." unless (length ($name));
-      die "double defined id '$name' in template file '$filename'." if (exists ($self -> {parsed} -> {$name}));
-      die "use '/^[_a-zA-Z]\\S*\$/' for 'Scrap'-ids in template file '$filename' (wrong: '$name')." unless ($name =~ /^[_a-zA-Z]\S*$/);
+      croak "Element 'Scrap' requires attribute 'id' in template file '$filename'." unless (length ($name));
+      croak "double defined id '$name' in template file '$filename'." if (exists ($self -> {parsed} -> {$name}));
+      croak "use '/^[_a-zA-Z]\\S*\$/' for 'Scrap'-ids in template file '$filename' (wrong: '$name')." unless ($name =~ /^[_a-zA-Z]\S*$/);
 
       $self -> {parsed} -> {$name} = $_ -> getFirstChild -> getData;
       $self -> {parsed} -> {$name} =~ s/^\s+|\s+$//g;}

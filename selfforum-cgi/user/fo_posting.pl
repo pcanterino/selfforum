@@ -14,9 +14,11 @@ use strict;
 use vars qw($Bin $Shared $Script %subhash $httpurl $flocked);
 
 BEGIN {
-  ($Bin)    = ($0 =~ /^(.*)\/.*$/)? $1 : '.';
+  my $null = $0; $null =~ s/\\/\//g; # for win :-(
+  ($Bin)    = ($null =~ /^(.*)\/.*$/)? $1 : '.';
   $Shared   = "$Bin/../shared";
-  ($Script) = ($0 =~ /^.*\/(.*)$/)? $1 : $0;}
+  ($Script) = ($null =~ /^.*\/(.*)$/)? $1 : $null;
+}
 
 use CGI::Carp qw(fatalsToBrowser);
 
