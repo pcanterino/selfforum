@@ -1,5 +1,4 @@
-package Handle;
-#package Posting::Handle;
+package Posting::Handle;
 
 ################################################################################
 #                                                                              #
@@ -16,7 +15,7 @@ use strict;
 use vars qw(@EXPORT);
 use base qw(Exporter);
 
-@EXPORT = qw(hide_posting);
+@EXPORT = qw(hide_posting recover_posting);
 
 use Posting::_lib;
 
@@ -29,7 +28,7 @@ use XML::DOM;
 # Params: $forum     Path and filename of forum
 #         $tpath     Path to thread files
 #         \%hashref  Reference: 'thread', 'posting', 'indexFile'
-# Return: Boolean
+# Return: -none-
 #
 sub hide_posting($$$)
 {
@@ -43,9 +42,30 @@ sub hide_posting($$$)
     change_posting_visibility($forum, $tid, $mid, 1);
 }
 
+### recover_posting() ##########################################################
+#
+# Recover a posting: delete 'invisible' flag
+#
+# Params: $forum     Path and filename of forum
+#         $tpath     Path to thread files
+#         \%hashref  Reference: 'thread', 'posting', 'indexFile'
+# Return: -none-
+#
+sub recover_posting($$$)
+{
+    my ($forum, $tpath, $info) = @_;
+    my ($tid, $mid, $indexFile) = ('t' . $info->{'thread'},
+                                   'm' . $info->{'posting'},
+                                   $info->{'indexFile'});
+
+    my $tfile = $tpath . '/' . $tid . '.xml';
+    change_posting_visibility($tfile, $tid, $mid, 0);
+    change_posting_visibility($forum, $tid, $mid, 0);
+}
+
 ### change_posting_visibility () ###############################################
 #
-# -desc-
+# Set a postings visibility flag to $invisible
 #
 # Params: $fname      Filename
 #         $tid        Thread ID
