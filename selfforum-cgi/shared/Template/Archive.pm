@@ -73,7 +73,14 @@ sub print_month_as_HTML($$$) {
 
     my $template = new Template $tempfile;
 
-    my $threads = get_all_threads($mainfile, KILL_DELETED);
+    my ($threads, $locked);
+    unless ($locked = lock_file($mainfile) and $threads = get_all_threads($mainfile, KILL_DELETED)) {
+        print ${$template->scrap(
+            $assign->{'errorLocking'}
+        )};
+        return;
+    }
+    unlock_file($mainfile);
 
     my $tmplparam = {
             $assign->{'year'}           => $param->{'year'},
