@@ -148,14 +148,14 @@ sub w_write_lock_file ($;$) {
     # and wait $timeout seconds for
     # references == 0 (no shared locks set)
     #
-    &simple_lock ($filename,$timeout) or return;
+    &simple_lock ($filename,$timeout) or return 0;
     for (0..$timeout) {
       # lock reference counter
       # or fail
       #
       unless (&simple_lock (&reffile($filename),$timeout)) {
         &simple_unlock($filename,$timeout);
-        return;
+        return 0;
       }
 
       # ready if we have no shared locks
@@ -167,7 +167,7 @@ sub w_write_lock_file ($;$) {
       #
       unless (&simple_unlock (&reffile($filename),$timeout)) {
         &simple_unlock($filename,$timeout);
-        return;
+        return 0;
       }
       sleep(1);
     }
@@ -382,7 +382,7 @@ sub x_write_lock_file ($;$) {
     # and wait $timeout seconds for
     # references == 0 (no shared locks set)
     #
-    &simple_lock ($filename,$timeout) or return;
+    &simple_lock ($filename,$timeout) or return 0;
     for (0..$timeout) {
 
       # lock reference counter
@@ -390,7 +390,7 @@ sub x_write_lock_file ($;$) {
       #
       unless (&simple_lock (&reffile($filename),$timeout)) {
         &simple_unlock($filename,$timeout);
-        return;
+        return 0;
       }
 
       # ready if we have no shared locks
@@ -402,7 +402,7 @@ sub x_write_lock_file ($;$) {
       #
       unless (&simple_unlock (&reffile($filename),$timeout)) {
         &simple_unlock($filename,$timeout);
-        return;
+        return 0;
       }
       sleep(1);
     }

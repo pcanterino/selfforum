@@ -28,38 +28,172 @@ use constant KILL_DELETED => 0;
 
 use base qw(Exporter);
 @Posting::_lib::EXPORT_OK = qw(
-  get_message_header get_message_body get_message_node get_body_node parse_single_thread parse_xml_file
-  hr_time short_hr_time long_hr_time
-  get_all_threads create_forum_xml_string
+  get_message_header
+  get_message_body
+  get_message_node
+  get_body_node
+  parse_single_thread
+  parse_xml_file
+  create_new_thread
+  create_message
+
+  hr_time
+  short_hr_time
+  long_hr_time
+
+  get_all_threads
+  create_forum_xml_string
+
   save_file
-  SORT_ASCENT   SORT_DESCENT   KEEP_DELETED   KILL_DELETED
+
+  SORT_ASCENT
+  SORT_DESCENT
+  KEEP_DELETED
+  KILL_DELETED
 );
 
 # ====================================================
 # Access via XML::DOM
 # ====================================================
 
+### sub create_message ($$) ####################################################
+#
+# create the 'Message' subtree
+#
+# Params: $xml - XML::DOM::Document object
+#         $par - hash reference
+#                (msg, ip, name, email, home, image, category, subject, time)
+#
+# Return: XML::DOM::Element object
+#
+sub create_message ($$) {
+  my ($xml,$par) = @_;
+
+  my $message = $xml -> createElement ('Message');
+  $message -> setAttribute ('id' => $par -> {msg});
+  $message -> setAttribute ('ip' => $par -> {ip});
+
+  my $header = $xml -> createElement ('Header');
+  my $author = $xml -> createElement ('Author');
+
+  my @may = (
+    ['name'     => 'Name'        => $author],
+    ['email'    => 'Email'       => $author],
+    ['home'     => 'HomepageUrl' => $author],
+    ['image'    => 'ImageUrl'    => $author],
+    ['category' => 'Category'    => $header],
+    ['subject'  => 'Subject'     => $header]
+  );# key       => element name  => superior
+
+  for (@may) {
+
+    # create element
+    my $obj = $xml -> createElement ($_->[1]);
+
+    # insert content
+    $obj -> addText (
+        defined $par -> {$_->[0]}
+      ? $par -> {$_->[0]}
+      : ''
+    );
+
+    # link to superior element
+    $_ -> [2] -> appendChild ($obj);
+  }
+
+  my $date = $xml -> createElement ('Date');
+  $date -> setAttribute ('longSec'=> $par -> {time});
+
+  $header  -> appendChild ($author);
+  $header  -> appendChild ($date);
+  $message -> appendChild ($header);
+
+  # return
+  #
+  $message;
+}
+
+### sub create_new_thread ($) ##################################################
+#
+# create a XML::DOM::Document object of a thread containing one posting
+#
+# Params: hash reference
+#         (dtd, thread, msg, body, ip, name, email, home,
+#          image, category, subject, time)
+#
+# Return: XML::DOM::Document object
+#
+sub create_new_thread ($) {
+  my $par = shift;
+
+  # new document
+  #
+  my $xml = new XML::DOM::Document;
+
+  # xml declaration
+  #
+  my $decl = new XML::DOM::XMLDecl;
+  $decl -> setVersion  ('1.0');
+  $decl -> setEncoding ('UTF-8');
+  $xml -> setXMLDecl ($decl);
+
+  # set doctype
+  #
+  my $dtd = $xml -> createDocumentType ('Forum' => $par -> {dtd});
+  $xml -> setDoctype ($dtd);
+
+  # create root element 'Forum'
+  # create element 'Thread'
+  # create 'Message' subtree
+  # create element 'ContentList'
+  # create 'MessageContent' subtree
+  #
+  my $forum    = $xml -> createElement ('Forum');
+  my $thread   = $xml -> createElement ('Thread');
+    $thread -> setAttribute ('id' => $par -> {thread});
+  my $message  = create_message ($xml,$par);
+  my $content  = $xml -> createElement ('ContentList');
+  my $mcontent = $xml -> createElement ('MessageContent');
+    $mcontent -> setAttribute ('mid' => $par -> {msg});
+    $mcontent -> appendChild (
+      $xml -> createCDATASection (${$par -> {body}})
+    );
+
+  # link all the nodes to
+  # their superior elements
+  #
+  $thread  -> appendChild ($message);
+  $forum   -> appendChild ($thread);
+  $content -> appendChild ($mcontent);
+  $forum   -> appendChild ($content);
+  $xml     -> appendChild ($forum);
+
+  # return
+  #
+  $xml;
+}
+
 ### get_message_header () ######################################################
 #
 # Read message header, return as a hash
 #
-# Params: $node  XML message node
-# Return: Hash reference (name, category, subject, email, home, image, time)
+# Params: $node - XML message node
+# Return: hash reference (name, category, subject, email, home, image, time)
 #
 sub get_message_header ($)
 {
   my $node = shift;
   my %conf;
 
-  my $header    = $node   -> getElementsByTagName ('Header', 0) -> item (0);
-    my $author  = $header -> getElementsByTagName ('Author', 0) -> item (0);
-      my $name  = $author -> getElementsByTagName ('Name', 0) -> item (0);
-      my $email = $author -> getElementsByTagName ('Email', 0) -> item (0);
+  my $header    = $node   -> getElementsByTagName ('Header'     , 0) -> item (0);
+    my $author  = $header -> getElementsByTagName ('Author'     , 0) -> item (0);
+      my $name  = $author -> getElementsByTagName ('Name'       , 0) -> item (0);
+      my $email = $author -> getElementsByTagName ('Email'      , 0) -> item (0);
       my $home  = $author -> getElementsByTagName ('HomepageUrl', 0) -> item (0);
-      my $image = $author -> getElementsByTagName ('ImageUrl', 0) -> item (0);
-    my $cat     = $header -> getElementsByTagName ('Category', 0) -> item (0);
-    my $subject = $header -> getElementsByTagName ('Subject', 0) -> item (0);
-    my $date    = $header -> getElementsByTagName ('Date', 0) -> item (0);
+      my $image = $author -> getElementsByTagName ('ImageUrl'   , 0) -> item (0);
+    my $cat     = $header -> getElementsByTagName ('Category'   , 0) -> item (0);
+    my $subject = $header -> getElementsByTagName ('Subject'    , 0) -> item (0);
+    my $date    = $header -> getElementsByTagName ('Date'       , 0) -> item (0);
 
   %conf = (
     name     => ($name    -> hasChildNodes)?$name    -> getFirstChild -> getData:undef,
@@ -80,14 +214,14 @@ sub get_message_header ($)
 #
 # Params: $xml  XML::DOM::Document Object (Document Node)
 #         $mid  Message ID
+#
 # Return: MessageContent XML node (or -none-)
 #
 sub get_body_node ($$)
 {
   my ($xml, $mid) = @_;
 
-  for ($xml->getElementsByTagName ('ContentList', 1)->item (0)->getElementsByTagName ('MessageContent', 0))
-  {
+  for ($xml -> getElementsByTagName ('ContentList', 1) -> item (0) -> getElementsByTagName ('MessageContent', 0)) {
     return $_ if ($_ -> getAttribute ('mid') eq $mid);
   }
 
@@ -100,6 +234,7 @@ sub get_body_node ($$)
 #
 # Params: $xml  XML::DOM::Document Object (Document Node)
 #         $mid  Message ID
+#
 # Return: Scalar reference
 #
 sub get_message_body ($$)
@@ -119,6 +254,7 @@ sub get_message_body ($$)
 # Params: $xml  XML::DOM::Document Object (Document Node)
 #         $tid  Thread ID
 #         $mid  Message ID
+#
 # Return: Message XML node, Thread XML node (or -none-)
 #
 sub get_message_node ($$$)
@@ -126,15 +262,12 @@ sub get_message_node ($$$)
   my ($xml, $tid, $mid) = @_;
   my ($mnode, $tnode);
 
-  for ($xml->getElementsByTagName ('Thread'))
-  {
-    if ($_->getAttribute ('id') eq $tid)
-    {
+  for ($xml->getElementsByTagName ('Thread')) {
+    if ($_->getAttribute ('id') eq $tid) {
       $tnode = $_;
-      for ($tnode -> getElementsByTagName ('Message'))
-      {
-        if ($_ -> getAttribute ('id') eq $mid)
-        {
+
+      for ($tnode -> getElementsByTagName ('Message')) {
+        if ($_ -> getAttribute ('id') eq $mid) {
           $mnode = $_;
           last;
         }
@@ -143,7 +276,9 @@ sub get_message_node ($$$)
     }
   }
 
-  wantarray ? ($mnode, $tnode) : $mnode;
+  wantarray
+  ? ($mnode, $tnode)
+  : $mnode;
 }
 
 ### sub parse_xml_file ($) #####################################################
@@ -152,14 +287,16 @@ sub get_message_node ($$$)
 # this sub is only to avoid errors and to centralize the parse process
 #
 # Params: $file filename
+#
 # Return: XML::DOM::Document Object (Document Node) or false
 #
 sub parse_xml_file ($) {
   my $file = shift;
+
   my $xml = eval {
-              local $SIG{__DIE__};      # CGI::Carp works unreliable ;-(
-              new XML::DOM::Parser (KeepCDATA => 1) -> parsefile ($file);
-            };
+    local $SIG{__DIE__};      # CGI::Carp works unreliable ;-(
+    new XML::DOM::Parser (KeepCDATA => 1) -> parsefile ($file);
+  };
 
   return if ($@);
 

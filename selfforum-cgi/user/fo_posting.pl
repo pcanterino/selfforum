@@ -4,30 +4,11 @@
 #                                                                              #
 # File:        user/fo_posting.pl                                              #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-03-31                          #
+# Authors:     André Malo <nd@o3media.de>, 2001-04-08                          #
 #                                                                              #
 # Description: Accept new postings, display "Neue Nachricht" page              #
 #                                                                              #
-# not ready, be patient please                                                 #
-#                                                                              #
 ################################################################################
-
-#unknown_error
-#not_saved
-#no_option
-#occupied
-#master_lock
-#no_reply
-#dupe
-#missing_key
-#unexpected_key
-#unknown_encoding
-#unknown_followup
-#too_long
-#too_short
-#wrong_mail
-#wrong_http_url
-#wrong_url
 
 use strict;
 use vars qw($Bin $Shared $Script);
@@ -158,18 +139,48 @@ sub response {
   # response the 'new message' page
   #
   if ($self -> {response} -> {new_thread}) {
-    my $list = [map {{$assign -> {optval} => plain($_)}} @{$formdata -> {posterCategory} -> {values}}];
+
+    # fill in the default form data
+    # and optionlist(s)
+    #
+    my $default = {};
+    for (keys %$formdata) {
+      unless (exists ($formdata -> {$_} -> {type}) and $formdata -> {$_} -> {type} eq 'internal') {
+        if (exists ($formdata -> {$_} -> {default}) and exists ($formdata -> {$_} -> {assign} -> {value})) {
+          $default -> {$formdata -> {$_} -> {assign} -> {value}}
+          = $formdata -> {$_} -> {default};
+        }
+        elsif (exists($formdata -> {$_} -> {values})) {
+          my ($_name, $val) = $_;
+          $val = exists ($formdata -> {$_} -> {default})
+            ? $formdata -> {$_} -> {default}
+            : undef;
+          $default -> {$formdata -> {$_} -> {assign} -> {value}}
+          = $self -> {template} -> list (
+              $assign -> {option},
+              [ map {
+                  { $assign -> {optval} => plain($_),
+                    ((defined $val and $_ eq $val)
+                      ? ($assign -> {optsel} => 1)
+                      : ()
+                    )
+                  }
+                } @{$formdata -> {$_name} -> {values}}
+              ]
+            );
+        }
+      }
+    }
 
     print $q -> header (-type => 'text/html');
     print ${$template -> scrap (
       $assign -> {docNew},
       { $formdata->{uniqueID}      ->{assign}->{value} => plain(unique_id),
-        $formdata->{quoteChar}     ->{assign}->{value} =>
-          '&#255;'.plain($self -> {conf} -> {admin} -> {View} -> {quoteChars}),
-        $formdata->{posterCategory}->{assign}->{value} => $template->list ($assign -> {option}, $list),
-        $formact->{post}->{assign}                     => $formact->{post}->{url}
+        $formdata->{quoteChar}     ->{assign}->{value} => '&#255;'.plain($self -> {conf} -> {admin} -> {View} -> {quoteChars}),
+        $formact->{post}->{assign}                     => $formact->{post}->{url},
       },
-      $pars
+      $pars,
+      $default
     )};
     return;
   }
@@ -354,13 +365,6 @@ sub save {
         my $q        = $self -> {cgi_object};
         my $f        = $self -> {forum};
         my $pars     = {
-          author        => $q -> param ($formdata -> {posterName} -> {name}),
-          email         => $q -> param ($formdata -> {posterEmail} -> {name}),
-          category      => $q -> param ($formdata -> {posterCategory} -> {name}),
-          subject       => $q -> param ($formdata -> {posterSubject} -> {name}),
-          body          => $q -> param ($formdata -> {posterBody} -> {name}),
-          homepage      => $q -> param ($formdata -> {posterURL} -> {name}),
-          image         => $q -> param ($formdata -> {posterImage} -> {name}),
           quoteChars    => $q -> param ($formdata -> {quoteChar} -> {name}),
           uniqueID      => $q -> param ($formdata -> {uniqueID} -> {name}),
           time          => $time,
@@ -371,15 +375,38 @@ sub save {
           lastMessage   => $f -> {last_message},
           parsedThreads => $f -> {threads},
           dtd           => $f -> {dtd},
-          messages      => $self -> {template} -> {messages}
+          messages      => $self -> {template} -> {messages} || {},
         };
 
+        # set the variables if defined..
+        #
+        my %may = (
+          author   => 'posterName',
+          email    => 'posterEmail',
+          category => 'posterCategory',
+          subject  => 'posterSubject',
+          body     => 'posterBody',
+          homepage => 'posterURL',
+          image    => 'posterImage'
+        );
+
+        for (keys %may) {
+          $pars -> {$_} = $q -> param ($formdata -> {$may{$_}} -> {name})
+            if (defined $q -> param ($formdata -> {$may{$_}} -> {name}));
+        }
+
+        my ($stat, $xml, $mid);
+
+        # we've got a fup if it's a reply
+        #
         if ($self -> {response} -> {reply}) {
           $pars -> {parentMessage} = $self -> {fup_mid};
           $pars -> {thread}        = $self -> {fup_tid};
+          ($stat, $xml, $mid) = write_reply_posting ($pars);
         }
-
-        my ($stat, $xml, $mid) = write_posting ($pars);
+        else {
+          ($stat, $xml, $mid) = write_new_thread ($pars);
+        }
 
         if ($stat) {
           $self -> {error} = {
@@ -390,15 +417,12 @@ sub save {
         }
         else {
           $self -> {check_success} = 1;
-          my $thx      = $self -> {conf} -> {show_posting} -> {thanx};
+          my $thx = $self -> {conf} -> {show_posting} -> {thanx};
 
           # define special response data
           #
           $self -> {response} -> {doc}  = $self -> {conf} -> {assign} -> {docThx};
           $self -> {response} -> {pars} = {
-            $thx -> {subject}  => plain ($q -> param ($formdata -> {posterSubject} -> {name})),
-            $thx -> {author}   => plain ($q -> param ($formdata -> {posterName} -> {name})),
-            $thx -> {email}    => plain ($q -> param ($formdata -> {posterEmail} -> {name})),
             $thx -> {time}     => plain (hr_time($time)),
             $thx -> {body}     => message_as_HTML (
               $xml,
@@ -407,11 +431,26 @@ sub save {
                 assign     => $self -> {conf} -> {assign},
                 quoteChars => $q -> param ($formdata -> {quoteChar} -> {name}),
                 quoting    => $self -> {conf} -> {admin} -> {View} -> {quoting}
-              }),
-            $thx -> {category} => plain ($q -> param ($formdata -> {posterCategory} -> {name})),
-            $thx -> {home}     => plain ($q -> param ($formdata -> {posterURL} -> {name})),
-            $thx -> {image}    => plain ($q -> param ($formdata -> {posterImage} -> {name}))
+              }) || ''
           };
+
+          # set the variables if defined..
+          #
+          my %may = (
+            author   => 'posterName',
+            email    => 'posterEmail',
+            category => 'posterCategory',
+            subject  => 'posterSubject',
+            homepage => 'posterURL',
+            image    => 'posterImage'
+          );
+
+          for (keys %may) {
+            my $x = $q -> param ($formdata -> {$may{$_}} -> {name});
+            $x = '' unless (defined $x);
+            $self -> {response} -> {pars} -> {$thx -> {$_}} = plain ($x)
+              if (defined $thx -> {$_});
+          }
         }
       }
     }
@@ -909,7 +948,9 @@ sub decode_param {
 sub jerk {
   my $text = $_[1] || 'An error has occurred.';
   print <<EOF;
-Content-type: text/plain\n\n
+Content-type: text/plain
+
+
 
  Oops.
 

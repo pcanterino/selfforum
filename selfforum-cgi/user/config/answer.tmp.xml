@@ -136,27 +136,28 @@
 
 <!--
 	***** Fehlermeldungen *****
-	(fatal)
 -->
 
-<Scrap id="_MANIPULATED"><![CDATA[ Die &Uuml;bergabedaten sind fehlerhaft oder wurden manipuliert. Zumindest sind sie unbrauchbar, deshalb sehen Sie diese Fehlermeldung. ]]></Scrap>
-<Scrap id="_OCCUPIED"><![CDATA[ Es wird gerade ein anderes Posting bearbeitet. Bitte einfach nochmal abschicken (vorher evtl. ein paar Minuten warten). ]]></Scrap>
-<Scrap id="_UNKNOWN"><![CDATA[ Es ist ein nicht identifizierbarer Fehler aufgetreten. Wir bitten um Entschuldigung und Ihr Verst&auml;ndnis. Wir werden den Fehler so bald wie m&ouml;glich beheben. ]]></Scrap>
-<Scrap id="_ENCODING"><![CDATA[ Die &Uuml;bergabedaten konnten nicht ausgewertet werden, da eine unbekannte Zeichencodierung verwendet wurde. Dieses System unterst&uuml;tzt derzeit nur den Latin-1-Zeichensatz (ISO-8859-1) und (experimentell) UTF-8. ]]></Scrap>
-<Scrap id="_NAME_TOO_LONG"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte den Namen! Er ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
+<Scrap id="_MANIPULATED"><![CDATA[    Die &Uuml;bergabedaten sind fehlerhaft oder wurden manipuliert. Zumindest sind sie unbrauchbar, deshalb sehen Sie diese Fehlermeldung. ]]></Scrap>
+<Scrap id="_OCCUPIED"><![CDATA[       Es wird gerade ein anderes Posting bearbeitet. Bitte einfach nochmal abschicken (vorher evtl. ein paar Minuten warten). ]]></Scrap>
+<Scrap id="_UNKNOWN"><![CDATA[        Es ist ein nicht identifizierbarer Fehler aufgetreten. Wir bitten um Entschuldigung und Ihr Verst&auml;ndnis. Wir werden den Fehler so bald wie m&ouml;glich beheben. ]]></Scrap>
+<Scrap id="_ENCODING"><![CDATA[       Die &Uuml;bergabedaten konnten nicht ausgewertet werden, da eine unbekannte Zeichencodierung verwendet wurde. Dieses System unterst&uuml;tzt derzeit nur den Latin-1-Zeichensatz (ISO-8859-1) und (experimentell) UTF-8. ]]></Scrap>
+<Scrap id="_NAME_TOO_LONG"><![CDATA[  &Uuml;berpr&uuml;fen Sie bitte den Namen! Er ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
 <Scrap id="_NAME_TOO_SHORT"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte den Namen! Er ist zu kurz{&& %IF _NUM &&} (mindestens {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
-<Scrap id="_MAIL_TOO_LONG"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte die Mailadresse! Sie ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
+<Scrap id="_MAIL_TOO_LONG"><![CDATA[  &Uuml;berpr&uuml;fen Sie bitte die Mailadresse! Sie ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
 <Scrap id="_MAIL_TOO_SHORT"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte die Mailadresse! Sie ist zu kurz{&& %IF _NUM &&} (mindestens {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
-<Scrap id="_MAIL_WRONG"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte die Mailadresse! Sie scheint nicht korrekt zu sein. ]]></Scrap>
-<Scrap id="_CAT_WRONG"><![CDATA[ W&auml;hlen Sie bitte einen Themenbereich aus dem Auswahlfeld! ]]></Scrap>
-<Scrap id="_SUB_TOO_LONG"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte das Thema! Es ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
-<Scrap id="_SUB_TOO_SHORT"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte das Thema! Es ist zu kurz{&& %IF _NUM &&} (mindestens {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
-<Scrap id="_BODY_TOO_LONG"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte Ihre Mitteilung! Sie ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
+<Scrap id="_MAIL_WRONG"><![CDATA[     &Uuml;berpr&uuml;fen Sie bitte die Mailadresse! Sie scheint nicht korrekt zu sein. ]]></Scrap>
+<Scrap id="_CAT_WRONG"><![CDATA[      W&auml;hlen Sie bitte einen Themenbereich aus dem Auswahlfeld! ]]></Scrap>
+<Scrap id="_SUB_TOO_LONG"><![CDATA[   &Uuml;berpr&uuml;fen Sie bitte das Thema! Es ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
+<Scrap id="_SUB_TOO_SHORT"><![CDATA[  &Uuml;berpr&uuml;fen Sie bitte das Thema! Es ist zu kurz{&& %IF _NUM &&} (mindestens {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
+<Scrap id="_BODY_TOO_LONG"><![CDATA[  &Uuml;berpr&uuml;fen Sie bitte Ihre Mitteilung! Sie ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
 <Scrap id="_BODY_TOO_SHORT"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte Ihre Mitteilung! Haben Sie so wenig zu sagen? ]]></Scrap>
-<Scrap id="_URL_TOO_LONG"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte den Homepage-URL! Er ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
-<Scrap id="_IMG_TOO_LONG"><![CDATA[ &Uuml;berpr&uuml;fen Sie bitte den Bild-URL! Er ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
-<Scrap id="_NOREPLY"><![CDATA[ Die Nachricht, auf die Sie antworten m&ouml;chten, wurde nicht gefunden. ]]></Scrap>
-<Scrap id="_DUPE"><![CDATA[ Sie haben (vermutlich versehentlich) versucht, das Posting mehr als einmal abzusetzen. Ihr Beitrag wurde bereits aufgenommen. ]]></Scrap>
+<Scrap id="_URL_TOO_LONG"><![CDATA[   &Uuml;berpr&uuml;fen Sie bitte den Homepage-URL! Er ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
+<Scrap id="_IMG_TOO_LONG"><![CDATA[   &Uuml;berpr&uuml;fen Sie bitte den Bild-URL! Er ist zu lang{&& %IF _NUM &&} (maximal {&& _NUM &&} Zeichen){&& %ENDIF &&}. ]]></Scrap>
+<Scrap id="_NOREPLY"><![CDATA[        Die Nachricht, auf die Sie antworten m&ouml;chten, wurde nicht gefunden. ]]></Scrap>
+<Scrap id="_DUPE"><![CDATA[           Sie haben (vermutlich versehentlich) versucht, das Posting mehr als einmal abzusetzen. Ihr Beitrag wurde bereits aufgenommen. ]]></Scrap>
+<Scrap id="_NOT_SAVED"><![CDATA[      Leider konnte die Nachricht nicht gespeichert werden M&ouml;glicherweise ist die Festplatte voll. ]]></Scrap>
+<Scrap id="_MASTERLOCK"><![CDATA[     Die Anfrage konnte leider nicht bearbeitet weden. Das Forum oder die Threaddatei wurde mit einer Administratorsperre versehen. ]]></Scrap>
 <!--
 	***** Schnipsel *****
 	aus Grundelementen zusammengesetzt
