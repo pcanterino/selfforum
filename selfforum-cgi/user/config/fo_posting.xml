@@ -144,6 +144,7 @@
             <Variable name="name">name</Variable>
             <Variable name="maxlength">60</Variable>
             <Variable name="minlength">2</Variable>
+            <Variable name="type">name</Variable>
             <Variable name="errorType">repeat</Variable>
           </Property>
 

@@ -817,6 +817,9 @@ sub check_cgi {
       #
       (my $val_ww = $val) =~ s/\s+//g;
 
+      $val_ww =~ y/a-zA-Z//cd
+        if (exists ($formdata -> {$name {$_}} -> {type}) and $formdata -> {$name {$_}} -> {type} eq 'name');
+
       if (length $val_ww < $formdata -> {$name {$_}} -> {minlength}) {
         $self -> {error} = {
           spec => 'too_short',

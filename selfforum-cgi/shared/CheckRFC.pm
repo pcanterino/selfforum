@@ -99,6 +99,8 @@ sub is_email ($;$) {
 
   # remove nested comments
   1 while ($string =~ s/\([^()]*\)//g);
+  #$string =~ s/^\s+//;
+  #$string =~ s/\s+$//;
 
   return ($string =~ /^$email[0]$/) unless $strict;
 
