@@ -4,7 +4,7 @@ package Arc::Starter;
 #                                                                              #
 # File:        shared/Arc/Starter.pm                                           #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-07-16                    #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: start severancer and archiver                                   #
 #                                                                              #
@@ -20,7 +20,11 @@ use vars qw(
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #

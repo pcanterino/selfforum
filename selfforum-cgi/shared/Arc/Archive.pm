@@ -4,7 +4,7 @@ package Arc::Archive;
 #                                                                              #
 # File:        shared/Arc/Archive.pm                                           #
 #                                                                              #
-# Authors:     Andre Malo       <nd@o3media.de>, 2001-06-16                    #
+# Authors:     André Malo <nd@o3media.de>                                      #
 #                                                                              #
 # Description: Severance of Threads and archiving                              #
 #                                                                              #
@@ -37,7 +37,11 @@ use XML::DOM;
 #
 # Version check
 #
-$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+# last modified:
+#    $Date$ (GMT)
+# by $Author$
+#
+sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 ################################################################################
 #
@@ -153,6 +157,10 @@ sub delete_no_archived ($) {
     #
     $h = get_body_node($xml, 'm'.$_->{mid});
     $h -> getParentNode -> removeChild ($h);
+
+    # 'remove' from $msg
+    #
+    $_->{deleted} = 1;
   }
 }
 
@@ -200,13 +208,15 @@ sub create_arcdir ($$) {
 #                (opt, cache, failed, obsolete, messagePath,
 #                 archivePath, adminDefault)
 #
-# Return: ~none~
+# Return: hashref (tid => $msg)
 #
 sub process_threads ($) {
   my $par = shift;
 
   my ($opt, $failed, $obsolete, $cache) = map {$par->{$_}} qw
      ( opt   failed   obsolete   cache);
+
+  my %archived;
 
   if ($opt->{exArchiving}) {
 
@@ -267,14 +277,131 @@ sub process_threads ($) {
               # save thread file
               #
               my $file = "${path}t$tid.xml";
-              save_file ($file => \($xml -> toString)) or $failed->{$tid} = "could not save '$file'";
+              unless (save_file ($file => \($xml -> toString))) {
+                $failed->{$tid} = "could not save '$file'";
+              }
+              else {
+                $archived{$tid} = $msg
+              }
             }
           }
         }
       }
     }
     else {
-      @$failed{@$obsolete} = 'could not load summary';
+      @$failed{@$obsolete} = 'error: could not load summary';
+    }
+  }
+
+  \%archived;
+}
+
+### append_threads () ##########################################################
+#
+# open specified index file, append threads, save it back
+#
+# Params: $file    - /path/to/indexfile
+#         $threads - hashref (threads)
+#
+# Return: success code (boolean)
+#
+sub append_threads ($$) {
+  my ($file, $threads) = @_;
+  my $thash={};
+
+  my $index = new Lock ($file);
+
+  return unless ($index -> lock (LH_EXCL));
+
+  if (-f $file) {
+    $thash = get_all_threads ($file => KEEP_DELETED);
+    $thash->{$_} = $threads->{$_} for (keys %$threads);
+  }
+  else {
+    $thash = $threads;
+  }
+
+  # save it back...
+  #
+  my $saved = save_file (
+    $file => create_forum_xml_string (
+      $threads,
+      {
+        dtd         => 'forum.dtd',
+        lastMessage => 0,
+        lastThread  => 0
+      }
+    )
+  );
+
+  $index -> unlock;
+
+  return unless $saved;
+
+  1;
+}
+
+### indexpath () ###############################################################
+#
+# compose relative path of archive index file
+#
+# Params: $param - hash reference
+#                  ($msg->[0])
+#
+# Return: $string (relative path)
+#
+sub indexpath ($) {
+  my $root = shift;
+
+  my ($month, $year) = (localtime ($root->{time}))[4,5];
+
+  # use the 'real' values for directory names
+  #
+  $month++; $year+=1900;
+
+  "$year/$month/";
+}
+
+### index_threads () ###########################################################
+#
+# add threads to their specific archive index file
+#
+# Params: $param - hash reference
+#                  (threads, archivePath, archiveIndex, failed)
+#
+# Return: ~none~
+#
+sub index_threads ($) {
+  my $par = shift;
+
+  my ($threads, $failed) = map {$par->{$_}} qw
+     ( threads   failed);
+
+  # indexfile => hashref of threads
+  # for more efficiency (open each index file *once*)
+  #
+  my %index;
+
+  # iterate over all archived threads,
+  # prepare indexing and assign threads to indexfiles
+  #
+  for my $thread (keys %$threads) {
+
+    # index only, if the root is visible
+    #
+    unless ($threads->{$thread}->[0]->{deleted}) {
+      my $file = $par->{archivePath} . indexpath ($threads->{$thread}->[0]) . $par->{archiveIndex};
+      $index{$file} = {} unless exists($index{$file});
+
+      $index{$file} -> {$thread} = [$threads->{$thread}->[0]];
+    }
+  }
+
+  # now append threads to index files
+  #
+  for my $file (keys %index) {
+    unless (append_threads ($file => $index{$file})) {
+      $failed->{$_} = "error: could not list in '$file'" for (keys %{$index{$file}});
     }
   }
 }
@@ -285,7 +412,7 @@ sub process_threads ($) {
 #
 # Params: $param - hash reference
 #                  (forumFile, messagePath, archivePath, lockFile, adminDefault,
-#                   cachePath)
+#                   cachePath, archiveIndex)
 #
 # Return: hash reference - empty if all right done
 #
@@ -353,7 +480,7 @@ sub cut_tail ($) {
           #
           if ($saved) {
             for (@$obsolete) {
-              new Lock($param->{messagePath}."t$_.xml")->lock(LH_MASTER) or $failed{$_} = 'could not set master lock';
+              new Lock($param->{messagePath}."t$_.xml")->lock(LH_MASTER) or $failed{$_} = 'error: could not set master lock';
             }
           }
 
@@ -380,18 +507,42 @@ sub cut_tail ($) {
               adminDefault => $param->{adminDefault}
             });
 
-
             # delete processed files, that are not failed
             #
+            my @removed;
+
             for (grep {not exists($failed{$_})} @$obsolete) {
-              unlink ($param->{messagePath}."t$_.xml") or $failed{$_} = 'could not delete thread file';
-              #file_removed ($param->{messagePath}."t$_.xml");
+              if (exists($failed{$_})) {
+                delete $obsolete{$_};
+              }
+              else {
+                unless (unlink ($param->{messagePath}."t$_.xml")) {
+                  $failed{$_} = 'warning: could not delete thread file';
+                }
+                else {
+                  push @removed => $_;
+                  #file_removed ($param->{messagePath}."t$_.xml");
+                }
+              }
             }
-            $cache -> delete_threads (@$obsolete);
-            $cache -> garbage_collection;
+
+            if (@removed) {
+              $cache -> delete_threads (@removed);
+              $cache -> garbage_collection;
+            }
+
+            # add archived threads to archive index
+            #
+            index_threads ({
+              threads      => \%obsolete,
+              archivePath  => $param->{archivePath},
+              archiveIndex => $param->{archiveIndex},
+              failed       => \%failed
+            });
           }
         }
-        # we're ready, tell this other instances
+
+        # we're ready, tell this other (waiting?) instances
         #
         $sev -> unlock;
       }
