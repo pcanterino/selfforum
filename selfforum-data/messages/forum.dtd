@@ -43,7 +43,7 @@
 <!-- Parameterentity fuer ja (1) oder nein (0) Fragen -->
 
 
-<!ELEMENT   Forum           ((Thread, ContentList) | (Thread)*)>
+<!ELEMENT   Forum       ((Thread, ContentList) | (Thread)*)>
 <!ATTLIST   Forum
     lastThread          IDREF       #IMPLIED
     lastMessage         IDREF       #IMPLIED
