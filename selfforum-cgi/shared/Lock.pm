@@ -11,6 +11,7 @@ package Lock;
 ################################################################################
 
 use strict;
+use Carp;
 use vars qw(
   @EXPORT_OK
   %EXPORT_TAGS
@@ -554,6 +555,7 @@ sub masterlockfile ($) {
   &lockfile(&masterfile($_[0]));
 }
 sub masterfile ($) {
+  confess unless defined $_[0];
   "$_[0].master";
 }
 

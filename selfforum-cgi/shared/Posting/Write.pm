@@ -56,16 +56,16 @@ sub write_posting ($) {
     $thread = create_new_thread (
       { msg      => $mid,
         ip       => $param -> {ip},
-        name     => $param -> {author},
-        email    => $param -> {email},
-        home     => $param -> {homepage},
-        image    => $param -> {image},
-        category => $param -> {category},
-        subject  => $param -> {subject},
+        name     => $param -> {author}   || '',
+        email    => $param -> {email}    || '',
+        home     => $param -> {homepage} || '',
+        image    => $param -> {image}    || '',
+        category => $param -> {category} || '',
+        subject  => $param -> {subject}  || '',
         time     => $param -> {time},
         dtd      => $param -> {dtd},
         thread   => $tid,
-        body     => $param -> {body},
+        body     => $param -> {body}     || '',
         pars     => $pars
       }
     );
@@ -79,9 +79,10 @@ sub write_posting ($) {
           { mid     => $param -> {lastMessage} + 1,
             unid    => $param -> {uniqueID},
             name    => plain($param -> {author}),
-            cat     => plain(length($param -> {category})?$param->{category}:''),
+            cat     => plain(defined $param -> {category}?$param->{category}:''),
             subject => plain($param -> {subject}),
-            time    => plain($param -> {time})
+            time    => plain($param -> {time}),
+            level   => 0,
           }
          ];
 

@@ -13,12 +13,16 @@
         <Variable name="docFatal">DOC_FATAL</Variable>
         <Variable name="errorMessage">_ERR_MESS</Variable>
         <Variable name="charNum">_NUM</Variable>
-        <Variable name="wrongPar">_MANIPULATED</Variable>
-        <Variable name="wrongCode">_ENCODING</Variable>
+        <Variable name="missing_key">_MANIPULATED</Variable>
+        <Variable name="unexpected_key">_MANIPULATED</Variable>
+        <Variable name="unknown_followup">_MANIPULATED</Variable>
+        <Variable name="unknown_encoding">_ENCODING</Variable>
         <Variable name="occupied">_OCCUPIED</Variable>
-        <Variable name="noReply">_NOREPLY</Variable>
+        <Variable name="master_lock">_MASTERLOCK</Variable>
+        <Variable name="no_reply">_NOREPLY</Variable>
         <Variable name="dupe">_DUPE</Variable>
-        <Variable name="unknownError">_UNKNOWN</Variable>
+        <Variable name="not_saved">_NOT_SAVED</Variable>
+        <Variable name="unknown_error">_UNKNOWN</Variable>
 
         <Variable name="cssFile">_CSS_FILE</Variable>
 
@@ -46,7 +50,7 @@
       <Property name="form">
         <Property name="action">
           <Property name="post">
-            <Variable name="url">/cgi-local/dev/env.pl</Variable>
+            <Variable name="url">/cgi-local/user/fo_posting.pl</Variable>
             <Variable name="assign">_FORM_ACTION</Variable>
           </Property>
         </Property>
@@ -79,7 +83,7 @@
             <Property name="assign">
               <Variable name="name">_FORM_FUP_NAME</Variable>
               <Variable name="value">_FORM_FUP_VALUE</Variable>
-              <Variable name="tooLong">_MANIPULATED</Variable>
+              <Variable name="too_long">_MANIPULATED</Variable>
             </Property>
 
             <Variable name="name">fup</Variable>
@@ -91,7 +95,7 @@
             <Property name="assign">
               <Variable name="name">_FORM_UID_NAME</Variable>
               <Variable name="value">_FORM_UID_VALUE</Variable>
-              <Variable name="tooLong">_MANIPULATED</Variable>
+              <Variable name="too_long">_MANIPULATED</Variable>
             </Property>
 
             <Variable name="name">userid</Variable>
@@ -103,7 +107,7 @@
             <Property name="assign">
               <Variable name="name">_FORM_UNID_NAME</Variable>
               <Variable name="value">_FORM_UNID_VALUE</Variable>
-              <Variable name="tooLong">_MANIPULATED</Variable>
+              <Variable name="too_long">_MANIPULATED</Variable>
             </Property>
 
             <Variable name="name">unid</Variable>
@@ -115,7 +119,7 @@
             <Property name="assign">
               <Variable name="name">_FORM_QCHAR_NAME</Variable>
               <Variable name="value">_FORM_QCHAR_VALUE</Variable>
-              <Variable name="tooLong">_MANIPULATED</Variable>
+              <Variable name="too_long">_MANIPULATED</Variable>
             </Property>
 
             <Variable name="name">qchar</Variable>
@@ -127,8 +131,8 @@
             <Property name="assign">
               <Variable name="name">_FORM_NAME_NAME</Variable>
               <Variable name="value">_FORM_NAME_VALUE</Variable>
-              <Variable name="tooLong">_NAME_TOO_LONG</Variable>
-              <Variable name="tooShort">_NAME_TOO_SHORT</Variable>
+              <Variable name="too_long">_NAME_TOO_LONG</Variable>
+              <Variable name="too_short">_NAME_TOO_SHORT</Variable>
             </Property>
 
             <Variable name="name">name</Variable>
@@ -141,9 +145,9 @@
             <Property name="assign">
               <Variable name="name">_FORM_MAIL_NAME</Variable>
               <Variable name="value">_FORM_MAIL_VALUE</Variable>
-              <Variable name="tooLong">_MAIL_TOO_LONG</Variable>
-              <Variable name="tooShort">_MAIL_TOO_SHORT</Variable>
-              <Variable name="wrong">_MAIL_WRONG</Variable>
+              <Variable name="too_long">_MAIL_TOO_LONG</Variable>
+              <Variable name="too_short">_MAIL_TOO_SHORT</Variable>
+              <Variable name="wrong_mail">_MAIL_WRONG</Variable>
             </Property>
 
             <Variable name="name">email</Variable>
@@ -157,9 +161,9 @@
             <Property name="assign">
               <Variable name="name">_FORM_CAT_NAME</Variable>
               <Variable name="value">_CATLIST</Variable>
-              <Variable name="tooLong">_CAT_WRONG</Variable>
-              <Variable name="tooShort">_CAT_WRONG</Variable>
-              <Variable name="notSelected">_CAT_WRONG</Variable>
+              <Variable name="too_long">_CAT_WRONG</Variable>
+              <Variable name="too_short">_CAT_WRONG</Variable>
+              <Variable name="no_option">_CAT_WRONG</Variable>
             </Property>
 
             <Variable name="name">category</Variable>
@@ -206,8 +210,8 @@
             <Property name="assign">
               <Variable name="name">_FORM_SUBJECT_NAME</Variable>
               <Variable name="value">_FORM_SUBJECT_VALUE</Variable>
-              <Variable name="tooLong">_SUB_TOO_LONG</Variable>
-              <Variable name="tooShort">_SUB_TOO_SHORT</Variable>
+              <Variable name="too_long">_SUB_TOO_LONG</Variable>
+              <Variable name="too_short">_SUB_TOO_SHORT</Variable>
             </Property>
             <Variable name="name">subject</Variable>
             <Variable name="maxlength">64</Variable>
@@ -220,8 +224,8 @@
             <Property name="assign">
               <Variable name="name">_FORM_BODY_NAME</Variable>
               <Variable name="value">_FORM_BODY_VALUE</Variable>
-              <Variable name="tooLong">_BODY_TOO_LONG</Variable>
-              <Variable name="tooShort">_BODY_TOO_SHORT</Variable>
+              <Variable name="too_long">_BODY_TOO_LONG</Variable>
+              <Variable name="too_short">_BODY_TOO_SHORT</Variable>
             </Property>
             <Variable name="name">body</Variable>
             <Variable name="maxlength">12288</Variable>
@@ -238,7 +242,7 @@
             <Property name="assign">
               <Variable name="name">_FORM_URL_NAME</Variable>
               <Variable name="value">_FORM_URL_VALUE</Variable>
-              <Variable name="tooLong">_URL_TOO_LONG</Variable>
+              <Variable name="too_long">_URL_TOO_LONG</Variable>
             </Property>
             <Variable name="name">url</Variable>
             <Variable name="maxlength">1024</Variable>
@@ -250,7 +254,7 @@
             <Property name="assign">
               <Variable name="name">_FORM_IMG_NAME</Variable>
               <Variable name="value">_FORM_IMG_VALUE</Variable>
-              <Variable name="tooLong">_IMG_TOO_LONG</Variable>
+              <Variable name="too_long">_IMG_TOO_LONG</Variable>
             </Property>
             <Variable name="name">image</Variable>
             <Variable name="maxlength">1024</Variable>

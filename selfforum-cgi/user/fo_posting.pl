@@ -1,4 +1,4 @@
-#!/usr/bin/perl -wT
+#!/usr/bin/perl -w
 
 ################################################################################
 #                                                                              #
@@ -12,10 +12,28 @@
 #                                                                              #
 ################################################################################
 
+#unknown_error
+#not_saved
+#no_option
+#occupied
+#master_lock
+#no_reply
+#dupe
+#missing_key
+#unexpected_key
+#unknown_encoding
+#unknown_followup
+#too_long
+#too_short
+#wrong_mail
+#wrong_http_url
+#wrong_url
+
 use strict;
 use vars qw($Bin $Shared $Script);
 
 # locate the script
+#
 BEGIN {
   my $null = $0; $null =~ s/\\/\//g; # for win :-(
   ($Bin)    = ($null =~ /^(.*)\/.*$/)? $1 : '.';
@@ -26,16 +44,11 @@ BEGIN {
 use lib "$Shared";
 use CGI::Carp qw(fatalsToBrowser);
 
-#use Conf;
-#use Encode::Plain; $Encode::Plain::utf8 = 1; # generally convert from UTF-8
-#use Id;
-#use Posting::Write;
-#use Template;
-#use Template::Posting;
-
-#use autouse 'Encode::Posting' => qw();
+use Conf;
+use Conf::Admin;
 
 # load script configuration and admin default conf.
+#
 my $conf         = read_script_conf ($Bin, $Shared, $Script);
 my $adminDefault = read_admin_conf ($conf -> {files} -> {adminDefault});
 
@@ -63,15 +76,23 @@ $request -> response;
 ### Posting::Request ###########################################################
 package Posting::Request;
 
+use CheckRFC;
+use Encode::Plain; $Encode::Plain::utf8 = 1; # generally convert from UTF-8
+use Encode::Posting;
 use Lock          qw(:ALL);
 use Posting::_lib qw(
-      hr_time
-      parse_xml_file
-      get_all_threads get_message_node get_message_header
-      KEEP_DELETED
-    );
+  hr_time
+  parse_xml_file
+  get_all_threads
+  get_message_node
+  get_message_header
+  KEEP_DELETED
+);
+use Posting::Write;
+use Id;
+use Template;
+use Template::Posting;
 
-use autouse 'CheckRFC' => qw[ is_email($) is_URL($@) ];
 use CGI;
 
 ### sub new ####################################################################
@@ -94,6 +115,7 @@ sub new {
 
          show_posting    => $sp,
          assign          => $sp -> {assign},
+         template        => $conf -> {template},
          form_must       => $sp -> {form} -> {must},
          form_data       => $sp -> {form} -> {data},
          form_action     => $sp -> {form} -> {action},
@@ -106,6 +128,190 @@ sub new {
      };
 
   bless $self, $class;
+}
+
+### sub response ###############################################################
+#
+# print the response to STDOUT
+#
+# Return: -none-
+#
+sub response {
+  my $self = shift;
+  my $formdata = $self -> {conf} -> {form_data};
+  my $formact  = $self -> {conf} -> {form_action};
+  my $template = $self -> {template};
+  my $assign   = $self -> {conf} -> {assign};
+  my $q        = $self -> {cgi_object};
+
+  # fill out the form field names
+  #
+  my $pars = {};
+  for (keys %$formdata) {
+    $pars -> {$formdata -> {$_} -> {assign} -> {name}} = plain($formdata -> {$_} -> {name}) if (
+      exists($formdata -> {$_} -> {name})
+      and exists ($formdata -> {$_} -> {assign})
+      and exists ($formdata -> {$_} -> {assign} -> {name})
+    );
+  }
+
+  # response the 'new message' page
+  #
+  if ($self -> {response} -> {new_thread}) {
+    my $list = [map {{$assign -> {optval} => plain($_)}} @{$formdata -> {posterCategory} -> {values}}];
+
+    print $q -> header (-type => 'text/html');
+    print ${$template -> scrap (
+      $assign -> {docNew},
+      { $formdata->{uniqueID}      ->{assign}->{value} => plain(unique_id),
+        $formdata->{quoteChar}     ->{assign}->{value} =>
+          '&#255;'.plain($self -> {conf} -> {admin} -> {View} -> {quoteChars}),
+        $formdata->{posterCategory}->{assign}->{value} => $template->list ($assign -> {option}, $list),
+        $formact->{post}->{assign}                     => $formact->{post}->{url}
+      },
+      $pars
+    )};
+    return;
+  }
+
+  # check the response -> doc
+  #
+  unless ($self -> {response} -> {doc}) {
+    $self -> {error} = {
+      spec => 'unknown_error',
+      type => 'fatal'
+    };
+
+    $self -> handle_error;
+
+    unless ($self -> {response} -> {doc}) {
+      $self -> jerk ('While producing the HTML response an unknown error has occurred.');
+      return;
+    }
+  }
+
+  # ok, print the response document to STDOUT
+  #
+  print $q -> header (-type => 'text/html');
+  print ${$template -> scrap (
+      $self -> {response} -> {doc},
+      $pars,
+      $self -> {response} -> {pars}
+    )
+  };
+
+  return;
+}
+
+### sub handle_error ###########################################################
+#
+# analyze error data and create content for the response method
+#
+# Return: true  if error detected
+#         false otherwise
+#
+sub handle_error {
+  my $self = shift;
+
+  my $spec = $self -> {error} -> {spec};
+
+  return unless ($spec);
+
+  my $assign   = $self -> {conf} -> {assign};
+  my $formdata = $self -> {conf} -> {form_data};
+
+  my $desc = $self -> {error} -> {desc} || '';
+  my $type = $self -> {error} -> {type};
+  my $emsg;
+
+  if (exists ($formdata -> {$desc})
+      and exists ($formdata -> {$desc} -> {assign} -> {$spec})) {
+    $emsg = $formdata -> {$desc} -> {assign} -> {$spec};
+  }
+  else {
+    $emsg = $assign -> {$spec} || '';
+  }
+
+  # fatal errors
+  #
+  if ($type eq 'fatal') {
+    $self -> {response} -> {doc}  = $assign -> {docFatal};
+    $self -> {response} -> {pars} = {
+      $assign -> {errorMessage} => $self -> {template} -> insert ($emsg)
+    };
+  }
+
+  # 'soft' errors
+  # user is able to repair his request
+  #
+  elsif ($type eq 'repeat' or $type eq 'fetch') {
+    $self -> {response} -> {doc} = $assign -> {docError};
+    $self -> fillout_form;
+    $self -> {response} -> {pars} -> {$assign -> {errorMessage}} = $self -> {template} -> insert ($emsg);
+    my $num = $spec eq 'too_long'
+      ? $formdata -> {$desc} -> {maxlength}
+      : ($spec eq 'too_short'
+          ? $formdata -> {$desc} -> {minlength}
+          : undef
+        );
+
+    $self -> {response} -> {pars} -> {$assign -> {charNum}} = $num
+      if $num;
+  }
+
+  1;
+}
+
+### sub fillout_form ###########################################################
+#
+# fill out the form using available form data
+#
+# Return: -none-
+#
+sub fillout_form {
+  my $self = shift;
+
+  my $assign   = $self -> {conf} -> {assign};
+  my $formdata = $self -> {conf} -> {form_data};
+  my $formact  = $self -> {conf} -> {form_action};
+  my $q        = $self -> {cgi_object};
+  my $pars     = {};
+
+  # fill out the form
+  #
+  $pars -> {$formact -> {post} -> {assign}} = $formact -> {post} -> {url};
+
+  for (keys %$formdata) {
+    if ($_ eq 'quoteChar') {
+      $pars -> {$formdata->{$_}->{assign}->{value}}
+      = '&#255;'.plain($q -> param ($formdata -> {quoteChar} -> {name}) or '');
+    }
+    elsif (exists ($formdata -> {$_} -> {name})) {
+      unless (exists ($formdata -> {$_} -> {values})) {
+        $pars -> {$formdata -> {$_} -> {assign} -> {value}}
+        = plain($q -> param ($formdata -> {$_} -> {name}));
+      }
+      else {
+        my $_name = $_;
+        $pars -> {$formdata -> {$_} -> {assign} -> {value}}
+        = $self -> {template} -> list (
+            $assign -> {option},
+            [ map {
+                { $assign -> {optval} => plain($_),
+                  (( $_ eq $q -> param ($formdata -> {$_name} -> {name}))
+                    ? ($assign -> {optsel} => 1)
+                    : ()
+                  )
+                }
+              } @{$formdata -> {$_name} -> {values}}
+            ]
+          );
+      }
+    }
+  }
+
+  $self -> {response} -> {pars} = $pars;
+  return;
 }
 
 ### sub save ###################################################################
@@ -122,6 +328,8 @@ sub save {
   #
   return if ($self -> {response} -> {new_thread});
 
+  $self -> {check_success} = 0;
+
   # lock and load the forum main file
   #
   if ($self -> load_main_file) {
@@ -131,26 +339,80 @@ sub save {
     #
     if ($self -> check_reply_dupe) {
 
-      # we've got an opening
-      #
-      if ($self -> {response} -> {new}) {
-        $self -> save_new;
-      }
-
-      # we've got a reply
-      #
-      elsif ($self -> {response} -> {reply}) {
-        $self -> save_reply;
-      }
-
-      # don't know, if we any time come to this branch
-      # the script is probably broken
-      #
-      else {
+      unless ($self -> {response} -> {reply} or $self -> {response} -> {new}) {
+        # don't know, if we any time come to this branch
+        # the script is probably broken
+        #
         $self -> {error} = {
           spec => 'unknown_error',
           type => 'fatal'
         };
+      }
+      else {
+        my $time     = time;
+        my $formdata = $self -> {conf} -> {form_data};
+        my $q        = $self -> {cgi_object};
+        my $f        = $self -> {forum};
+        my $pars     = {
+          author        => $q -> param ($formdata -> {posterName} -> {name}),
+          email         => $q -> param ($formdata -> {posterEmail} -> {name}),
+          category      => $q -> param ($formdata -> {posterCategory} -> {name}),
+          subject       => $q -> param ($formdata -> {posterSubject} -> {name}),
+          body          => $q -> param ($formdata -> {posterBody} -> {name}),
+          homepage      => $q -> param ($formdata -> {posterURL} -> {name}),
+          image         => $q -> param ($formdata -> {posterImage} -> {name}),
+          quoteChars    => $q -> param ($formdata -> {quoteChar} -> {name}),
+          uniqueID      => $q -> param ($formdata -> {uniqueID} -> {name}),
+          time          => $time,
+          ip            => $q -> remote_addr,
+          forumFile     => $self -> {conf} -> {forum_file_name},
+          messagePath   => $self -> {conf} -> {message_path},
+          lastThread    => $f -> {last_thread},
+          lastMessage   => $f -> {last_message},
+          parsedThreads => $f -> {threads},
+          dtd           => $f -> {dtd},
+          messages      => $self -> {template} -> {messages}
+        };
+
+        if ($self -> {response} -> {reply}) {
+          $pars -> {parentMessage} = $self -> {fup_mid};
+          $pars -> {thread}        = $self -> {fup_tid};
+        }
+
+        my ($stat, $xml, $mid) = write_posting ($pars);
+
+        if ($stat) {
+          $self -> {error} = {
+            spec => 'not_saved',
+            desc => $stat,
+            type => 'fatal'
+          };
+        }
+        else {
+          $self -> {check_success} = 1;
+          my $thx      = $self -> {conf} -> {show_posting} -> {thanx};
+
+          # define special response data
+          #
+          $self -> {response} -> {doc}  = $self -> {conf} -> {assign} -> {docThx};
+          $self -> {response} -> {pars} = {
+            $thx -> {subject}  => plain ($q -> param ($formdata -> {posterSubject} -> {name})),
+            $thx -> {author}   => plain ($q -> param ($formdata -> {posterName} -> {name})),
+            $thx -> {email}    => plain ($q -> param ($formdata -> {posterEmail} -> {name})),
+            $thx -> {time}     => plain (hr_time($time)),
+            $thx -> {body}     => message_as_HTML (
+              $xml,
+              $self -> {template},
+              { posting    => $mid,
+                assign     => $self -> {conf} -> {assign},
+                quoteChars => $q -> param ($formdata -> {quoteChar} -> {name}),
+                quoting    => $self -> {conf} -> {admin} -> {View} -> {quoting}
+              }),
+            $thx -> {category} => plain ($q -> param ($formdata -> {posterCategory} -> {name})),
+            $thx -> {home}     => plain ($q -> param ($formdata -> {posterURL} -> {name})),
+            $thx -> {image}    => plain ($q -> param ($formdata -> {posterImage} -> {name}))
+          };
+        }
       }
     }
   }
@@ -158,7 +420,7 @@ sub save {
   # unlock forum main file
   #
   if ($self -> {forum} -> {flocked}) {
-    violent_unlock_file($self -> {forum_file_name}) unless unlock_file ($self -> {forum_file_name});
+    violent_unlock_file($self -> {conf} -> {forum_file_name}) unless write_unlock_file ($self -> {conf} -> {forum_file_name});
     $self -> {forum} -> {flocked} = 0;
   }
 
@@ -179,8 +441,7 @@ sub parse_cgi {
 
   # create the CGI object
   #
-  my $q = new CGI;
-  $self -> {cgi_object} = $q;
+  $self -> {cgi_object} = new CGI;
 
   # check the params
   #
@@ -199,14 +460,14 @@ sub load_main_file {
   my $self = shift;
   my $lock_stat;
 
-  unless ($lock_stat = write_lock_file ($self ->{forum_file_name})) {
-    if ($lock_stat == 0) {
+  unless ($lock_stat = write_lock_file ($self -> {conf} -> {forum_file_name})) {
+    if (defined $lock_stat and $lock_stat == 0) {
       # occupied or no w-bit set for the directory..., hmmm
       #
-      violent_unlock_file ($self -> {forum_file_name});
+      violent_unlock_file ($self -> {conf} -> {forum_file_name});
       $self -> {error} = {
         spec => 'occupied',
-        type => 'fatal'
+        type => 'repeat'
       };
       return;
     }
@@ -225,9 +486,9 @@ sub load_main_file {
     ( $self -> {forum} -> {threads},
       $self -> {forum} -> {last_thread},
       $self -> {forum} -> {last_message},
-      undef,
+      $self -> {forum} -> {dtd},
       $self -> {forum} -> {unids}
-    ) = get_all_threads ($self -> {forum_file_name}, KEEP_DELETED);
+    ) = get_all_threads ($self -> {conf} -> {forum_file_name}, KEEP_DELETED);
   }
 
   # ok, looks good
@@ -246,19 +507,19 @@ sub load_main_file {
 #
 sub check_reply_dupe {
   my $self = shift;
+  my %unids;
 
   # return true unless it's not a reply
+  # or an opening
   #
   return 1 unless (
     $self -> {response} -> {reply}
-    and $self -> {response} -> {new}
+    or $self -> {response} -> {new}
   );
-
-  my %unids;
 
   if ($self -> {response} -> {reply}) {
 
-    my ($threads, $ftid, $fmid, $i, %msg, %unids) = (
+    my ($threads, $ftid, $fmid, $i, %msg) = (
           $self -> {forum} -> {threads},
           $self -> {fup_tid},
           $self -> {fup_mid}
@@ -307,7 +568,7 @@ sub check_reply_dupe {
     # build a unique id lookup hash, too
     # but use only the level-zero-messages
     #
-    %unids = map {$_ => 1} @{$self -> {unids}};
+    %unids = map {$_ => 1} @{$self -> {forum} -> {unids}};
   }
 
   # now check on dupe
@@ -370,7 +631,11 @@ sub check_cgi {
 
   # 1
   #
-  my %name = map {($formdata -> {$_} -> {name} => $_)} keys %$formdata;
+  my %name = map {
+    exists($formdata -> {$_} -> {name})
+    ? ($formdata -> {$_} -> {name} => $_)
+    : ()
+  } keys %$formdata;
 
   # 2
   #
@@ -388,11 +653,12 @@ sub check_cgi {
       # only miss the key unless we're able to fetch it from parent posting
       #
       unless (
-           $self -> {response} -> {new}
-        or $formdata -> {$name {$_}} -> {errorType} eq 'fetch') {
+        not $self -> {response} -> {reply}
+        or $formdata -> {$_} -> {errorType} eq 'fetch') {
 
         $self -> {error} = {
           spec => 'missing_key',
+          desc => $_,
           type => 'fatal'
         };
         return;
@@ -400,14 +666,17 @@ sub check_cgi {
       else {
         # keep in mind to fetch the value later
         #
-        push @{$self -> {fetch}} => $name {$_};
+        push @{$self -> {fetch}} => $_;
       }
     }
   }
 
+  # I'm lazy - I know...
+  my $q = $self -> {cgi_object};
+
   # 3
   #
-  for ($self -> {cgi_object} -> param) {
+  for ($q -> param) {
     unless (exists ($name {$_})) {
       $self -> {error} = {
         spec => 'unexpected_key',
@@ -427,9 +696,6 @@ sub check_cgi {
     };
     return;
   };
-
-  # I'm lazy - I know...
-  my $q = $self -> {cgi_object};
 
   if ($self -> {response} -> {reply}) {
 
@@ -451,7 +717,7 @@ sub check_cgi {
     # if it fails, they're too short, too... ;)
     #
     $self -> fetch;
-    $got_keys{$_}=1 for (@{$self -> {fetch}});
+    $got_keys{$formdata -> {$_} -> {name}} = 1 for (@{$self -> {fetch}});
   }
 
   # now we can check on length, type etc.
@@ -479,7 +745,7 @@ sub check_cgi {
         desc => $name{$_},
         type => $formdata -> {$name {$_}} -> {errorType}
       };
-      return;
+      $self -> kill_param or return;
     }
 
     # too short?
@@ -497,12 +763,12 @@ sub check_cgi {
           desc => $name{$_},
           type => $formdata -> {$name {$_}} -> {errorType}
         };
-        return;
+        $self -> kill_param or return;
       }
     }
 
     # check the values on expected kinds of content
-    # (email, http-url, url)
+    # (email, http-url, url, option)
     #
     if (exists ($formdata -> {$name {$_}} -> {type}) and length $val) {
       if ($formdata -> {$name {$_}} -> {type} eq 'email' and not is_email $val) {
@@ -511,7 +777,7 @@ sub check_cgi {
           desc => $name{$_},
           type => $formdata -> {$name {$_}} -> {errorType}
         };
-        return;
+        $self -> kill_param or return;
       }
 
       elsif ($formdata -> {$name {$_}} -> {type} eq 'http-url' and not is_URL $val => 'http') {
@@ -520,7 +786,7 @@ sub check_cgi {
           desc => $name{$_},
           type => $formdata -> {$name {$_}} -> {errorType}
         };
-        return;
+        $self -> kill_param or return;
       }
 
       elsif ($formdata -> {$name {$_}} -> {type} eq 'url' and not is_URL $val => ':ALL') {
@@ -529,13 +795,41 @@ sub check_cgi {
           desc => $name{$_},
           type => $formdata -> {$name {$_}} -> {errorType}
         };
-        return;
+        $self -> kill_param or return;
       }
+    }
+
+    if (exists ($formdata -> {$name {$_}} -> {values})
+        and not exists ({map {$_ => undef} @{$formdata -> {$name {$_}} -> {values}}} -> {$val})) {
+        $self -> {error} = {
+          spec => 'no_option',
+          desc => $name{$_},
+          type => $formdata -> {$name {$_}} -> {errorType}
+        };
+        $self -> kill_param or return;
     }
   }
 
   # ok, looks good.
   1;
+}
+### sub kill_param #############################################################
+#
+# kill the param (set it on '') if wrong and declared as 'kill' in config file
+#
+# Return: true  if killed
+#         false otherwise
+#
+sub kill_param {
+  my $self = shift;
+
+  if ($self -> {conf} -> {form_data} -> {$self -> {error} -> {desc}} -> {errorType} eq 'kill') {
+    $self -> {cgi_object} -> param ($self -> {conf} -> {form_data} -> {$self -> {error} -> {desc}} -> {name} => '');
+    $self -> {error} = {};
+    return 1;
+  }
+
+  return;
 }
 
 ### sub fetch ##################################################################
@@ -605,10 +899,26 @@ sub decode_param {
   }
 
   # remove the &#255; (encoded as UTF-8) from quotechars
-  $q -> param ($formdata -> {quoteChar} -> {name} => substr ($code, 2));
+  $q -> param ($formdata -> {quoteChar} -> {name}
+        => substr $q -> param ($formdata -> {quoteChar} -> {name}),2);
 
   # ok, params now should be UTF-8 encoded
   1;
+}
+
+sub jerk {
+  my $text = $_[1] || 'An error has occurred.';
+  print <<EOF;
+Content-type: text/plain\n\n
+
+ Oops.
+
+ $text
+ We will fix it as soon as possible. Thank you for your patience.
+
+ Regards
+    n.d.p.
+EOF
 }
 
 #

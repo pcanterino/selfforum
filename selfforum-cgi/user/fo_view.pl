@@ -1,10 +1,10 @@
-#!/usr/bin/perl -wT
+#!/usr/bin/perl -w
 
 ################################################################################
 #                                                                              #
 # File:        user/fo_view.pl                                                 #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-03-31                          #
+# Authors:     André Malo <nd@o3media.de>, 2001-04-01                          #
 #                                                                              #
 # Description: display the forum main file or a single posting                 #
 #                                                                              #
@@ -25,8 +25,8 @@ use CGI::Carp qw(fatalsToBrowser);
 
 use Conf;
 use Conf::Admin;
-use autouse 'Template::Forum'   => qw(print_forum_as_HTML($$$));
-use autouse 'Template::Posting' => qw(print_posting_as_HTML($$$));
+use Template::Forum;
+use Template::Posting;
 
 use CGI qw(param header);
 

@@ -157,7 +157,7 @@ sub get_message_node ($$$)
 sub parse_xml_file ($) {
   my $file = shift;
   my $xml = eval {
-              local $SIG{__DIE__};
+              local $SIG{__DIE__};      # CGI::Carp works unreliable ;-(
               new XML::DOM::Parser (KeepCDATA => 1) -> parsefile ($file);
             };
 
