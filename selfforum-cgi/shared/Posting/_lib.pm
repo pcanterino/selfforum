@@ -4,7 +4,7 @@ package Posting::_lib;
 #                                                                              #
 # File:        shared/Posting/_lib.pm                                          #
 #                                                                              #
-# Authors:     André Malo <nd@o3media.de>, 2001-02-25                          #
+# Authors:     André Malo <nd@o3media.de>, 2001-03-03                          #
 #              Frank Schoenmann <fs@tower.de>, 2001-03-02                      #
 #                                                                              #
 # Description: Message access interface, time format routines                  #
@@ -21,16 +21,16 @@ use Encode::Plain; $Encode::Plain::utf8 = 1;
 use XML::DOM;
 
 # ====================================================
-# Funktionsexport
+# Export
 # ====================================================
 
-@EXPORT_OK = qw(get_message_header get_message_body get_message_node parse_single_thread
+@EXPORT_OK = qw(get_message_header get_message_body get_message_node get_body_node parse_single_thread
                 hr_time short_hr_time long_hr_time
                 get_all_threads create_forum_xml_string
                 save_file);
 
 # ====================================================
-# Zugriff uebers DOM
+# Access via XML::DOM
 # ====================================================
 
 ### get_message_header () ######################################################
@@ -61,34 +61,47 @@ sub get_message_header ($)
     subject  => ($subject -> hasChildNodes)?$subject -> getFirstChild -> getData:undef,
     email    => (defined ($email) and $email -> hasChildNodes)?$email -> getFirstChild -> getData:undef,
     home     => (defined ($home)  and $home  -> hasChildNodes)?$home  -> getFirstChild -> getData:undef,
-    image    => (defined ($image) and $image -> hasChildNodes)?$image -> getFirstChild - >getData:undef,
+    image    => (defined ($image) and $image -> hasChildNodes)?$image -> getFirstChild -> getData:undef,
     time     => $date -> getAttribute ('longSec')
   );
 
   \%conf;
 }
 
+### get_body_node () ########################################################
+#
+# Search a specific message body in a XML tree
+#
+# Params: $xml  XML::DOM::Document Object (Document Node)
+#         $mid  Message ID
+# Return: MessageContent XML node (or -none-)
+#
+sub get_body_node ($$)
+{
+  my ($xml, $mid) = @_;
+
+  for ($xml->getElementsByTagName ('ContentList', 1)->item (0)->getElementsByTagName ('MessageContent', 0))
+  {
+    return $_ if ($_ -> getAttribute ('mid') eq $mid);
+  }
+
+  return;
+}
+
 ### get_message_body () ########################################################
 #
 # Read message body
 #
-# Params: $xml  XML tree
+# Params: $xml  XML::DOM::Document Object (Document Node)
 #         $mid  Message ID
 # Return: Scalar reference
 #
 sub get_message_body ($$)
 {
-  my ($xml, $mid) = @_;
+  my $cnode = get_body_node ($_[0], $_[1]);
   my $body;
 
-  foreach ($xml->getElementsByTagName ('ContentList', 1)->item (0)->getElementsByTagName ('MessageContent', 0))
-  {
-    if ($_ -> getAttribute ('mid') eq $mid)
-    {
-      $body = ($_ -> hasChildNodes)?$_ -> getFirstChild -> getData:'';
-      last;
-    }
-  }
+  $body = ($cnode -> hasChildNodes)?$cnode -> getFirstChild -> getData:'' if $cnode;
 
   \$body;
 }
@@ -97,10 +110,10 @@ sub get_message_body ($$)
 #
 # Search a specific message in a XML tree
 #
-# Params: $xml  XML tree
+# Params: $xml  XML::DOM::Document Object (Document Node)
 #         $tid  Thread ID
 #         $mid  Message ID
-# Return: Message XML node, Thread XML node
+# Return: Message XML node, Thread XML node (or -none-)
 #
 sub get_message_node ($$$)
 {
@@ -260,7 +273,7 @@ sub sort_thread ($$) {
   \@smsg;
 }
 
-### delete_message () ##########################################################
+### delete_messages () ##########################################################
 #
 # Filter out deleted messages
 #
@@ -278,10 +291,7 @@ sub delete_messages ($)
     if ($_ -> {'deleted'})
     {
       my $n = $_ -> {'answers'} + 1;
-      for (@path)
-      {
-        $smsg -> [$_] -> {'answers'} -= $n;
-      }
+      $smsg -> [$_] -> {'answers'} -= $n for (@path);
       splice @$smsg,$z,$n;
     }
     else
@@ -308,26 +318,31 @@ sub delete_messages ($)
   return;
 }
 
-###########################
-# sub get_all_threads
+### get_all_threads () ##########################################################
 #
-# Hauptdatei laden und
-# parsen
-###########################
-
+# Read and Parse the main file (without any XML-module, they are too slow)
+#
+# Params: $file     /path/to/filename of the main file
+#         $deleted  hold deleted (invisible) messages in result (1) oder not (0)
+#         $sorted   direction of message sort: descending (0) (default) or ascending (1)
+# Return: scalar context: hash reference
+#           list context: list (\%threads, $last_thread, $last_message, \@unids)
+#
 sub get_all_threads ($$;$)
 {
   my ($file, $deleted, $sorted) = @_;
   my ($last_thread, $last_message, @unids, %threads);
-  local *FILE;
+  local (*FILE, $/);
 
   open FILE, $file or return undef;
   my $xml = join '', <FILE>;
   close(FILE) or return undef;
 
-  if (wantarray) {
+  if (wantarray)
+  {
     ($last_thread)  = map {/(\d+)/} $xml =~ /<Forum.+?lastThread="([^"]+)"[^>]*>/;
-    ($last_message) = map {/(\d+)/} $xml =~ /<Forum.+?lastMessage="([^"]+)"[^>]*>/;}
+    ($last_message) = map {/(\d+)/} $xml =~ /<Forum.+?lastMessage="([^"]+)"[^>]*>/;
+  }
 
   my $reg_msg = qr~(?:</Message>
                      |<Message\s+id="m(\d+)"\s+unid="([^"]*)"(?:\s+invisible="([^"]*)")?(?:\s+archive="([^"]*)")?[^>]*>\s*
@@ -338,91 +353,95 @@ sub get_all_threads ($$;$)
                         <Date\s+longSec="(\d+)"[^>]*>\s*
                       </Header>\s*(?:(<)/Message>|(?=(<)Message\s*)))~sx;
 
-  while ($xml =~ /<Thread id="t(\d+)">([^<]*(?:<(?!\/Thread>)[^<]*)*)<\/Thread>/g) {
-
+  while ($xml =~ /<Thread id="t(\d+)">([^<]*(?:<(?!\/Thread>)[^<]*)*)<\/Thread>/g)
+  {
     my ($tid, $thread) = ($1, $2);
     my ($level, $cmno, @msg, @stack) = (0);
 
-    while ($thread =~ m;$reg_msg;g) {
-
-      if (defined($10)) {
+    while ($thread =~ m;$reg_msg;g)
+    {
+      if (defined($10))
+      {
         push @stack,$cmno if (defined $cmno);
-        push @msg, {};
+        push @msg, {mid     => $1,
+                    unid    => $2,
+                    deleted => $3,
+                    archive => $4,
+                    name    => $5,
+                    cat     => $6,
+                    subject => $7,
+                    time    => $8,
+                    level   => $level++,
+                    unids   => [],
+                    kids    => [],
+                    answers => 0};
 
-        if (defined $cmno) {
+        if (defined $cmno)
+        {
           push @{$msg[$cmno] -> {kids}}  => $#msg;
-          push @{$msg[$cmno] -> {unids}} => $2;}
-        else {
-          push @unids => $2;}
+          push @{$msg[$cmno] -> {unids}} => $2;
+        }
+        else
+        {
+          push @unids => $2;
+        }
 
-        for (@stack) {$msg[$_] -> {answers}++}
+        $msg[$_] -> {answers}++ for (@stack);
 
         $cmno=$#msg;
 
-       ($msg[-1] -> {mid},
-        $msg[-1] -> {unid},
-        $msg[-1] -> {name},
-        $msg[-1] -> {cat},
-        $msg[-1] -> {subject},
-        $msg[-1] -> {time})     = ($1, $2, $5, $6, $7, $8);
-
-        $msg[-1] -> {deleted} = $3;
-        $msg[-1] -> {archive} = $4;
-
-        $msg[-1] -> {name} =~ s/&amp;/&/g;
-        $msg[-1] -> {cat} =~ s/&amp;/&/g;
+        $msg[-1] -> {name}    =~ s/&amp;/&/g;
+        $msg[-1] -> {cat}     =~ s/&amp;/&/g;
         $msg[-1] -> {subject} =~ s/&amp;/&/g;
 
-        $msg[-1] -> {unids} = [];
-        $msg[-1] -> {kids} = [];
-        $msg[-1] -> {answers} = 0;
-        $msg[-1] -> {level} = $level++;}
+      }
+      elsif (defined ($9))
+      {
+        push @msg, {mid     => $1,
+                    unid    => $2,
+                    deleted => $3,
+                    archive => $4,
+                    name    => $5,
+                    cat     => $6,
+                    subject => $7,
+                    time    => $8,
+                    level   => $level,
+                    unids   => [],
+                    kids    => [],
+                    answers => 0};
 
-      elsif (defined ($9)) {
-        push @msg, {};
-
-        if (defined $cmno) {
+        if (defined $cmno)
+        {
           push @{$msg[$cmno] -> {kids}}  => $#msg;
           push @{$msg[$cmno] -> {unids}} => $2;
-          $msg[$cmno] -> {answers}++;}
-        else {
-          push @unids => $2;}
+          $msg[$cmno] -> {answers}++;
+        }
+        else
+        {
+          push @unids => $2;
+        }
 
-        for (@stack) {$msg[$_] -> {answers}++}
+        $msg[$_] -> {answers}++ for (@stack);
 
-       ($msg[-1] -> {mid},
-        $msg[-1] -> {unid},
-        $msg[-1] -> {name},
-        $msg[-1] -> {cat},
-        $msg[-1] -> {subject},
-        $msg[-1] -> {time})     = ($1, $2, $5, $6, $7, $8);
-
-        $msg[-1] -> {deleted} = $3;
-        $msg[-1] -> {archive} = $4;
-
-        $msg[-1] -> {name} =~ s/&amp;/&/g;
-        $msg[-1] -> {cat} =~ s/&amp;/&/g;
+        $msg[-1] -> {name}    =~ s/&amp;/&/g;
+        $msg[-1] -> {cat}     =~ s/&amp;/&/g;
         $msg[-1] -> {subject} =~ s/&amp;/&/g;
+      }
+      else
+      {
+        $cmno = pop @stack; $level--;
+      }
+    }
 
-        $msg[-1] -> {level} = $level;
-        $msg[-1] -> {unids} = [];
-        $msg[-1] -> {kids} = [];
-        $msg[-1] -> {answers} = 0;}
-
-      else {
-        $cmno = pop @stack; $level--;}}
-
-  # ============
-  # Sortieren und bei Bedarf
-  # geloeschte Messages entfernen
-
-    my $smsg = sort_thread (\@msg, $sorted);
-    delete_messages ($smsg) unless ($deleted);
+    my $smsg = sort_thread (\@msg, $sorted);    # sort messages
+    delete_messages ($smsg) unless ($deleted);  # remove invisible messages
 
     $threads{$tid} = $smsg if (@$smsg);
   }
 
-  wantarray ? (\%threads, $last_thread, $last_message, \@unids) : \%threads;
+  wantarray ?
+    (\%threads, $last_thread, $last_message, \@unids)
+  : \%threads;
 }
 
 ###########################
