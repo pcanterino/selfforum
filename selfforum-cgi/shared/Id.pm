@@ -14,7 +14,14 @@ use strict;
 use vars qw(
   @table
   @EXPORT
+  $VERSION
 );
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 ################################################################################
 #
@@ -79,7 +86,7 @@ BEGIN {
   );
 }
 
-# keep require happy
+# keep 'require' happy
 1;
 
 #

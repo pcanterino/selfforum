@@ -12,9 +12,15 @@ package Template;
 ################################################################################
 
 use strict;
-use vars qw($xml_dom_used);
+use vars qw(
+  $xml_dom_used
+  $VERSION
+);
 
-use Carp qw(croak confess);
+use Carp qw(
+  croak
+  confess
+);
 
 BEGIN {
   $xml_dom_used = eval q[
@@ -23,6 +29,13 @@ BEGIN {
     1;
   ];
 }
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
+
 
 ### sub new ####################################################################
 #
@@ -178,7 +191,8 @@ sub scrap {
   );
 
   # remove newlines
-  $scrap =~ s/\n|\r\n|\n\r|\r//g if ($no_nl);
+  #
+  $scrap =~ s/\015\012|\015|\012//g if ($no_nl);
 
   # return
   \$scrap;
@@ -345,7 +359,7 @@ sub parse_if {
   return;
 }
 
-# keeping 'require' happy
+# keep 'require' happy
 1;
 
 #

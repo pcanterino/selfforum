@@ -19,10 +19,17 @@ use vars qw(
   $violentTimeout
   $masterTimeout
   $iAmMaster
+  $VERSION
 );
 
 use Carp;
 use Fcntl;
+
+################################################################################
+#
+# Version check
+#
+$VERSION = do { my @r =(q$Revision$ =~ /\d+/g); sprintf "%d."."%02d" x $#r, @r };
 
 ################################################################################
 #
@@ -55,7 +62,7 @@ use base qw(Exporter);
   ALL   => \@EXPORT_OK
 );
 
-### sub ~file ($) ##############################################################
+### ~file () ###################################################################
 #
 # create lock file names
 #
@@ -77,7 +84,7 @@ sub masterlockfile ($) {
 # Windows section (no symlinks)
 #
 
-### sub w_lock_file ($;$) ######################################################
+### w_lock_file () #############################################################
 #
 # set read lock (shared lock)
 # (for no-symlink-systems)
@@ -115,7 +122,7 @@ sub w_lock_file ($;$) {
   0;
 }
 
-### sub w_unlock_file ($;$) ####################################################
+### w_unlock_file () ###########################################################
 #
 # remove read lock (shared lock)
 # (for no-symlink-systems)
@@ -151,7 +158,7 @@ sub w_unlock_file ($;$) {
   return;
 }
 
-### sub w_write_lock_file ($;$) ################################################
+### w_write_lock_file () #######################################################
 #
 # set write lock (exclusive lock)
 # (for no-symlink-systems)
@@ -214,7 +221,7 @@ sub w_write_lock_file ($;$) {
   0;
 }
 
-### sub w_write_unlock_file ($;$) ##############################################
+### w_write_unlock_file () #####################################################
 #
 # remove write lock (exclusive lock)
 # (for no-symlink-systems)
@@ -244,7 +251,7 @@ sub w_write_unlock_file ($;$) {
   1;
 }
 
-### sub w_violent_unlock_file ($) ##############################################
+### w_violent_unlock_file () ###################################################
 #
 # remove any lock violent  (excl. master lock)
 # (for no-symlink-systems)
@@ -276,7 +283,7 @@ sub w_violent_unlock_file ($) {
   return;
 }
 
-### sub w_set_master_lock ($;$) ################################################
+### w_set_master_lock () #######################################################
 #
 # set master lock
 # (for no-symlink-systems)
@@ -302,7 +309,7 @@ sub w_set_master_lock ($;$) {
   return;
 }
 
-### sub w_release_file ($) #####################################################
+### w_release_file () ##########################################################
 #
 # remove any locks (incl. master lock)
 # (for no-symlink-systems)
@@ -340,7 +347,7 @@ sub w_file_removed ($) {
 # *n*x section (symlinks possible)
 #
 
-### sub x_lock_file ($;$) ######################################################
+### x_lock_file () #############################################################
 #
 # set read lock (shared lock)
 # (symlinks possible)
@@ -378,7 +385,7 @@ sub x_lock_file ($;$) {
   0;
 }
 
-### sub x_unlock_file ($;$) ####################################################
+### x_unlock_file () ###########################################################
 #
 # remove read lock (shared lock)
 # (symlinks possible)
@@ -413,7 +420,7 @@ sub x_unlock_file ($;$) {
   }
 }
 
-### sub x_write_lock_file ($;$) ################################################
+### x_write_lock_file () #######################################################
 #
 # set write lock (exclusive lock)
 # (symlinks possible)
@@ -480,7 +487,7 @@ sub x_write_lock_file ($;$) {
   0;
 }
 
-### sub x_write_unlock_file ($;$) ##############################################
+### x_write_unlock_file () #####################################################
 #
 # remove write lock (exclusive lock)
 # (symlinks possible)
@@ -509,7 +516,7 @@ sub x_write_unlock_file ($;$) {
   1;
 }
 
-### sub x_violent_unlock_file ($) ##############################################
+### x_violent_unlock_file () ###################################################
 #
 # remove any lock violent  (excl. master lock)
 # (symlinks possible)
@@ -544,7 +551,7 @@ sub x_violent_unlock_file ($) {
     delete $LOCKED{$filename};
 }
 
-### sub x_set_master_lock ($;$) ################################################
+### x_set_master_lock () #######################################################
 #
 # set master lock
 # (symlinks possible)
@@ -570,7 +577,7 @@ sub x_set_master_lock ($;$) {
   return;
 }
 
-### sub x_release_file ($) #####################################################
+### x_release_file () ##########################################################
 #
 # remove any locks (incl. master lock)
 # (symlinks possible)
@@ -598,8 +605,8 @@ sub x_file_removed ($) {
   release_file (shift);
 }
 
-### sub w_simple_lock ($;$) ####################################################
-### sub w_simple_unlock ($) ####################################################
+### w_simple_lock () ###########################################################
+### w_simple_unlock () #########################################################
 #
 # simple file lock/unlock
 # (for no-symlink-systems: kill/create lockfile)
@@ -638,8 +645,8 @@ sub w_simple_unlock ($) {
   return;
 }
 
-### sub x_simple_lock ($;$) ####################################################
-### sub x_simple_unlock ($) ####################################################
+### x_simple_lock () ###########################################################
+### x_simple_unlock () #########################################################
 #
 # simple file lock/unlock
 # (symlinks possible: create/unlink symlink)
@@ -673,7 +680,7 @@ sub x_simple_unlock ($) {
   return;
 }
 
-### sub w_set_ref ($$$) ########################################################
+### w_set_ref () ###############################################################
 #
 # add $_[1] to reference counter
 # (may be negative...)
@@ -733,7 +740,7 @@ sub w_set_ref ($$$) {
   1;
 }
 
-### sub x_set_ref ($$$) ########################################################
+### x_set_ref () ###############################################################
 #
 # add $_[1] to reference counter
 # (may be negative...)
@@ -792,7 +799,7 @@ sub x_set_ref ($$$) {
   1;
 }
 
-### sub get_ref ($) ############################################################
+### get_ref () #################################################################
 #
 # read out the reference counter
 # (system independant)
@@ -866,7 +873,7 @@ BEGIN {
   }
 }
 
-# keeping require happy
+# keep 'require' happy
 1;
 
 #
