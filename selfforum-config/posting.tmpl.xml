@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+
+<Template metaon="{&amp;&amp;" metaoff="&amp;&amp;}">
+
+  <Scrap id="DOC_POSTING"><![CDATA[
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+<!--    <meta http-equiv="expires" content="0">-->
+    <meta name="robots" content="noindex,noarchive">
+
+    <title>SELFHTML Forum: {&& %IF _BEF_CATEGORY &&}({&& _BEF_CATEGORY &&}) {&& %ENDIF &&}{&& _BEF_TITLE &&}</title>
+
+    <link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%"><tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_FORUM &&}</td></tr></table><table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+    <td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>{&& _BEF_NAME &&}:<br>{&& %IF _BEF_CATEGORY &&}({&& _BEF_CATEGORY &&})&nbsp;{&& %ENDIF &&}{&& _BEF_TITLE &&}</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center">{&& IMG_X5 &&}</td>
+    <td bgcolor="#FFFFFF" valign="top">{&& %IF _VOTED &&}
+        <p>Vielen Dank! Ihr Archivierungsvorschlag wurde entgegengenommen.</p>{&& %ENDIF &&}
+        <p>{&& IMG_XGDOWN &&}&nbsp;<a href="#a1"><b>Nachricht lesen</b></a><br>{&& %IF _FIRSTTIME &&}
+           {&& IMG_XGDOWN &&}&nbsp;<a href="#a2"><b>Nachricht zur Archivierung vorschlagen</b></a><br>{&& %ENDIF &&}
+           {&& IMG_XGDOWN &&}&nbsp;<a href="#a3"><b>Nachricht beantworten</b></a></p></td></tr>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr>
+</table>
+<h2 class="Sh2"><a class="an" name="a1">Nachricht lesen</a></h2>
+<p>{&& %IF _REF_LINK _REF_TITLE _REF_NAME &&}Urspr&uuml;ngliche Nachricht zum Thema: {&& IMG_X3 &&}&nbsp;{&& %IF _REF_CATEGORY &&}<b>({&& _REF_CATEGORY &&})</b>&nbsp;{&& %ENDIF &&}<a href="{&& BASE &&}{&& _REF_LINK &&}"><b>{&& _REF_TITLE &&}</b></a> von <b>{&& _REF_NAME &&}</b>, {&& _REF_TIME &&}<br>
+   {&& %ENDIF &&}Die folgende Nachricht zum Thema stammt von: <b>{&& _BEF_NAME &&}</b>{&& %IF _BEF_MAIL &&}, {&& IMG_XGMAIL &&} <a href="mailto:{&& _BEF_MAIL &&}"><b>{&& _BEF_MAIL &&}</b></a>{&& %ENDIF &&}, {&& _BEF_TIME &&}{&& %IF _BEF_HOME &&}<br>
+   <a href="{&& _BEF_HOME &&}"><b>{&& _BEF_HOME &&}</b></a>{&& %ENDIF &&}</p>
+<p><tt>{&& _MESSAGE &&}</tt></p><br>&#160;{&& %IF _BEF_IMAGE &&}
+<p><img src="{&& _BEF_IMAGE &&}" border=0 alt=""></p>{&& %ENDIF &&}
+
+{&& UPNDOWN &&}{&& %IF _FIRSTTIME &&}
+<h2 class="Sh2"><a class="an" name="a2">Nachricht zur Archivierung vorschlagen</a></h2>
+<p>Wenn Sie dieses Posting f&uuml;r interessant, fachlich wertvoll, humorvoll oder sonst irgendwie f&uuml;r lesenswert halten, sollten Sie es f&uuml;r die dauerhafte Archivierung vorschlagen.</p>
+<form method="post" action="{&& _VOTE_ACTION &&}">
+<input type="hidden" name="{&& _FORM_FUP_NAME &&}" value="{&& _FORM_FUP_VALUE &&}">
+<input type="hidden" name="{&& _FORM_UNID_NAME &&}" value="{&& _FORM_UNID_VALUE &&}">
+<input id="archiv" type="submit" value="zur Archivierung vorschlagen">
+</form>
+<p>Bitte nur <b>einmal</b> auf <i>zur Archivierung vorschlagen</i> klicken, dann abwarten!</p>
+{&& UPNDOWN &&}{&& %ENDIF &&}
+
+<h2 class="Sh2"><a class="an" name="a3">Nachricht beantworten</a></h2>{&& %IF _THREAD &&}
+<dl>{&& _THREAD &&}</dl>{&& %ENDIF &&}
+<h3>Eigene Antwort schreiben</h3>
+<form accept-charset="iso-8859-1, UTF-8" method="post" action="{&& _FORM_ACTION &&}">
+<input type="hidden" name="{&& _FORM_FUP_NAME &&}" value="{&& _FORM_FUP_VALUE &&}">{&& %IF _FORM_UID_VALUE &&}
+<input type="hidden" name="{&& _FORM_UID_NAME &&}" value="{&& _FORM_UID_VALUE &&}">{&& %ENDIF &&}
+<input type="hidden" name="{&& _FORM_UNID_NAME &&}" value="{&& _FORM_UNID_VALUE &&}">
+<input type="hidden" name="{&& _FORM_QCHAR_NAME &&}" value="{&& _FORM_QCHAR_VALUE &&}">
+<table bgcolor="#EEEEEE" cellpadding="2" cellspacing="0" border="0">
+<tr><td align="right" valign="middle"><br><b>Name:</b></td>
+    <td valign="top"><br><input type="text" name="{&& _FORM_NAME_NAME &&}" value="{&& _FORM_NAME_VALUE &&}" size="40" style="width:410px; font-family:Arial,Sans-serif; font-size:10pt;"></td></tr>
+<tr><td align="right" valign="middle"><b>E-Mail:</b></td>
+    <td valign="top"><input type="text" name="{&& _FORM_MAIL_NAME &&}" value="{&& _FORM_MAIL_VALUE &&}" size="40" style="width:410px; font-family:Arial,Sans-serif; font-size:10pt"></td></tr>
+<tr><td valign="top" colspan=2>
+        <b>Nachrichtentext:</b><br>
+        <tt><textarea cols="76" rows="25" name="{&& _FORM_BODY_NAME &&}" style="width:580px; height:380px; font-family:Courier New,Courier; font-size:10pt; color:#0000C0">{&& _FORM_BODY_VALUE &&}{&& %IF _FORM_SIGN_VALUE &&}
+--
+{&& _FORM_SIGN_VALUE &&}{&& %ENDIF &&}</textarea></tt></td></tr>
+<tr><td align="right" valign="middle"><b>URL (optional):</b></td>
+    <td valign="top"><input type="text" name="{&& _FORM_URL_NAME &&}" value="{&& %IF _FORM_URL_VALUE &&}{&& _FORM_URL_VALUE &&}{&& %ELSE &&}http://{&& %ENDIF &&}" size="40" style="width:410px; font-family:Arial,Sans-serif; font-size:10pt"></td></tr>
+<tr><td align="right" valign="middle"><b>Grafik-URL (optional):</b></td>
+    <td valign="top"><input type=text name="{&& _FORM_IMG_NAME &&}" value="{&& %IF _FORM_IMG_VALUE &&}{&& _FORM_IMG_VALUE &&}{&& %ELSE &&}http://{&& %ENDIF &&}" size="40" style="width:410px; font-family:Arial,Sans-serif; font-size:10pt"></td></tr>
+<tr><td valign="top" nowrap colspan="2"><input type="submit" value="Nachricht absenden"> <input type="reset" value="Eingaben verwerfen"></td></tr>
+</table>
+</form><br>
+<p>Bitte nur <b>einmal</b> auf <i>Nachricht absenden</i> klicken, dann abwarten!</p>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top">{&& IMG_XGOUP &&}</a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_FORUM &&}</td></tr>
+</table>
+<p>&copy; 2000 {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:{&& MAIL_SELF &&}">{&& MAIL_SELF &&}</a></p>
+</body>
+</html>
+  ]]></Scrap>
+
+<Scrap id="_N_A"><![CDATA[      Das angeforderte Posting ist nicht verf&uuml;gbar. ]]></Scrap>
+<Scrap id="_OCCUPIED"><![CDATA[ Das angeforderte Posting ist vor&uuml;bergehend nicht verf&uuml;gbar. Versuchen Sie es bitte in einigen Minuten nocheinmal. ]]></Scrap>
+
+  <Scrap id="DOC_ERROR"><![CDATA[
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+<head>
+    <meta http-equiv="expires" content="0">
+    <meta name="robots" content="noindex">
+
+    <title>SELFHTML Forum: Fehler</title>
+
+    <link rel="stylesheet" type="text/css" href="{&& _CSS_FILE &&}">
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" link="#AA5522" vlink="#772200" alink="#000000">
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="top">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_FORUM &&}</td></tr>
+</table>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc" width="110">{&& IMG_XWEB &&}</td>
+    <td bgcolor="#EEEEEE" class="doc" valign="bottom" width="100%"><h2>SELFHTML Forum:<br>Fehler</h2></td></tr>
+<tr><td bgcolor="#EEEEEE" class="doc" valign="top" align="center">
+    {&& QUICKLINKS &&}
+<br></td>
+    <td bgcolor="#FFFFFF" valign="top">
+    <p>{&& IMG_XGDOWN &&}&nbsp;<a href="#a1"><b>Fehler</b></a></p>{&& %IF _LOAD_TIME &&}
+    <p>Ladezeitpunkt: {&& _LOAD_TIME &&}</p>{&& %ENDIF &&}</td></tr>
+<tr><td colspan="2" bgcolor="#EEEEEE" class="doc"><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr>
+</table>
+<h2 class="Sh2"><a class="an" name="a1">Fehler</a></h2>
+<p>{&& _ERROR_TEXT &&}</p>
+<table cellpadding="4" cellspacing="0" border="0" width="100%">
+<tr><td bgcolor="#EEEEEE" class="doc"><a href="#top">{&& IMG_XGOUP &&}</a></td></tr>
+<tr><td bgcolor="#FFEEDD" class="nav"><a class="an" name="bottom">{&& IMG_X2 &&}</a>&nbsp;{&& LINK_SELFAKTUELL &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_LIVE &&}&nbsp;{&& IMG_X2 &&}&nbsp;{&& LINK_FORUM &&}</td></tr>
+</table>
+<p>&copy; 2000 {&& IMG_XGMAIL &&}&nbsp;<a href="mailto:{&& MAIL_SELF &&}">{&& MAIL_SELF &&}</a></p>
+</body>
+</html>
+  ]]></Scrap>
+
+<!--
+    ***** Schnipsel *****
+    aus Grundelementen zusammengesetzt
+-->
+
+  <Scrap id="QUICKLINKS"><![CDATA[
+    <table border="0" cellpadding="5" cellspacing="5" width="100%"><tr>
+    <td bgcolor="#FFEEDD" align="center">
+        <p><b>QuickLink:</b><br>
+    <a href="/selfaktuell/forum/archiv/">Forumsarchiv</a><br>
+    <a href="/selfaktuell/forum/faq/">Forums-FAQ</a><br>&nbsp;<br>
+    <a href="/selfhtml/">SELFHTML</a><br>
+    <a href="/selfaktuell/news.htm" OnClick="if (!window.News) return true; News(); return false;">News</a><br>
+    <a href="/selfaktuell/live/chat.htm" OnClick="if (!window.Chat) return true; Chat(); return false;">Chat</a><br>
+    <a href="/cgi-local/self/such.pl">Suche</a><br>
+    </table>
+  ]]></Scrap>
+
+  <Scrap id="TREE_START"><![CDATA[
+{&& IMG_X3 &&} (<b>{&& _CATEGORY &&}</b>) <a href="{&& BASE &&}{&& _LINK &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_START_NC"><![CDATA[
+{&& IMG_X3 &&} <a href="{&& BASE &&}{&& _LINK &&}"><b>{&& _TITLE &&}</b></a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_LINE"><![CDATA[
+{&& IMG_X3 &&} ({&& _CATEGORY &&}) <a href="{&& BASE &&}{&& _LINK &&}">{&& _TITLE &&}</a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  ]]></Scrap>
+
+  <Scrap id="TREE_LINE_NC"><![CDATA[
+{&& IMG_X3 &&} <a href="{&& BASE &&}{&& _LINK &&}">{&& _TITLE &&}</a> von <b>{&& _NAME &&}</b>, {&& _TIME &&}
+  ]]></Scrap>
+
+  <Scrap id="UPNDOWN"><![CDATA[
+<table bgcolor="#EEEEEE" class="doc" width="100%"><tr><td><a href="#top">{&& IMG_XGOUP &&}</a><a href="#bottom">{&& IMG_XGDOWN &&}</a>&#160;</td></tr></table>
+  ]]></Scrap>
+
+<!--
+    ***** ATOMICS *****
+    Grundelemente
+-->
+
+<Scrap id="CITE_START"><![CDATA[ <span class="q"> ]]></Scrap>
+<Scrap id="CITE_END"><![CDATA[ </span> ]]></Scrap>
+
+<!--
+    Links/URLs
+-->
+
+<Scrap id="MAIL_SELF"><![CDATA[ selfhtml@teamone.de ]]></Scrap>
+
+<Scrap id="BASE"><![CDATA[ /selfaktuell/forum/ ]]></Scrap>
+<Scrap id="LINK_SELFHTML"><![CDATA[ <a href="/selfhtml/"><b>SELFHTML</b></a> ]]></Scrap>
+<Scrap id="LINK_SELFAKTUELL"><![CDATA[ <a href="/selfaktuell/"><b>SELFHTML aktuell</b></a> ]]></Scrap>
+<Scrap id="LINK_LIVE"><![CDATA[ <a href="/selfaktuell/live/"><b>SELFHTML live</b></a> ]]></Scrap>
+<Scrap id="LINK_FORUM"><![CDATA[ <a href="/selfaktuell/forum/"><b>SELFHTML&nbsp;Forum</b></a> ]]></Scrap>
+<Scrap id="LINK_UNRECHT"><![CDATA[ <a href="/selfaktuell/talk/rechtundlinks.htm"><b>Recht + Links</b></a> ]]></Scrap>
+<Scrap id="LINK_FAQ"><![CDATA[ <a href="/selfaktuell/forum/faq/"><b>Forums-FAQ</b></a> ]]></Scrap>
+<Scrap id="LINK_ARCHIV"><![CDATA[ <a href="/selfaktuell/forum/archiv/"><b>Forumsarchiv</b></a> ]]></Scrap>
+<Scrap id="LINK_SUCHE"><![CDATA[ <a href="/cgi-local/self/such.pl"><b>SELFHTML Suche</b></a> ]]></Scrap>
+<Scrap id="LINK_NEU"><![CDATA[ <a href="neu.shtml" target="_blank"><b>Neue Nachricht verfassen</b></a> ]]></Scrap>
+
+<Scrap id="_CSS_FILE"><![CDATA[ /selfaktuell/src/wselfhtmf.css ]]></Scrap>
+
+<!--
+    Bilder
+-->
+
+<Scrap id="IMG_XGMAIL"><![CDATA[ <img src="/selfaktuell/src/xgmail.gif" width="15" height="10" border="0" alt="E-Mail"> ]]></Scrap>
+<Scrap id="IMG_XGOUP"><![CDATA[ <img src="/selfaktuell/src/xgoup.gif" width="14" height="10" border="0" alt="nach oben"> ]]></Scrap>
+<Scrap id="IMG_XGDOWN"><![CDATA[ <img src="/selfaktuell/src/xgdown.gif" width="14" height="10" border="0" alt="nach unten"> ]]></Scrap>
+<Scrap id="IMG_X2"><![CDATA[ <img src="/selfaktuell/src/x2.gif" width="16" height="13" border="0" alt="Teil von"> ]]></Scrap>
+<Scrap id="IMG_X3"><![CDATA[ <img src="/selfaktuell/src/x3.gif" width="15" height="10" border="0" alt="Seite"> ]]></Scrap>
+<Scrap id="IMG_X5"><![CDATA[ <img src="/selfaktuell/src/x5.gif" width="30" height="20" vspace="6" border="0" alt="Informationsseite"> ]]></Scrap>
+<Scrap id="IMG_XWEB"><![CDATA[ <img src="/selfaktuell/src/xweb.gif" width="106" height="109" border="0" alt="SELFHTML"> ]]></Scrap>
+
+</Template>
