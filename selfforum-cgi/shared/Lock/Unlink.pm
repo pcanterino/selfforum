@@ -24,7 +24,7 @@ use Fcntl;
 #
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
-### sub _simple_lock ###########################################################
+### _simple_lock () ############################################################
 #
 # simple file lock
 # (unlink lock file)
@@ -42,7 +42,7 @@ sub _simple_lock {
   return;
 }
 
-### sub _simple_unlock #########################################################
+### _simple_unlock () ##########################################################
 #
 # simple file unlock
 # (create lock file)
@@ -65,7 +65,7 @@ sub _simple_unlock {
   return;
 }
 
-### sub _reftime ###############################################################
+### _reftime () ################################################################
 #
 # determine reference time for violent unlock
 #
@@ -86,7 +86,7 @@ sub _reftime {
   $time;
 }
 
-### sub masterlocked ###########################################################
+### masterlocked () ############################################################
 #
 # check on master lock status of the file
 #
@@ -96,7 +96,7 @@ sub _reftime {
 #
 sub masterlocked {not -f shift -> masterlock}
 
-### sub excl_announced #########################################################
+### excl_announced () ##########################################################
 #
 # check on exclusive lock announced status of the file
 #
@@ -106,7 +106,7 @@ sub masterlocked {not -f shift -> masterlock}
 #
 sub excl_announced {not -f shift -> lockfile}
 
-### sub exsh_announced #########################################################
+### exsh_announced () ##########################################################
 #
 # check on exclusive shared lock status of the file
 #
@@ -115,6 +115,26 @@ sub excl_announced {not -f shift -> lockfile}
 # Return: status (boolean)
 #
 sub exsh_announced {not -f shift -> exshlock}
+
+### purge () ###################################################################
+#
+# cover our traces after a file was removed
+#
+# Params: ~none~
+#
+# Return: ~none~
+#
+sub purge {
+  my $self = shift;
+
+  $self -> set_ref (0);          # reference counter = 0
+  unlink ($self -> reflock);     # remove reference counter lock
+  unlink ($self -> lockfile);    # remove any write lock announce
+  unlink ($self -> exshlock);    # remove any excl shared lock
+  unlink ($self -> masterlock);  # remove master lock
+
+  return;
+}
 
 # keep 'require' happy
 1;

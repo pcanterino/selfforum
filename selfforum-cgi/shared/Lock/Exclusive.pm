@@ -24,7 +24,7 @@ use Fcntl;
 #
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
-### sub _simple_lock ###########################################################
+### _simple_lock () ############################################################
 #
 # simple file lock
 # (create lock file)
@@ -44,7 +44,7 @@ sub _simple_lock {
   return;
 }
 
-### sub _simple_unlock #########################################################
+### _simple_unlock () ##########################################################
 #
 # simple file unlock
 # (unlink lock file)
@@ -64,7 +64,7 @@ sub _simple_unlock {
   return;
 }
 
-### sub _reftime ###############################################################
+### _reftime () ################################################################
 #
 # determine reference time for violent unlock
 #
@@ -85,7 +85,7 @@ sub _reftime {
   $time;
 }
 
-### sub masterlocked ###########################################################
+### masterlocked () ############################################################
 #
 # check on master lock status of the file
 #
@@ -95,7 +95,7 @@ sub _reftime {
 #
 sub masterlocked {-f shift -> masterlock}
 
-### sub excl_announced #########################################################
+### excl_announced () ##########################################################
 #
 # check on exclusive lock announced status of the file
 #
@@ -105,7 +105,7 @@ sub masterlocked {-f shift -> masterlock}
 #
 sub excl_announced {-f shift -> lockfile}
 
-### sub exsh_announced #########################################################
+### exsh_announced () ##########################################################
 #
 # check on exclusive shared lock status of the file
 #
@@ -114,6 +114,18 @@ sub excl_announced {-f shift -> lockfile}
 # Return: status (boolean)
 #
 sub exsh_announced {-f shift -> exshlock}
+
+### purge () ###################################################################
+#
+# cover our traces after a file was removed
+#
+# Params: ~none~
+#
+# Return: ~none~
+#
+sub purge {
+  shift -> release;
+}
 
 # keep 'require' happy
 1;
