@@ -37,7 +37,7 @@ BEGIN {
 sub VERSION {(q$Revision$ =~ /([\d.]+)\s*$/)[0] or '0.0'}
 
 
-### sub new ####################################################################
+### new () #####################################################################
 #
 # constructor
 #
@@ -56,7 +56,7 @@ sub new {
   $self;
 }
 
-### sub file ###################################################################
+### file () ####################################################################
 #
 # assign new template file to object
 # parse the template file
@@ -77,7 +77,7 @@ sub file {
   $old;
 }
 
-### sub insert #################################################################
+### insert () ##################################################################
 #
 # return the placeholder surrounded by meta delimiters
 #
@@ -96,7 +96,7 @@ sub insert {
   $self -> {metaon} . $name . $self -> {metaoff};
 }
 
-### sub list ###################################################################
+### list () ####################################################################
 #
 # fill in a complete list
 #
@@ -107,19 +107,36 @@ sub insert {
 #
 sub list {
   my $self = shift;
-  my $name = shift;
 
   croak "no template file specified"
     unless (defined $self -> {file});
 
-#  no warnings 'uninitialized';
-  my $list = join '' => map { ${ $self -> scrap ($name, $_) } } @{ +shift };
+  $self -> joinlist ('' => @_);
+}
+
+### joinlist () ################################################################
+#
+# fill in a complete list, using a scrap between the list elements
+#
+# Params: $join  - joining string (or stringref)
+#         $name  - name of the atomic list scrap
+#         $array - list of hashes (same strcuture like the hash used by 'scrap')
+#
+# Return: scalar reference - filled in list
+#
+sub joinlist {
+  my $self = shift;
+  my $join = shift;
+  $join = $$join if ref($join);
+  my $name = shift;
+
+  my $list = join $join => map { ${ $self -> scrap ($name, $_) } } @{ +shift };
 
   # return
   \$list;
 }
 
-### sub scrap ##################################################################
+### scrap () ###################################################################
 #
 # fill in a template scrap
 #
@@ -198,7 +215,43 @@ sub scrap {
   \$scrap;
 }
 
-### sub parse_file #############################################################
+### printscrap () ##############################################################
+#
+# fill in a template scrap and print to STDOUT
+#
+# Params: $name    name of the scrap
+#         ...
+#         $no_nl   1 - remove newlines (\n)
+#                  0 - do no such thing
+#
+# Return: success code (boolean)
+#
+sub printscrap {
+  my $self = shift;
+
+  $self -> scrap2file (\*STDOUT, @_);
+}
+
+### scrap2file () ##############################################################
+#
+# fill in a template scrap and print to a file handle
+#
+# Params: $handle  filehandle
+#         $name    name of the scrap
+#         ...
+#         $no_nl   1 - remove newlines (\n)
+#                  0 - do no such thing
+#
+# Return: success code (boolean)
+#
+sub scrap2file {
+  my $self = shift;
+  my $handle = shift;
+
+  print $handle ${$self->scrap(@_)};
+}
+
+### parse_file () ##############################################################
 #
 # read in and parse template file
 #
@@ -298,7 +351,7 @@ sub parse_file {
   return; # anything failed (??)
 }
 
-### sub parse_if ###############################################################
+### parse_if () ################################################################
 #
 # parse conditional blocks
 #
